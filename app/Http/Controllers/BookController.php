@@ -2,23 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\OcrPreviewRequest;
+use App\Http\Requests\StoreBookRequest;
 use App\Jobs\ProcessBookJob;
 use App\Models\Book;
 use App\Models\Chapter;
 use App\Models\User;
+use App\Services\AudioStreamingService;
 use App\Services\AudioSynthesisService;
+use App\Services\DocumentIngestService;
+use App\Services\GuestSessionService;
 use App\Services\PdfExtractorService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BookController extends Controller
 {
+    public function __construct(
+        protected GuestSessionService $guestSession,
+        protected DocumentIngestService $ingestService,
+        protected AudioStreamingService $streamingService
+    ) {}
+
     /**
-     * Display a listing of all audiobooks.
+     * Display a listing of all audiobooks with search, filters and statistics.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $user = Auth::user();
         $query = Book::with(['user'])->withCount('chapters')->latest();
@@ -36,7 +51,6 @@ class BookController extends Controller
                 $query->where('user_id', $user->id);
             }
         } else {
-            // Regular user only sees their own books
             $query->where('user_id', $user->id);
         }
 
@@ -55,11 +69,7 @@ class BookController extends Controller
 
         $books = $query->paginate(12)->withQueryString();
 
-        // Stats calculation based on active query scope
-        $statsQuery = clone $query;
-        // Strip pagination limits
-        $allIds = $statsQuery->pluck('id');
-
+        $allIds = (clone $query)->pluck('id');
         $stats = [
             'total' => $allIds->count(),
             'ready' => Book::whereIn('id', $allIds)->where('status', 'ready')->count(),
@@ -71,63 +81,53 @@ class BookController extends Controller
     }
 
     /**
-     * Show form to upload a new PDF for conversion.
+     * Show form to upload a new document or text for conversion.
      */
-    public function create(?Request $request = null)
+    public function create(?Request $request = null): View|RedirectResponse
     {
         $request = $request ?? request();
 
         if ($request->has('reset') || $request->has('new') || $request->has('reset_trial')) {
-            session()->forget(['guest_book_id', 'guest_upload_count']);
-            session()->save();
+            $this->guestSession->resetSession();
         }
 
-        $voices = AudioSynthesisService::getAvailableVoices();
-        $registeredUsers = collect();
+        if (!Auth::check() && $this->guestSession->isTrialExhausted()) {
+            return redirect()->route('register')
+                ->with('info', 'Has utilizado tu conversión de prueba gratuita. Regístrate en 10 segundos para seguir subiendo documentos.');
+        }
 
-        if (!Auth::check()) {
-            // Check guest upload count
-            $guestCount = session('guest_upload_count', 0);
-            if ($guestCount >= 1) {
-                return redirect()->route('register')
-                    ->with('info', 'Has utilizado tu conversión de prueba gratuita. Regístrate en 10 segundos para seguir subiendo documentos.');
-            }
-        } else {
+        if (Auth::check()) {
             $user = Auth::user();
             if (!$user->canUploadBook()) {
                 return redirect()->route('books.index')
                     ->with('error', "Has alcanzado tu cuota de {$user->book_limit} libros. Contacta al Administrador para ampliar tu cuenta.");
             }
-
-            if ($user->isAdmin()) {
-                $registeredUsers = User::orderBy('name')->get(['id', 'name', 'email']);
-            }
         }
+
+        $voices = AudioSynthesisService::getAvailableVoices();
+        $registeredUsers = (Auth::check() && Auth::user()->isAdmin())
+            ? User::orderBy('name')->get(['id', 'name', 'email'])
+            : collect();
 
         return view('books.create', compact('voices', 'registeredUsers'));
     }
 
     /**
-     * Explicitly reset guest trial session to allow uploading another document.
+     * Reset guest trial session to allow uploading another document.
      */
-    public function resetGuest(Request $request)
+    public function resetGuest(Request $request): RedirectResponse
     {
-        session()->forget(['guest_book_id', 'guest_upload_count']);
-        session()->save();
+        $this->guestSession->resetSession();
 
         return redirect()->route('books.create')
             ->with('info', 'Tu sesión de prueba gratuita ha sido reiniciada con éxito. Puedes cargar o pegar un nuevo documento.');
     }
 
     /**
-     * Live OCR preview for uploaded or pasted images.
+     * Live OCR preview endpoint for images from upload or clipboard.
      */
-    public function ocrPreview(Request $request, PdfExtractorService $extractor)
+    public function ocrPreview(OcrPreviewRequest $request, PdfExtractorService $extractor): JsonResponse
     {
-        $request->validate([
-            'image' => 'required|file|mimes:png,jpg,jpeg,webp,bmp|max:20480',
-        ]);
-
         $file = $request->file('image');
         $tempPath = $file->getRealPath();
 
@@ -158,95 +158,43 @@ class BookController extends Controller
     }
 
     /**
-     * Store and start processing a new PDF audiobook.
+     * Store and start processing a new audiobook.
      */
-    public function store(Request $request)
+    public function store(StoreBookRequest $request): RedirectResponse
     {
-        if (!Auth::check()) {
-            $guestCount = session('guest_upload_count', 0);
-            if ($guestCount >= 1) {
-                return redirect()->route('register')
-                    ->with('info', 'Has utilizado tu conversión de prueba gratuita. Regístrate para continuar.');
-            }
-        } else {
-            $user = Auth::user();
-            if (!$user->canUploadBook()) {
-                return redirect()->route('books.index')
-                    ->with('error', "Has alcanzado el límite de tu cuenta ({$user->book_limit} libros).");
-            }
+        if (!Auth::check() && $this->guestSession->isTrialExhausted()) {
+            return redirect()->route('register')
+                ->with('info', 'Has utilizado tu conversión de prueba gratuita. Regístrate para continuar.');
         }
 
-        $allowedMimes = 'pdf,docx,doc,txt,md,markdown,png,jpg,jpeg,webp,bmp,mp3,wav,m4a,ogg,aac,flac';
-        $request->validate([
-            'pdf_file' => "required_without:raw_text|nullable|file|mimes:{$allowedMimes}|max:102400", // 100MB max
-            'raw_text' => 'required_without:pdf_file|nullable|string|min:10',
-            'title' => 'nullable|string|max:255',
-            'author' => 'nullable|string|max:255',
-            'voice' => 'required|string',
-            'speed_rate' => 'required|string',
-            'pitch' => 'required|string',
-            'assigned_user_id' => 'nullable|exists:users,id',
-        ], [
-            'pdf_file.required_without' => 'Debes adjuntar un archivo o ingresar texto en el modo de pegado directo.',
-            'raw_text.required_without' => 'Debes adjuntar un archivo o ingresar texto en el modo de pegado directo.',
-            'raw_text.min' => 'El texto pegado debe contener al menos 20 caracteres.',
-        ]);
-
-        if ($request->hasFile('pdf_file')) {
-            $file = $request->file('pdf_file');
-            $originalFilename = $file->getClientOriginalName();
-            $cleanTitle = $request->filled('title')
-                ? $request->input('title')
-                : pathinfo($originalFilename, PATHINFO_FILENAME);
-
-            $storedPath = $file->store('pdfs', 'public');
-        } else {
-            $rawText = trim($request->input('raw_text'));
-            if ($request->filled('title')) {
-                $cleanTitle = $request->input('title');
-            } else {
-                $firstLine = strtok($rawText, "\r\n");
-                $cleanTitle = \Illuminate\Support\Str::limit(trim(preg_replace('/^[#\s*_-]+/', '', $firstLine)), 50, '...');
-                if (empty($cleanTitle)) {
-                    $cleanTitle = 'Texto Directo ' . now()->format('d/m/Y H:i');
-                }
-            }
-            $slug = \Illuminate\Support\Str::slug($cleanTitle) ?: 'texto-directo';
-            $fileName = $slug . '-' . time() . '.txt';
-            $storedPath = 'pdfs/' . $fileName;
-            Storage::disk('public')->put($storedPath, $rawText);
-            $originalFilename = $cleanTitle . '.txt';
+        if (Auth::check() && !Auth::user()->canUploadBook()) {
+            return redirect()->route('books.index')
+                ->with('error', "Has alcanzado el límite de tu cuenta (" . Auth::user()->book_limit . " libros).");
         }
 
-        // Determine owner
+        $ingested = $this->ingestService->ingest($request);
+
         $ownerId = null;
         if (Auth::check()) {
             $currentUser = Auth::user();
-            if ($currentUser->isAdmin() && $request->filled('assigned_user_id')) {
-                $ownerId = (int) $request->input('assigned_user_id');
-            } else {
-                $ownerId = $currentUser->id;
-            }
+            $ownerId = ($currentUser->isAdmin() && $request->filled('assigned_user_id'))
+                ? (int) $request->input('assigned_user_id')
+                : $currentUser->id;
         }
 
         $book = Book::create([
             'user_id' => $ownerId,
-            'title' => $cleanTitle,
-            'author' => $request->input('author'),
-            'original_filename' => $originalFilename,
-            'pdf_path' => $storedPath,
+            'title' => $ingested['title'],
+            'author' => $ingested['author'],
+            'original_filename' => $ingested['original_filename'],
+            'pdf_path' => $ingested['stored_path'],
             'voice' => $request->input('voice'),
             'speed_rate' => $request->input('speed_rate'),
             'pitch' => $request->input('pitch'),
             'status' => 'pending',
         ]);
 
-        if (!Auth::check()) {
-            session(['guest_upload_count' => session('guest_upload_count', 0) + 1]);
-            session(['guest_book_id' => $book->id]);
-        }
-
-        // Dispatch background processing job
+        $this->guestSession->recordTrialUpload($book->id);
         ProcessBookJob::dispatch($book->id);
 
         return redirect()->route('books.show', $book->id)
@@ -256,10 +204,9 @@ class BookController extends Controller
     /**
      * Display the audiobook player and chapter playlist.
      */
-    public function show(Book $book)
+    public function show(Book $book): View
     {
         $this->authorizeBookAccess($book);
-
         $book->load('chapters');
 
         return view('books.show', compact('book'));
@@ -268,19 +215,14 @@ class BookController extends Controller
     /**
      * Stream the original document file inline for in-browser reading/download.
      */
-    public function pdfStream(Book $book)
+    public function pdfStream(Book $book): BinaryFileResponse
     {
         $this->authorizeBookAccess($book);
 
         $path = Storage::disk('public')->path($book->pdf_path);
         if (!file_exists($path)) {
-            // Check fallback in pdfs/manifiesto_homelab.pdf if available
             $fallback = Storage::disk('public')->path('pdfs/manifiesto_homelab.pdf');
-            if (file_exists($fallback)) {
-                $path = $fallback;
-            } else {
-                abort(404, 'Archivo de documento no encontrado en el almacenamiento.');
-            }
+            $path = file_exists($fallback) ? $fallback : abort(404, 'Archivo no encontrado en el almacenamiento.');
         }
 
         $ext = strtolower(pathinfo($book->original_filename ?? $book->pdf_path, PATHINFO_EXTENSION));
@@ -301,22 +243,21 @@ class BookController extends Controller
             'm4a' => 'audio/mp4',
             'ogg' => 'audio/ogg',
         ];
-        $contentType = $mimeTypes[$ext] ?? 'application/octet-stream';
 
         return response()->file($path, [
-            'Content-Type' => $contentType,
+            'Content-Type' => $mimeTypes[$ext] ?? 'application/octet-stream',
             'Content-Disposition' => 'inline; filename="' . basename($book->original_filename) . '"',
         ]);
     }
 
     /**
-     * Retrieve book text chapters and document metadata for universal in-app reader modal.
+     * Retrieve book text chapters and metadata for universal in-app reader modal.
      */
-    public function documentContent(Book $book)
+    public function documentContent(Book $book): JsonResponse
     {
         $this->authorizeBookAccess($book);
-
         $book->load('chapters');
+
         $ext = strtolower(pathinfo($book->original_filename ?? $book->pdf_path, PATHINFO_EXTENSION));
 
         return response()->json([
@@ -328,26 +269,23 @@ class BookController extends Controller
             'summary' => $book->summary,
             'total_chapters' => $book->chapters->count(),
             'total_duration' => $book->formatted_duration,
-            'chapters' => $book->chapters->map(function ($ch) {
-                return [
-                    'id' => $ch->id,
-                    'chapter_number' => $ch->chapter_number,
-                    'title' => $ch->title,
-                    'duration' => $ch->formatted_duration,
-                    'word_count' => $ch->word_count,
-                    'content_text' => $ch->content_text,
-                ];
-            }),
+            'chapters' => $book->chapters->map(fn($ch) => [
+                'id' => $ch->id,
+                'chapter_number' => $ch->chapter_number,
+                'title' => $ch->title,
+                'duration' => $ch->formatted_duration,
+                'word_count' => $ch->word_count,
+                'content_text' => $ch->content_text,
+            ]),
         ]);
     }
 
     /**
      * Status polling API endpoint for real-time frontend updates.
      */
-    public function status(Book $book)
+    public function status(Book $book): JsonResponse
     {
         $this->authorizeBookAccess($book);
-
         $book->load('chapters');
 
         return response()->json([
@@ -358,25 +296,23 @@ class BookController extends Controller
             'processed_chapters' => $book->processed_chapters,
             'total_duration' => $book->formatted_duration,
             'error_message' => $book->error_message,
-            'chapters' => $book->chapters->map(function ($ch) {
-                return [
-                    'id' => $ch->id,
-                    'chapter_number' => $ch->chapter_number,
-                    'title' => $ch->title,
-                    'status' => $ch->status,
-                    'duration' => $ch->formatted_duration,
-                    'duration_seconds' => $ch->duration_seconds,
-                    'audio_url' => $ch->audio_stream_url,
-                    'download_url' => $ch->audio_download_url,
-                ];
-            }),
+            'chapters' => $book->chapters->map(fn($ch) => [
+                'id' => $ch->id,
+                'chapter_number' => $ch->chapter_number,
+                'title' => $ch->title,
+                'status' => $ch->status,
+                'duration' => $ch->formatted_duration,
+                'duration_seconds' => $ch->duration_seconds,
+                'audio_url' => $ch->audio_stream_url,
+                'download_url' => $ch->audio_download_url,
+            ]),
         ]);
     }
 
     /**
      * Retry processing for a failed book.
      */
-    public function retry(Book $book)
+    public function retry(Book $book): RedirectResponse
     {
         $this->authorizeBookAccess($book);
 
@@ -393,9 +329,9 @@ class BookController extends Controller
     }
 
     /**
-     * Stream an audio chapter with HTTP 206 Partial Content support for seeking.
+     * Stream an audio chapter with HTTP 206 Partial Content support.
      */
-    public function streamChapter(Request $request, Chapter $chapter)
+    public function streamChapter(Request $request, Chapter $chapter): StreamedResponse
     {
         $this->authorizeBookAccess($chapter->book);
 
@@ -405,59 +341,13 @@ class BookController extends Controller
 
         $fullPath = Storage::disk('public')->path($chapter->audio_path);
 
-        if (!file_exists($fullPath)) {
-            abort(404, 'Archivo de audio no encontrado en el servidor.');
-        }
-
-        $size = filesize($fullPath);
-        $file = @fopen($fullPath, 'rb');
-
-        if (!$file) {
-            abort(500, 'No se pudo abrir el archivo de audio.');
-        }
-
-        $start = 0;
-        $end = $size - 1;
-        $status = 200;
-        $headers = [
-            'Content-Type' => 'audio/mpeg',
-            'Accept-Ranges' => 'bytes',
-        ];
-
-        $range = $request->header('Range') ?? $request->server('HTTP_RANGE');
-        if ($range) {
-            if (preg_match('/bytes=\h*(\d+)-(\d*)[\D.*]?/i', $range, $matches)) {
-                $start = intval($matches[1]);
-                if (!empty($matches[2])) {
-                    $end = intval($matches[2]);
-                }
-                $status = 206;
-                $headers['Content-Range'] = sprintf('bytes %d-%d/%d', $start, $end, $size);
-            }
-        }
-
-        $length = $end - $start + 1;
-        $headers['Content-Length'] = $length;
-
-        fseek($file, $start);
-
-        return new StreamedResponse(function () use ($file, $length) {
-            $buffer = 1024 * 64; // 64KB buffer
-            $remaining = $length;
-            while (!feof($file) && $remaining > 0 && connection_status() == 0) {
-                $read = min($buffer, $remaining);
-                echo fread($file, $read);
-                flush();
-                $remaining -= $read;
-            }
-            fclose($file);
-        }, $status, $headers);
+        return $this->streamingService->stream($fullPath, $request);
     }
 
     /**
      * Stream executive summary audio.
      */
-    public function streamSummary(Book $book)
+    public function streamSummary(Book $book): StreamedResponse
     {
         $this->authorizeBookAccess($book);
 
@@ -466,53 +356,16 @@ class BookController extends Controller
         }
 
         $fullPath = Storage::disk('public')->path($book->summary_audio_path);
-        $size = filesize($fullPath);
-        $file = fopen($fullPath, 'rb');
 
-        $start = 0;
-        $end = $size - 1;
-        $status = 200;
-
-        $headers = [
-            'Content-Type' => 'audio/mpeg',
-            'Accept-Ranges' => 'bytes',
+        return $this->streamingService->stream($fullPath, request(), [
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
-        ];
-
-        if (request()->hasHeader('Range')) {
-            $rangeHeader = request()->header('Range');
-            if (preg_match('/bytes=\h*(\d+)-(\d*)[\D.*]?/i', $rangeHeader, $matches)) {
-                $start = intval($matches[1]);
-                if (!empty($matches[2])) {
-                    $end = intval($matches[2]);
-                }
-                $status = 206;
-                $headers['Content-Range'] = sprintf('bytes %d-%d/%d', $start, $end, $size);
-            }
-        }
-
-        $length = $end - $start + 1;
-        $headers['Content-Length'] = $length;
-
-        fseek($file, $start);
-
-        return new StreamedResponse(function () use ($file, $length) {
-            $buffer = 1024 * 64;
-            $remaining = $length;
-            while (!feof($file) && $remaining > 0 && connection_status() == 0) {
-                $read = min($buffer, $remaining);
-                echo fread($file, $read);
-                flush();
-                $remaining -= $read;
-            }
-            fclose($file);
-        }, $status, $headers);
+        ]);
     }
 
     /**
      * Direct download of chapter MP3.
      */
-    public function downloadChapter(Chapter $chapter)
+    public function downloadChapter(Chapter $chapter): StreamedResponse
     {
         $this->authorizeBookAccess($chapter->book);
 
@@ -532,16 +385,14 @@ class BookController extends Controller
     /**
      * Delete book, its chapters, and stored files.
      */
-    public function destroy(Book $book)
+    public function destroy(Book $book): RedirectResponse
     {
         $this->authorizeBookAccess($book);
 
-        // Delete PDF file
         if ($book->pdf_path && Storage::disk('public')->exists($book->pdf_path)) {
             Storage::disk('public')->delete($book->pdf_path);
         }
 
-        // Delete audio folder
         $audioDir = "audiobooks/{$book->id}";
         if (Storage::disk('public')->exists($audioDir)) {
             Storage::disk('public')->deleteDirectory($audioDir);
@@ -554,13 +405,12 @@ class BookController extends Controller
     }
 
     /**
-     * Check if user is authorized to access the book.
+     * Verify whether the authenticated user or guest is authorized to access the book.
      */
     protected function authorizeBookAccess(Book $book): void
     {
-        // Allow guest to access their converted trial book
         if (!Auth::check()) {
-            if ((int) session('guest_book_id') === (int) $book->id) {
+            if ($this->guestSession->guestOwnsBook($book)) {
                 return;
             }
             throw new \Illuminate\Http\Exceptions\HttpResponseException(
@@ -570,7 +420,6 @@ class BookController extends Controller
         }
 
         $user = Auth::user();
-
         if ($user->isAdmin()) {
             return;
         }
