@@ -35,11 +35,16 @@
                     </p>
                     <a href="{{ route('books.show', session('guest_book_id')) }}" class="btn-neon-tactile inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition transform active:scale-95 shadow-sm">
                         <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <span>← Volver a mi Audiolibro de Prueba</span>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        <span>Volver a mi Audiolibro de Prueba</span>
                     </a>
                     <div class="pt-1.5 flex items-center justify-center gap-3">
                         <a href="{{ route('guest.reset') }}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1 transition">
-                            <span>↺ Reiniciar prueba para cargar otro documento</span>
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span>Reiniciar prueba para cargar otro documento</span>
                         </a>
                     </div>
                 </div>

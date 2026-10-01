@@ -181,9 +181,10 @@
 
             <!-- Text Metrics & Dynamic Listening Estimation -->
             <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-sky-400 font-mono px-1">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                     <span><strong id="counterWords" class="text-slate-800 dark:text-cyan-200 font-bold">0</strong> palabras</span>
-                    <span><strong id="counterChars" class="text-slate-800 dark:text-cyan-200 font-bold">0</strong> caracteres</span>
+                    <span><strong id="counterChars" class="text-slate-800 dark:text-cyan-200 font-bold">0</strong> / 50,000 car.</span>
+                    <span id="counterLimitWarning" class="hidden text-rose-500 font-bold text-[10px] animate-pulse">⚠️ Límite de 50k superado</span>
                 </div>
                 <div class="flex items-center gap-1.5 text-emerald-600 dark:text-[#00ff87] font-bold">
                     <span>⏱️ Estimado:</span>
@@ -352,6 +353,86 @@
         </div>
     </div>
 
+    <!-- Text Limit Warning & Guidance Modal (Direct Paste Limiter) -->
+    <div id="textLimitModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="card-tactile rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 border border-amber-500/40 shadow-2xl relative">
+            <!-- Modal Header -->
+            <div class="flex items-start gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center flex-shrink-0 text-amber-500 shadow-sm">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="space-y-1 min-w-0 flex-1">
+                    <h3 class="text-base font-black text-slate-900 dark:text-cyan-200">Límite de Pegado Directo Excedido</h3>
+                    <p class="text-xs text-slate-500 dark:text-sky-300">
+                        El texto detectado sobrepasa la capacidad recomendada para pegado directo.
+                    </p>
+                </div>
+                <button type="button" onclick="closeTextLimitModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition" title="Cerrar ventana">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Stats Badge Comparison -->
+            <div class="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-950/60 font-mono text-center">
+                <div class="space-y-0.5">
+                    <span class="text-[10px] uppercase text-rose-500 font-bold block">Texto Detectado</span>
+                    <span id="modalDetectedChars" class="text-sm font-black text-rose-600 dark:text-rose-400">0 car.</span>
+                    <span id="modalDetectedWords" class="text-[10px] text-slate-500 dark:text-sky-400 block">(0 palabras)</span>
+                </div>
+                <div class="space-y-0.5 border-l border-slate-200 dark:border-cyan-900/40">
+                    <span class="text-[10px] uppercase text-emerald-600 dark:text-[#00ff87] font-bold block">Límite Permitido</span>
+                    <span class="text-sm font-black text-emerald-600 dark:text-[#00ff87]">50,000 car.</span>
+                    <span class="text-[10px] text-slate-500 dark:text-sky-400 block">(~10,000 pal. / ~1h audio)</span>
+                </div>
+            </div>
+
+            <!-- Explanatory recommendation -->
+            <div class="space-y-2 text-xs text-slate-600 dark:text-sky-200 leading-relaxed bg-emerald-500/5 border border-emerald-500/20 p-3.5 rounded-2xl">
+                <p class="font-bold text-slate-900 dark:text-cyan-100 flex items-center gap-1.5">
+                    <span>💡 Recomendación para documentos extensos:</span>
+                </p>
+                <p>
+                    El pegado directo está diseñado para artículos breves, notas o capítulos individuales. Si deseas convertir un libro completo o tesis, te recomendamos <strong>subirlo como archivo</strong> (<span class="font-mono text-emerald-600 dark:text-[#00ff87]">.pdf, .docx, .txt</span>).
+                </p>
+                <p class="text-[11px] text-slate-500 dark:text-sky-400">
+                    Al subirlo como archivo, el sistema dividirá automáticamente todo el documento en pistas organizadas por capítulos sin riesgo de saturación ni truncado.
+                </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-1">
+                <button 
+                    type="button" 
+                    onclick="switchToUploadFromModal()"
+                    class="btn-neon-tactile px-4 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-sm"
+                >
+                    <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    <span>Cambiar a Subir Archivo</span>
+                </button>
+                <button 
+                    type="button" 
+                    onclick="truncateAndApplyText()"
+                    class="px-3.5 py-2.5 text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition flex items-center justify-center gap-1.5"
+                >
+                    <span>✂️ Recortar a 50,000 car.</span>
+                </button>
+                <button 
+                    type="button" 
+                    onclick="closeTextLimitModal()"
+                    class="px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition text-center"
+                >
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -379,6 +460,51 @@
     const submitBtnText = document.getElementById('submitBtnText');
     const submitOverlay = document.getElementById('submitOverlay');
 
+    // Text limit configurations & modal references
+    const MAX_TEXT_CHARS = 50000;
+    let pendingExcessText = '';
+    const textLimitModal = document.getElementById('textLimitModal');
+    const modalDetectedChars = document.getElementById('modalDetectedChars');
+    const modalDetectedWords = document.getElementById('modalDetectedWords');
+    const counterLimitWarning = document.getElementById('counterLimitWarning');
+
+    function showTextLimitModal(incomingLen, totalLen, fullTextCandidate) {
+        pendingExcessText = fullTextCandidate || '';
+        const detected = incomingLen || totalLen || 0;
+        if (modalDetectedChars) modalDetectedChars.textContent = `${detected.toLocaleString()} car.`;
+        if (modalDetectedWords) {
+            const words = (pendingExcessText.match(/\S+/g) || []).length;
+            modalDetectedWords.textContent = `(${words.toLocaleString()} palabras)`;
+        }
+        if (textLimitModal) {
+            textLimitModal.classList.remove('hidden');
+            textLimitModal.classList.add('flex');
+        }
+    }
+
+    function closeTextLimitModal() {
+        if (textLimitModal) {
+            textLimitModal.classList.add('hidden');
+            textLimitModal.classList.remove('flex');
+        }
+        pendingExcessText = '';
+    }
+
+    function switchToUploadFromModal() {
+        closeTextLimitModal();
+        switchInputMode('file');
+        if (dropZone) dropZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function truncateAndApplyText() {
+        if (!rawTextInput) return;
+        const source = pendingExcessText || rawTextInput.value;
+        rawTextInput.value = source.slice(0, MAX_TEXT_CHARS);
+        closeTextLimitModal();
+        updateTextCounters();
+        rawTextInput.focus();
+    }
+
     function switchInputMode(mode) {
         currentInputMode = mode;
         if (inputModeHidden) inputModeHidden.value = mode;
@@ -405,13 +531,25 @@
 
     function updateTextCounters() {
         if (!rawTextInput) return;
-        const text = rawTextInput.value.trim();
+        const text = rawTextInput.value;
         const chars = text.length;
-        const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+        const words = (text.match(/\S+/g) || []).length;
         const minutes = Math.max(1, Math.ceil(words / 150)); // ~150 words per minute speaking rate
 
         if (counterWords) counterWords.textContent = words.toLocaleString();
-        if (counterChars) counterChars.textContent = chars.toLocaleString();
+        if (counterChars) {
+            counterChars.textContent = chars.toLocaleString();
+            if (chars > MAX_TEXT_CHARS) {
+                counterChars.className = "text-rose-600 dark:text-rose-400 font-black";
+                if (counterLimitWarning) counterLimitWarning.classList.remove('hidden');
+            } else if (chars > MAX_TEXT_CHARS * 0.9) {
+                counterChars.className = "text-amber-500 font-bold";
+                if (counterLimitWarning) counterLimitWarning.classList.add('hidden');
+            } else {
+                counterChars.className = "text-slate-800 dark:text-cyan-200 font-bold";
+                if (counterLimitWarning) counterLimitWarning.classList.add('hidden');
+            }
+        }
         if (counterEstTime) {
             counterEstTime.textContent = words > 0 ? `~${minutes} min de audio` : '~0 min de audio';
         }
@@ -419,6 +557,17 @@
 
     if (rawTextInput) {
         rawTextInput.addEventListener('input', updateTextCounters);
+        rawTextInput.addEventListener('paste', (e) => {
+            const pasted = (e.clipboardData || window.clipboardData).getData('text');
+            if (!pasted) return;
+            const currentLen = rawTextInput.value.length;
+            const totalLen = currentLen + pasted.length;
+            if (totalLen > MAX_TEXT_CHARS) {
+                e.preventDefault();
+                const fullCandidate = rawTextInput.value + pasted;
+                showTextLimitModal(pasted.length, totalLen, fullCandidate);
+            }
+        });
         updateTextCounters();
     }
 
@@ -430,7 +579,14 @@
             }
             const text = await navigator.clipboard.readText();
             if (text && text.trim()) {
-                rawTextInput.value = text;
+                const currentLen = rawTextInput ? rawTextInput.value.length : 0;
+                const totalLen = currentLen + text.length;
+                if (totalLen > MAX_TEXT_CHARS) {
+                    const fullCandidate = (rawTextInput ? rawTextInput.value : '') + text;
+                    showTextLimitModal(text.length, totalLen, fullCandidate);
+                    return;
+                }
+                rawTextInput.value = (rawTextInput.value ? rawTextInput.value + "\n\n" : '') + text;
                 updateTextCounters();
             } else {
                 alert('El portapapeles de texto está vacío. Si copiaste una imagen, presiona Ctrl+V en esta pantalla para hacerle OCR.');
@@ -484,7 +640,12 @@
             if (data.success && data.text) {
                 switchInputMode('text');
                 const prev = rawTextInput.value.trim();
-                rawTextInput.value = prev ? (prev + "\n\n" + data.text) : data.text;
+                const combined = prev ? (prev + "\n\n" + data.text) : data.text;
+                if (combined.length > MAX_TEXT_CHARS) {
+                    showTextLimitModal(data.text.length, combined.length, combined);
+                    return;
+                }
+                rawTextInput.value = combined;
                 updateTextCounters();
 
                 const titleInput = document.getElementById('title');
@@ -583,6 +744,11 @@
                 e.preventDefault();
                 alert('Por favor ingresa o pega un texto con al menos 10 caracteres.');
                 if (rawTextInput) rawTextInput.focus();
+                return false;
+            }
+            if (textVal.length > MAX_TEXT_CHARS) {
+                e.preventDefault();
+                showTextLimitModal(textVal.length, textVal.length, textVal);
                 return false;
             }
         }

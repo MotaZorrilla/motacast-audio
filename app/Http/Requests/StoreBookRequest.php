@@ -23,7 +23,7 @@ class StoreBookRequest extends FormRequest
 
         return [
             'pdf_file' => "required_without:raw_text|nullable|file|mimes:{$allowedMimes}|max:102400", // 100MB
-            'raw_text' => 'required_without:pdf_file|nullable|string|min:10',
+            'raw_text' => 'required_without:pdf_file|nullable|string|min:10|max:50000',
             'title' => 'nullable|string|max:255',
             'author' => 'nullable|string|max:255',
             'voice' => 'required|string',
@@ -41,7 +41,8 @@ class StoreBookRequest extends FormRequest
         return [
             'pdf_file.required_without' => 'Debes adjuntar un archivo o ingresar texto en el modo de pegado directo.',
             'raw_text.required_without' => 'Debes adjuntar un archivo o ingresar texto en el modo de pegado directo.',
-            'raw_text.min' => 'El texto pegado debe contener al menos 20 caracteres.',
+            'raw_text.min' => 'El texto pegado debe contener al menos 10 caracteres.',
+            'raw_text.max' => 'El texto pegado excede el límite de 50,000 caracteres (~10,000 palabras). Para documentos extensos o libros completos, por favor súbelo como archivo (PDF, Word, TXT) en la pestaña "Subir Archivo".',
         ];
     }
 }

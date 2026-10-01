@@ -735,5 +735,43 @@ doc.close()
         $this->artisan('books:regenerate-summaries')
             ->assertExitCode(0);
     }
+
+    public function test_raw_text_upload_rejects_exceeding_character_limit(): void
+    {
+        Storage::fake('public');
+        Queue::fake();
+
+        $oversizedText = str_repeat('a', 50001);
+
+        $response = $this->actingAs($this->user)->post('/books', [
+            'raw_text' => $oversizedText,
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+        ]);
+
+        $response->assertSessionHasErrors(['raw_text']);
+    }
+
+    public function test_raw_text_upload_accepts_valid_length(): void
+    {
+        Storage::fake('public');
+        Queue::fake();
+
+        $validText = "Este es un texto directo de prueba con una longitud perfectamente válida.\n\n# Capítulo 1\nContenido de prueba.";
+
+        $response = $this->actingAs($this->user)->post('/books', [
+            'raw_text' => $validText,
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+        ]);
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('books', [
+            'status' => 'pending',
+        ]);
+    }
 }
+
 

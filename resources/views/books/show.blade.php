@@ -24,13 +24,13 @@
                     <svg class="w-3.5 h-3.5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>+ Cargar otro</span>
+                    <span>Cargar otro</span>
                 </a>
                 <a href="{{ route('guest.reset') }}" onclick="return confirm('¿Deseas reiniciar tu prueba gratuita para subir o pegar otro documento?');" class="px-2.5 py-1 text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition text-[11px] font-bold inline-flex items-center gap-1 shadow-sm" title="Reiniciar sesión de prueba">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    <span>↺ Reiniciar</span>
+                    <span>Reiniciar</span>
                 </a>
             </div>
         @endauth
@@ -72,21 +72,16 @@
 
             <!-- Mobile Quick Actions -->
             <div class="flex items-center gap-1.5 flex-shrink-0">
-                @guest
-                    <a href="{{ route('guest.reset') }}" onclick="return confirm('¿Reiniciar prueba y cargar otro documento?');" class="px-2 py-1 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/30 text-[10px] font-bold" title="Reiniciar sesión de prueba">
-                        ↺ Reiniciar
-                    </a>
-                @endguest
                 <button 
                     type="button" 
                     onclick="openPdfModal()"
                     class="btn-neon-tactile px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 shadow-sm"
-                    title="Leer Libro"
+                    title="Leer Documento"
                 >
                     <svg class="w-3.5 h-3.5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    <span>📖 Leer</span>
+                    <span>Leer</span>
                 </button>
             </div>
         </div>
@@ -146,7 +141,7 @@
                         <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
-                        <span>📖 Leer Libro</span>
+                        <span>Leer Libro</span>
                     </button>
                 </div>
 
