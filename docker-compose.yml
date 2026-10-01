@@ -1,0 +1,38 @@
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: audiolibros-db
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=RootSecretAudioLab2026!
+      - MARIADB_DATABASE=audiolibros
+      - MARIADB_USER=audiolibros
+      - MARIADB_PASSWORD=SecureAudioLab2026!
+    volumes:
+      - audiolibros_mariadb_data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3306:3306"
+    networks:
+      - audiolibros-net
+
+  app:
+    image: audiolibros-img
+    container_name: audiolibros-app
+    restart: unless-stopped
+    ports:
+      - "8096:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - mariadb
+    networks:
+      - audiolibros-net
+
+volumes:
+  audiolibros_mariadb_data:
+    name: audiolibros_mariadb_data
+
+networks:
+  audiolibros-net:
+    name: audiolibros-net
+    driver: bridge
