@@ -35,9 +35,21 @@
                     </p>
                     <a href="{{ route('books.show', session('guest_book_id')) }}" class="btn-neon-tactile inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition transform active:scale-95 shadow-sm">
                         <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
                         <span>← Volver a mi Audiolibro de Prueba</span>
+                    </a>
+                    <div class="pt-1.5 flex items-center justify-center gap-3">
+                        <a href="{{ route('guest.reset') }}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1 transition">
+                            <span>↺ Reiniciar prueba para cargar otro documento</span>
+                        </a>
+                    </div>
+                </div>
+            @elseif (session('guest_upload_count'))
+                <div class="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 text-center space-y-2">
+                    <p class="text-xs text-slate-700 dark:text-cyan-200 font-medium">
+                        ¿Deseas probar con otro documento antes de registrarte?
+                    </p>
+                    <a href="{{ route('guest.reset') }}" class="btn-neon-tactile inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition transform active:scale-95 shadow-sm">
+                        <span>↺ Reiniciar y Cargar Otro Documento</span>
                     </a>
                 </div>
             @endif

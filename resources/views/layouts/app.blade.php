@@ -57,7 +57,7 @@
                                 <span class="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-cyan-300 group-hover:text-cyan-400 transition">
                                     MotaCast<span class="text-[#00c965] dark:text-[#00ff87] drop-shadow-[0_0_8px_rgba(0,255,135,0.4)]">Audio</span>
                                 </span>
-                                <span class="hidden xs:inline-block px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold bg-slate-100 dark:bg-cyan-950/70 text-slate-600 dark:text-cyan-300 border border-slate-300/80 dark:border-cyan-800/40">v0.7.0</span>
+                                <span class="hidden xs:inline-block px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold bg-slate-100 dark:bg-cyan-950/70 text-slate-600 dark:text-cyan-300 border border-slate-300/80 dark:border-cyan-800/40">v0.8.0</span>
                             </div>
                             <p class="text-[10px] font-mono text-slate-500 dark:text-sky-400 hidden sm:block">Streaming & Audiolibros Personales</p>
                         </div>
@@ -232,16 +232,16 @@
             </svg>
         </a>
 
-        <!-- Tab: Reproductor / Streaming -->
-        <a href="{{ route('books.index') }}#player" class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-slate-500 dark:text-sky-400 transition" onclick="if(window.audioEngine && window.audioEngine.src){window.audioEngine.play();}">
-            <div class="flex items-center gap-0.5 h-5">
-                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-1"></span>
-                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-2"></span>
-                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-3"></span>
-                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-4"></span>
+        <!-- Tab: Reproductor / Streaming con Estado Reactivo -->
+        <button type="button" id="mobileAudioDockBtn" onclick="handleDockAudioClick(event)" class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-slate-500 dark:text-sky-400 hover:text-[#00c965] dark:hover:text-[#00ff87] transition cursor-pointer" title="Control de Audio">
+            <div id="dockSoundwave" class="flex items-center gap-0.5 h-5 transition-all">
+                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-1 transition-all duration-200"></span>
+                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-2 transition-all duration-200"></span>
+                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-3 transition-all duration-200"></span>
+                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-4 transition-all duration-200"></span>
             </div>
-            <span class="text-[10px]">Audio</span>
-        </a>
+            <span id="dockAudioLabel" class="text-[10px]">Audio</span>
+        </button>
     </nav>
     @endif
     @endauth
@@ -253,7 +253,7 @@
             <div class="flex items-center gap-2">
                 <img src="{{ asset('images/motacast-icon.svg') }}" alt="MotaCastAudio" class="w-5 h-5 object-contain" onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
                 <span class="font-black text-slate-900 dark:text-cyan-300 tracking-tight">MotaCast<span class="text-[#00c965] dark:text-[#00ff87]">Audio</span></span>
-                <span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 dark:bg-cyan-950/70 text-emerald-700 dark:text-[#00ff87] border border-emerald-200 dark:border-cyan-800/50 shadow-sm">v0.7.0</span>
+                <span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 dark:bg-cyan-950/70 text-emerald-700 dark:text-[#00ff87] border border-emerald-200 dark:border-cyan-800/50 shadow-sm">v0.8.0</span>
             </div>
             
             <div class="text-slate-500 dark:text-sky-300 text-center sm:text-right text-[11px] leading-relaxed max-w-full">
@@ -401,6 +401,70 @@
             resize();
             animationId = requestAnimationFrame(draw);
         })();
+
+        // Reactive Mobile Dock Audio Controller
+        window.handleDockAudioClick = function(e) {
+            if (e) e.preventDefault();
+            const soundwave = document.getElementById('dockSoundwave');
+            const btn = document.getElementById('mobileAudioDockBtn');
+            const audio = window.audioEngine || document.querySelector('audio');
+
+            if (audio && audio.src && !audio.src.endsWith('#') && audio.src !== window.location.href) {
+                if (audio.paused) {
+                    audio.play().then(() => {
+                        if (soundwave) soundwave.classList.add('is-playing');
+                        if (btn) btn.classList.add('text-[#00c965]', 'dark:text-[#00ff87]');
+                    }).catch(err => console.log('Dock play prevented:', err));
+                } else {
+                    audio.pause();
+                    if (soundwave) soundwave.classList.remove('is-playing');
+                    if (btn) btn.classList.remove('text-[#00c965]', 'dark:text-[#00ff87]');
+                }
+                return;
+            }
+
+            // If on books.show, start playing first ready chapter
+            if (typeof togglePlay === 'function') {
+                togglePlay();
+                return;
+            }
+
+            // If on library, try first play action
+            const firstPlay = document.querySelector('[data-play-book], .play-chapter-btn');
+            if (firstPlay) {
+                firstPlay.click();
+                return;
+            }
+
+            // Fallback notification
+            alert('No hay audio en reproducción activa. Selecciona un audiolibro para escuchar.');
+        };
+
+        // Attach listeners to any audio engine created on the page
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkAndAttach = () => {
+                const audio = window.audioEngine || document.querySelector('audio');
+                if (audio && !audio._dockAttached) {
+                    audio._dockAttached = true;
+                    const soundwave = document.getElementById('dockSoundwave');
+                    const btn = document.getElementById('mobileAudioDockBtn');
+                    const updateState = () => {
+                        const isPlaying = !audio.paused && !audio.ended && audio.currentTime > 0;
+                        if (soundwave) soundwave.classList.toggle('is-playing', isPlaying);
+                        if (btn) {
+                            btn.classList.toggle('text-[#00c965]', isPlaying);
+                            btn.classList.toggle('dark:text-[#00ff87]', isPlaying);
+                        }
+                    };
+                    audio.addEventListener('play', updateState);
+                    audio.addEventListener('playing', updateState);
+                    audio.addEventListener('pause', updateState);
+                    audio.addEventListener('ended', updateState);
+                }
+            };
+            checkAndAttach();
+            setInterval(checkAndAttach, 1000);
+        });
     </script>
 
     @stack('scripts')

@@ -251,6 +251,131 @@ def extract_text_or_markdown(file_path: str, is_markdown: bool = False):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# IMAGE OCR EXTRACTION (Tesseract)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def extract_image_ocr(image_path: str):
+    """
+    Extract text from an image (.png, .jpg, .jpeg, .webp, .bmp) using Tesseract OCR.
+    """
+    import pytesseract
+    from PIL import Image
+
+    title = ""
+    author = "OCR de Imagen"
+
+    try:
+        img = Image.open(image_path)
+        if img.mode not in ('L', 'RGB'):
+            img = img.convert('RGB')
+
+        # Run OCR with Spanish and English trained models
+        custom_config = r'--oem 3 --psm 3'
+        raw_text = pytesseract.image_to_string(img, lang='spa+eng', config=custom_config)
+        cleaned = clean_extracted_text(raw_text)
+
+        if not cleaned or len(cleaned.split()) < 3:
+            # Fallback with PSM 6 (single uniform block of text)
+            raw_text_fallback = pytesseract.image_to_string(img, lang='spa+eng', config=r'--oem 3 --psm 6')
+            cleaned_fallback = clean_extracted_text(raw_text_fallback)
+            if cleaned_fallback:
+                cleaned = cleaned_fallback
+
+        pages_text = [cleaned] if cleaned else []
+        return title, author, pages_text
+    except Exception as e:
+        raise Exception(f"Error procesando OCR de la imagen: {e}")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# AUDIO SPEECH-TO-TEXT EXTRACTION (ffmpeg + SpeechRecognition)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def extract_audio_stt(audio_path: str):
+    """
+    Transcribes spoken audio (.mp3, .wav, .m4a, .ogg, .aac, .flac) into text
+    using ffmpeg chunking and SpeechRecognition (Google STT es-ES).
+    """
+    import subprocess
+    import tempfile
+    import glob
+    import speech_recognition as sr
+
+    title = ""
+    author = "Transcripción de Audio"
+
+    # Check ffmpeg availability
+    try:
+        subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    except Exception:
+        raise Exception("ffmpeg no está disponible en el sistema para procesar el archivo de audio.")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        chunk_template = os.path.join(tmpdir, "chunk_%03d.wav")
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", audio_path,
+            "-f", "segment",
+            "-segment_time", "45",
+            "-c:a", "pcm_s16le",
+            "-ar", "16000",
+            "-ac", "1",
+            chunk_template
+        ]
+
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if proc.returncode != 0:
+            raise Exception(f"ffmpeg no pudo decodificar el audio: {proc.stderr.decode('utf-8', errors='ignore')[:300]}")
+
+        chunk_files = sorted(glob.glob(os.path.join(tmpdir, "chunk_*.wav")))
+        if not chunk_files:
+            raise Exception("No se pudieron generar segmentos de audio para transcribir.")
+
+        recognizer = sr.Recognizer()
+        transcribed_chunks = []
+
+        for idx, chunk_file in enumerate(chunk_files):
+            try:
+                with sr.AudioFile(chunk_file) as source:
+                    audio_data = recognizer.record(source)
+                text = recognizer.recognize_google(audio_data, language="es-ES")
+                text = text.strip()
+                if text:
+                    transcribed_chunks.append(text)
+            except sr.UnknownValueError:
+                sys.stderr.write(f"[STT] Segmento {idx+1}/{len(chunk_files)} sin voz inteligible.\n")
+                continue
+            except sr.RequestError as e:
+                sys.stderr.write(f"[STT Error] Fallo al consultar servicio STT en segmento {idx+1}: {e}\n")
+                continue
+            except Exception as e:
+                sys.stderr.write(f"[STT Error] Error procesando segmento {idx+1}: {e}\n")
+                continue
+
+        if not transcribed_chunks:
+            raise Exception("No se detectó voz o habla comprensible en el archivo de audio.")
+
+        # Group chunks into paragraphs (~2-3 chunks per section)
+        grouped_sections = []
+        current_section = []
+        for chunk in transcribed_chunks:
+            formatted = chunk[0].upper() + chunk[1:]
+            if not formatted.endswith(('.', '!', '?')):
+                formatted += '.'
+            current_section.append(formatted)
+            if len(current_section) >= 3:
+                grouped_sections.append(" ".join(current_section))
+                current_section = []
+
+        if current_section:
+            grouped_sections.append(" ".join(current_section))
+
+        pages_text = [clean_extracted_text(s) for s in grouped_sections if s.strip()]
+
+    return title, author, pages_text
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # DOCUMENT SUMMARIZATION (Extractive NLP)
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -459,6 +584,11 @@ def main():
             title, author, pages_text = extract_text_or_markdown(file_path, is_markdown=False)
         elif ext in ('.md', '.markdown'):
             title, author, pages_text = extract_text_or_markdown(file_path, is_markdown=True)
+        elif ext in ('.png', '.jpg', '.jpeg', '.webp', '.bmp'):
+            title, author, pages_text = extract_image_ocr(file_path)
+            ocr_used = True
+        elif ext in ('.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac'):
+            title, author, pages_text = extract_audio_stt(file_path)
         else:
             res = {"success": False, "error": f"Formato de archivo no soportado: {ext}"}
             print(json.dumps(res, ensure_ascii=False))
@@ -471,11 +601,10 @@ def main():
     total_text = "\n\n".join(pages_text).strip()
     total_words = len(total_text.split()) if total_text else 0
 
-    if total_words < 10:
+    if total_words < 2:
         msg = (
-            "El documento no contiene texto legible. "
-            "Si es un PDF escaneado (imagen sin texto seleccionable), "
-            "asegúrate de que Tesseract OCR esté instalado en el servidor."
+            "El documento no contiene texto legible ni voz reconocible. "
+            "Si es una imagen o PDF escaneado, asegúrate de que el texto sea claro y que Tesseract OCR esté disponible."
         )
         res = {"success": False, "error": msg}
         print(json.dumps(res, ensure_ascii=False))

@@ -654,4 +654,86 @@ doc.close()
         $expected = "Esta es la primera línea de un texto técnico que no debe tener pausas innecesarias.\n\nEste es un nuevo párrafo. Tiene una segunda oración.";
         $this->assertEquals($expected, $normalized);
     }
+
+    public function test_guest_can_reset_trial_session(): void
+    {
+        // Simulate a guest who has already uploaded a trial document
+        session([
+            'guest_upload_count' => 1,
+            'guest_book_id' => 999,
+        ]);
+
+        $response = $this->get('/guest/reset');
+        $response->assertRedirect(route('books.create'));
+        $this->assertNull(session('guest_upload_count'));
+        $this->assertNull(session('guest_book_id'));
+    }
+
+    public function test_guest_can_reset_trial_via_get_parameter_on_create(): void
+    {
+        session([
+            'guest_upload_count' => 1,
+            'guest_book_id' => 999,
+        ]);
+
+        $response = $this->get('/books/create?reset_trial=1');
+        $response->assertStatus(200);
+        $this->assertNull(session('guest_upload_count'));
+        $this->assertNull(session('guest_book_id'));
+    }
+
+    public function test_ocr_preview_requires_image_file(): void
+    {
+        $response = $this->actingAs($this->user)->postJson('/books/ocr-preview', []);
+        $response->assertStatus(422);
+    }
+
+    public function test_user_can_upload_image_file(): void
+    {
+        Storage::fake('public');
+        Queue::fake();
+
+        $image = UploadedFile::fake()->image('infografia.png', 800, 600);
+
+        $response = $this->actingAs($this->user)->post('/books', [
+            'pdf_file' => $image,
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+        ]);
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('books', [
+            'original_filename' => 'infografia.png',
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_user_can_upload_audio_file(): void
+    {
+        Storage::fake('public');
+        Queue::fake();
+
+        $audio = UploadedFile::fake()->create('grabacion.mp3', 500, 'audio/mpeg');
+
+        $response = $this->actingAs($this->user)->post('/books', [
+            'pdf_file' => $audio,
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+        ]);
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('books', [
+            'original_filename' => 'grabacion.mp3',
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_regenerate_summaries_command_runs_successfully(): void
+    {
+        $this->artisan('books:regenerate-summaries')
+            ->assertExitCode(0);
+    }
 }
+

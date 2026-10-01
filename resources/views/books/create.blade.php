@@ -86,13 +86,13 @@
         <!-- Section 1: File Drag & Drop Zone -->
         <div id="sectionFileDrop">
             <label class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider mb-2">
-                Documento a convertir <span class="text-rose-500">*</span>
+                Documento, Imagen o Audio a convertir <span class="text-rose-500">*</span>
             </label>
             <div 
                 id="dropZone"
                 class="border-2 border-dashed border-slate-300 dark:border-cyan-800/60 hover:border-[#00ff87] rounded-2xl p-8 text-center transition cursor-pointer bg-slate-50/70 dark:bg-[#071014]/60 hover:bg-[#00ff87]/5 group"
             >
-                <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown" class="hidden">
+                <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp,.bmp,.mp3,.wav,.m4a,.ogg" class="hidden">
                 
                 <div class="flex flex-col items-center justify-center space-y-3">
                     <div class="w-14 h-14 rounded-2xl bg-white dark:bg-[#0d1c22] border border-slate-300 dark:border-cyan-700/50 shadow-sm flex items-center justify-center text-emerald-600 dark:text-cyan-400 group-hover:scale-105 group-hover:shadow-neon-sm transition">
@@ -101,14 +101,14 @@
                         </svg>
                     </div>
                     <div class="text-center">
-                        <p class="text-sm font-bold text-slate-800 dark:text-cyan-200" id="fileLabel">Toca para seleccionar o arrastra tu documento aquí</p>
-                        <p class="text-xs text-slate-500 dark:text-sky-400/80 mt-1">PDF, DOCX, TXT, Markdown — hasta 100 MB</p>
+                        <p class="text-sm font-bold text-slate-800 dark:text-cyan-200" id="fileLabel">Toca para seleccionar o arrastra tu archivo aquí</p>
+                        <p class="text-xs text-slate-500 dark:text-sky-400/80 mt-1">PDF, DOCX, TXT, MD, Imágenes (PNG, JPG) o Audio (MP3, WAV) — hasta 100 MB</p>
                         <div class="flex items-center justify-center gap-2 mt-2 flex-wrap">
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40">PDF</span>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">DOCX</span>
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/40">TXT</span>
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40">MD</span>
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 ml-1">🔍 OCR auto</span>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/40">TXT/MD</span>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">📸 IMG (OCR)</span>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">🎙️ AUDIO (STT)</span>
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,17 @@
                 <label for="rawTextInput" class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
                     Texto a convertir en voz <span class="text-rose-500">*</span>
                 </label>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button 
+                        type="button" 
+                        onclick="document.getElementById('ocrImageInput').click()"
+                        class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800/60 hover:bg-cyan-500/20 transition flex items-center gap-1 shadow-sm"
+                        title="Extraer texto de una imagen (también puedes pegar con Ctrl+V)"
+                    >
+                        <span>📸 OCR Imagen</span>
+                    </button>
+                    <input type="file" id="ocrImageInput" accept="image/*" class="hidden" onchange="handleOcrImageUpload(this)">
+
                     <button 
                         type="button" 
                         onclick="pasteFromClipboard()"
@@ -140,7 +150,7 @@
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        <span>Pegar Portapapeles</span>
+                        <span>Pegar</span>
                     </button>
                     <button 
                         type="button" 
@@ -152,11 +162,20 @@
                 </div>
             </div>
 
+            <!-- OCR Extraction Status Indicator (Hidden by default) -->
+            <div id="ocrStatusBox" class="hidden p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-800 dark:text-cyan-300 text-xs font-semibold items-center gap-2">
+                <svg class="w-4 h-4 animate-spin text-cyan-500" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <span id="ocrStatusText">Extrayendo texto de la imagen con OCR...</span>
+            </div>
+
             <textarea 
                 name="raw_text" 
                 id="rawTextInput" 
                 rows="9"
-                placeholder="Pega aquí el artículo, ensayo, correo, notas de estudio o capítulo que deseas convertir en audiolibro...&#10;&#10;Consejo: Puedes separar secciones con doble salto de línea o encabezados (# Título) para crear capítulos separados automáticamente."
+                placeholder="Pega aquí el artículo, ensayo, notas o presiona Ctrl+V para pegar capturas de pantalla/imágenes con OCR automático...&#10;&#10;Consejo: Puedes separar secciones con doble salto de línea o encabezados (# Título) para crear capítulos separados automáticamente."
                 class="w-full px-4 py-3 text-xs sm:text-sm bg-slate-50 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/50 rounded-2xl text-slate-900 dark:text-cyan-200 placeholder-slate-400 dark:placeholder-sky-500/40 focus:outline-none focus:ring-2 focus:ring-[#00ff87] font-mono leading-relaxed transition resize-y"
             >{{ old('raw_text') }}</textarea>
 
@@ -313,6 +332,26 @@
 
     </form>
 
+    <!-- Processing Loading Overlay (Instant feedback on submission) -->
+    <div id="submitOverlay" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-4">
+        <div class="card-tactile rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center space-y-4 border border-[#00ff87]/30 shadow-neon-lg">
+            <div class="relative w-16 h-16 mx-auto">
+                <span class="absolute inset-0 rounded-full border-4 border-[#00ff87]/20 animate-pulse"></span>
+                <svg class="w-16 h-16 animate-spin text-[#00ff87]" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-base font-black text-slate-900 dark:text-cyan-200">Subiendo Documento</h3>
+                <p class="text-xs text-slate-500 dark:text-sky-300 mt-1" id="overlayStatusMsg">Iniciando pipeline neuronal de extracción y voz...</p>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                <div class="bg-[#00ff87] h-2 w-full animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -338,6 +377,7 @@
     const uploadForm = document.getElementById('uploadForm');
     const submitBtn = document.getElementById('submitBtn');
     const submitBtnText = document.getElementById('submitBtnText');
+    const submitOverlay = document.getElementById('submitOverlay');
 
     function switchInputMode(mode) {
         currentInputMode = mode;
@@ -385,7 +425,7 @@
     async function pasteFromClipboard() {
         try {
             if (!navigator.clipboard) {
-                alert('Tu navegador no permite acceso directo al portapapeles. Por favor usa Ctrl+V.');
+                alert('Por favor presiona Ctrl+V para pegar directamente.');
                 return;
             }
             const text = await navigator.clipboard.readText();
@@ -393,11 +433,11 @@
                 rawTextInput.value = text;
                 updateTextCounters();
             } else {
-                alert('El portapapeles está vacío.');
+                alert('El portapapeles de texto está vacío. Si copiaste una imagen, presiona Ctrl+V en esta pantalla para hacerle OCR.');
             }
         } catch (err) {
             console.warn('Clipboard read error:', err);
-            alert('Por favor pega manualmente el texto en el área usando Ctrl+V o clic derecho.');
+            alert('Por favor pega manualmente el texto usando Ctrl+V.');
         }
     }
 
@@ -408,6 +448,78 @@
             rawTextInput.focus();
         }
     }
+
+    // OCR Image Upload & Paste Handlers
+    function handleOcrImageUpload(input) {
+        if (input.files && input.files.length > 0) {
+            uploadAndOcrImage(input.files[0]);
+            input.value = '';
+        }
+    }
+
+    function uploadAndOcrImage(file) {
+        const box = document.getElementById('ocrStatusBox');
+        const textLabel = document.getElementById('ocrStatusText');
+        if (box) box.classList.remove('hidden');
+        if (box) box.classList.add('flex');
+        if (textLabel) textLabel.textContent = `Procesando OCR en "${file.name || 'imagen'}"...`;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        fetch("{{ route('books.ocr.preview') }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (box) {
+                box.classList.add('hidden');
+                box.classList.remove('flex');
+            }
+            if (data.success && data.text) {
+                switchInputMode('text');
+                const prev = rawTextInput.value.trim();
+                rawTextInput.value = prev ? (prev + "\n\n" + data.text) : data.text;
+                updateTextCounters();
+
+                const titleInput = document.getElementById('title');
+                if (titleInput && !titleInput.value && data.title) {
+                    titleInput.value = data.title;
+                }
+            } else {
+                alert(data.message || 'No se pudo extraer texto reconocible de la imagen.');
+            }
+        })
+        .catch(err => {
+            console.error('OCR Error:', err);
+            if (box) {
+                box.classList.add('hidden');
+                box.classList.remove('flex');
+            }
+            alert('Error conectando con el servicio de OCR.');
+        });
+    }
+
+    // Global Paste Listener for Images (Ctrl+V with image screenshot)
+    window.addEventListener('paste', (e) => {
+        if (e.clipboardData && e.clipboardData.items) {
+            for (let item of e.clipboardData.items) {
+                if (item.type.indexOf('image') !== -1) {
+                    const blob = item.getAsFile();
+                    if (blob) {
+                        e.preventDefault();
+                        uploadAndOcrImage(blob);
+                        return;
+                    }
+                }
+            }
+        }
+    });
 
     // Click to open file dialog
     dropZone.addEventListener('click', () => fileInput.click());
@@ -432,13 +544,13 @@
         const files = dt.files;
         if (files.length > 0) {
             const fileName = files[0].name.toLowerCase();
-            const validExts = ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown'];
+            const validExts = ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown', '.png', '.jpg', '.jpeg', '.webp', '.bmp', '.mp3', '.wav', '.m4a', '.ogg'];
             const isValid = validExts.some(ext => fileName.endsWith(ext));
             if (isValid) {
                 fileInput.files = files;
                 updateFileInfo(files[0]);
             } else {
-                alert('Formato no soportado. Por favor selecciona un archivo PDF, DOCX, TXT o Markdown.');
+                alert('Formato no soportado. Puedes seleccionar PDF, DOCX, TXT, Markdown, Imágenes (PNG, JPG) o Audio (MP3, WAV).');
             }
         }
     });
@@ -457,7 +569,7 @@
         fileLabel.textContent = 'Archivo seleccionado correctamente';
     }
 
-    // Submit state feedback
+    // Submit state feedback & overlay activation
     uploadForm.addEventListener('submit', (e) => {
         if (currentInputMode === 'file') {
             if (!fileInput.files || fileInput.files.length === 0) {
@@ -467,9 +579,9 @@
             }
         } else {
             const textVal = rawTextInput ? rawTextInput.value.trim() : '';
-            if (textVal.length < 20) {
+            if (textVal.length < 10) {
                 e.preventDefault();
-                alert('Por favor ingresa o pega un texto con al menos 20 caracteres.');
+                alert('Por favor ingresa o pega un texto con al menos 10 caracteres.');
                 if (rawTextInput) rawTextInput.focus();
                 return false;
             }
@@ -477,7 +589,12 @@
 
         submitBtn.disabled = true;
         submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
-        submitBtnText.textContent = 'Iniciando extracción y síntesis...';
+        submitBtnText.textContent = 'Subiendo y preparando procesamiento...';
+
+        if (submitOverlay) {
+            submitOverlay.classList.remove('hidden');
+            submitOverlay.classList.add('flex');
+        }
     });
 </script>
 @endpush

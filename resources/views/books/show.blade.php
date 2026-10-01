@@ -20,14 +20,17 @@
                     <span class="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse"></span>
                     <span>Libro de Prueba</span>
                 </span>
-                <a href="{{ route('books.create') }}" class="btn-neon-tactile px-2.5 py-1 rounded-xl text-[11px] font-black inline-flex items-center gap-1 shadow-sm" title="Cargar otro documento (Requiere registro gratuito)">
+                <a href="{{ route('books.create') }}" class="btn-neon-tactile px-2.5 py-1 rounded-xl text-[11px] font-black inline-flex items-center gap-1 shadow-sm" title="Cargar otro documento">
                     <svg class="w-3.5 h-3.5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
                     <span>+ Cargar otro</span>
                 </a>
-                <a href="{{ route('home', ['reset' => 1]) }}" onclick="return confirm('¿Deseas reiniciar tu prueba gratuita para volver a la pantalla de bienvenida y cargar otro documento?');" class="p-1 text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 rounded-xl transition text-[11px] font-semibold" title="Reiniciar sesión de prueba">
-                    ↺ Reiniciar prueba
+                <a href="{{ route('guest.reset') }}" onclick="return confirm('¿Deseas reiniciar tu prueba gratuita para subir o pegar otro documento?');" class="px-2.5 py-1 text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition text-[11px] font-bold inline-flex items-center gap-1 shadow-sm" title="Reiniciar sesión de prueba">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>↺ Reiniciar</span>
                 </a>
             </div>
         @endauth
@@ -60,25 +63,32 @@
                 <div class="min-w-0">
                     <h1 class="text-xs font-black text-slate-900 dark:text-cyan-200 truncate leading-tight">{{ $book->title }}</h1>
                     <div class="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-sky-400 mt-0.5">
-                        <span class="truncate max-w-[120px]">{{ $book->author ?: 'Documento' }}</span>
+                        <span class="truncate max-w-[100px]">{{ $book->author ?: 'Documento' }}</span>
                         <span>&bull;</span>
                         <span class="font-mono text-[#00c965] dark:text-[#00ff87] font-bold">{{ $book->formatted_duration }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Mobile Quick Read Button -->
-            <button 
-                type="button" 
-                onclick="openPdfModal()"
-                class="btn-neon-tactile px-3 py-1.5 rounded-xl text-[11px] font-black flex-shrink-0 flex items-center gap-1.5 shadow-sm"
-                title="Leer Libro"
-            >
-                <svg class="w-3.5 h-3.5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <span>📖 Leer</span>
-            </button>
+            <!-- Mobile Quick Actions -->
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+                @guest
+                    <a href="{{ route('guest.reset') }}" onclick="return confirm('¿Reiniciar prueba y cargar otro documento?');" class="px-2 py-1 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/30 text-[10px] font-bold" title="Reiniciar sesión de prueba">
+                        ↺ Reiniciar
+                    </a>
+                @endguest
+                <button 
+                    type="button" 
+                    onclick="openPdfModal()"
+                    class="btn-neon-tactile px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 shadow-sm"
+                    title="Leer Libro"
+                >
+                    <svg class="w-3.5 h-3.5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <span>📖 Leer</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -168,60 +178,60 @@
             </div>
         </div>
 
-        <!-- Processing Banner (real-time polling) -->
-        <div id="processingBanner" class="{{ $book->isProcessing() ? 'block' : 'hidden' }} mt-4 rounded-xl overflow-hidden border border-emerald-500/30 dark:border-cyan-700/40 bg-emerald-50/80 dark:bg-[#071014]">
-            <!-- Phase label + percentage -->
-            <div class="flex items-center justify-between px-4 py-3 text-xs font-bold text-emerald-900 dark:text-[#00ff87]">
-                <span class="flex items-center gap-2.5">
-                    <!-- Cyber neon spinner -->
-                    <span class="relative flex-shrink-0 w-5 h-5">
-                        <span class="absolute inset-0 rounded-full border-2 border-[#00ff87]/20 dark:border-cyan-800/30"></span>
-                        <svg class="w-5 h-5 animate-spin text-[#00ff87] drop-shadow-[0_0_6px_#00ff87]" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
-                            <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </span>
-                    <span id="processingDetail" class="leading-tight">Iniciando procesamiento…</span>
-                </span>
-                <span id="processingPercentage" class="font-mono text-xs tabular-nums ml-2 shrink-0">{{ $book->progress_percentage }}%</span>
-            </div>
+    </div>
 
-            <!-- Progress bar -->
-            <div class="w-full bg-slate-200 dark:bg-slate-800/80 h-2">
-                <div id="processingProgressBar"
-                     class="bg-[#00ff87] h-2 transition-all duration-500 shadow-[0_0_8px_#00ff87]"
-                     style="width: {{ $book->progress_percentage }}%">
-                </div>
-            </div>
-
-            <!-- Detail sub-row -->
-            <div class="px-4 py-2.5 flex items-center justify-between text-[10px] text-slate-500 dark:text-sky-400/70 font-mono border-t border-emerald-200/50 dark:border-cyan-900/30">
-                <span id="processingChaptersDetail">Capítulos: <span id="procChDone">{{ $book->processed_chapters }}</span> / <span id="procChTotal">{{ $book->total_chapters ?? '—' }}</span></span>
-                <span id="processingOcrBadge" class="hidden items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-300/40 dark:border-amber-700/30 text-[10px] font-bold">
-                    🔍 OCR activo
+    <!-- Processing Banner (Visible on Phones & Desktop in real-time polling) -->
+    <div id="processingBanner" class="{{ $book->isProcessing() ? 'block' : 'hidden' }} card-tactile rounded-2xl overflow-hidden border border-emerald-500/30 dark:border-cyan-700/40 bg-emerald-50/90 dark:bg-[#071014] p-0.5 shadow-neon-sm">
+        <!-- Phase label + percentage -->
+        <div class="flex items-center justify-between px-4 py-3 text-xs font-bold text-emerald-900 dark:text-[#00ff87]">
+            <span class="flex items-center gap-2.5">
+                <!-- Cyber neon spinner -->
+                <span class="relative flex-shrink-0 w-5 h-5">
+                    <span class="absolute inset-0 rounded-full border-2 border-[#00ff87]/20 dark:border-cyan-800/30"></span>
+                    <svg class="w-5 h-5 animate-spin text-[#00ff87] drop-shadow-[0_0_6px_#00ff87]" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                 </span>
+                <span id="processingDetail" class="leading-tight">Iniciando procesamiento…</span>
+            </span>
+            <span id="processingPercentage" class="font-mono text-xs tabular-nums ml-2 shrink-0">{{ $book->progress_percentage }}%</span>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="w-full bg-slate-200 dark:bg-slate-800/80 h-2">
+            <div id="processingProgressBar"
+                 class="bg-[#00ff87] h-2 transition-all duration-500 shadow-[0_0_8px_#00ff87]"
+                 style="width: {{ $book->progress_percentage }}%">
             </div>
         </div>
 
-
-        <!-- Failure Banner -->
-        @if ($book->hasFailed())
-            <div class="mt-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-500/30 text-rose-900 dark:text-rose-200">
-                <div class="flex items-start justify-between gap-4">
-                    <div class="space-y-1">
-                        <p class="text-sm font-bold text-rose-800 dark:text-rose-300">Hubo un inconveniente al procesar el archivo</p>
-                        <p class="text-xs text-rose-700 dark:text-rose-400 font-mono">{{ $book->error_message }}</p>
-                    </div>
-                    <form action="{{ route('books.retry', $book->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
-                            Reintentar
-                        </button>
-                    </form>
-                </div>
-            </div>
-        @endif
+        <!-- Detail sub-row -->
+        <div class="px-4 py-2.5 flex items-center justify-between text-[10px] text-slate-500 dark:text-sky-400/70 font-mono border-t border-emerald-200/50 dark:border-cyan-900/30">
+            <span id="processingChaptersDetail">Capítulos: <span id="procChDone">{{ $book->processed_chapters }}</span> / <span id="procChTotal">{{ $book->total_chapters ?? '—' }}</span></span>
+            <span id="processingOcrBadge" class="hidden items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-300/40 dark:border-amber-700/30 text-[10px] font-bold">
+                🔍 OCR activo
+            </span>
+        </div>
     </div>
+
+    <!-- Failure Banner (Universal mobile + desktop) -->
+    @if ($book->hasFailed())
+        <div class="card-tactile rounded-2xl p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-500/30 text-rose-900 dark:text-rose-200">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-sm font-bold text-rose-800 dark:text-rose-300">Hubo un inconveniente al procesar el archivo</p>
+                    <p class="text-xs text-rose-700 dark:text-rose-400 font-mono">{{ $book->error_message }}</p>
+                </div>
+                <form action="{{ route('books.retry', $book->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
+                        Reintentar
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 
     <!-- Executive Summary Card (NLP Synthesized) -->
     @if ($book->summary)

@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Chapter;
 use App\Models\User;
 use App\Services\AudioSynthesisService;
+use App\Services\PdfExtractorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -72,8 +73,15 @@ class BookController extends Controller
     /**
      * Show form to upload a new PDF for conversion.
      */
-    public function create()
+    public function create(?Request $request = null)
     {
+        $request = $request ?? request();
+
+        if ($request->has('reset') || $request->has('new') || $request->has('reset_trial')) {
+            session()->forget(['guest_book_id', 'guest_upload_count']);
+            session()->save();
+        }
+
         $voices = AudioSynthesisService::getAvailableVoices();
         $registeredUsers = collect();
 
@@ -100,6 +108,56 @@ class BookController extends Controller
     }
 
     /**
+     * Explicitly reset guest trial session to allow uploading another document.
+     */
+    public function resetGuest(Request $request)
+    {
+        session()->forget(['guest_book_id', 'guest_upload_count']);
+        session()->save();
+
+        return redirect()->route('books.create')
+            ->with('info', 'Tu sesión de prueba gratuita ha sido reiniciada con éxito. Puedes cargar o pegar un nuevo documento.');
+    }
+
+    /**
+     * Live OCR preview for uploaded or pasted images.
+     */
+    public function ocrPreview(Request $request, PdfExtractorService $extractor)
+    {
+        $request->validate([
+            'image' => 'required|file|mimes:png,jpg,jpeg,webp,bmp|max:20480',
+        ]);
+
+        $file = $request->file('image');
+        $tempPath = $file->getRealPath();
+
+        try {
+            $extraction = $extractor->extract($tempPath);
+            $fullText = '';
+            if (!empty($extraction['chapters'])) {
+                foreach ($extraction['chapters'] as $ch) {
+                    $fullText .= ($fullText ? "\n\n" : '') . $ch['text'];
+                }
+            }
+            if (empty($fullText) && !empty($extraction['summary'])) {
+                $fullText = $extraction['summary'];
+            }
+
+            return response()->json([
+                'success' => true,
+                'title' => $extraction['title'] ?? 'Texto Extraído con OCR',
+                'text' => $fullText,
+                'words' => $extraction['total_words'] ?? str_word_count($fullText),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error procesando OCR: ' . $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
      * Store and start processing a new PDF audiobook.
      */
     public function store(Request $request)
@@ -118,10 +176,10 @@ class BookController extends Controller
             }
         }
 
-        $allowedMimes = 'pdf,docx,doc,txt,md,markdown';
+        $allowedMimes = 'pdf,docx,doc,txt,md,markdown,png,jpg,jpeg,webp,bmp,mp3,wav,m4a,ogg,aac,flac';
         $request->validate([
             'pdf_file' => "required_without:raw_text|nullable|file|mimes:{$allowedMimes}|max:102400", // 100MB max
-            'raw_text' => 'required_without:pdf_file|nullable|string|min:20',
+            'raw_text' => 'required_without:pdf_file|nullable|string|min:10',
             'title' => 'nullable|string|max:255',
             'author' => 'nullable|string|max:255',
             'voice' => 'required|string',
@@ -233,6 +291,15 @@ class BookController extends Controller
             'txt' => 'text/plain; charset=utf-8',
             'md' => 'text/markdown; charset=utf-8',
             'markdown' => 'text/markdown; charset=utf-8',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'bmp' => 'image/bmp',
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+            'm4a' => 'audio/mp4',
+            'ogg' => 'audio/ogg',
         ];
         $contentType = $mimeTypes[$ext] ?? 'application/octet-stream';
 

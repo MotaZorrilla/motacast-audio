@@ -16,7 +16,9 @@ Route::middleware('guest')->group(function () {
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// Public / Guest Trial Creation Routes (Allowed for 1 test conversion before requiring account)
+// Public / Guest Trial Creation & Reset Routes (Allowed for test conversions)
+Route::match(['get', 'post'], '/guest/reset', [BookController::class, 'resetGuest'])->name('guest.reset');
+Route::post('/books/ocr-preview', [BookController::class, 'ocrPreview'])->name('books.ocr.preview');
 Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
 Route::post('/books', [BookController::class, 'store'])->name('books.store');
 
@@ -42,11 +44,11 @@ Route::get('/', function (\Illuminate\Http\Request $request) {
         return app(BookController::class)->index($request);
     }
 
-    // Optional reset switch for guests (?reset=1 or ?new=1)
-    if ($request->has('reset') || $request->has('new')) {
+    // Optional reset switch for guests (?reset=1 or ?new=1 or ?reset_trial=1)
+    if ($request->has('reset') || $request->has('new') || $request->has('reset_trial')) {
         session()->forget(['guest_book_id', 'guest_upload_count']);
         session()->save();
-        return app(BookController::class)->create();
+        return app(BookController::class)->create($request);
     }
 
     if (session()->has('guest_book_id')) {
@@ -62,7 +64,7 @@ Route::get('/', function (\Illuminate\Http\Request $request) {
         return redirect()->route('login')
             ->with('info', 'Has utilizado tu conversión de prueba gratuita. Inicia sesión o regístrate para acceder a tu biblioteca.');
     }
-    return app(BookController::class)->create();
+    return app(BookController::class)->create($request);
 })->name('home');
 
 // Authenticated Main Library
