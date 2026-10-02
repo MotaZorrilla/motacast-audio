@@ -772,6 +772,49 @@ doc.close()
             'status' => 'pending',
         ]);
     }
+
+    public function test_social_media_crawler_can_access_book_and_sees_open_graph_tags(): void
+    {
+        $book = Book::create([
+            'user_id' => $this->user->id,
+            'title' => 'El Arte de la Guerra Resumido',
+            'author' => 'Sun Tzu',
+            'original_filename' => 'arte_guerra.pdf',
+            'pdf_path' => 'pdfs/arte_guerra.pdf',
+            'summary' => 'Una guía estratégica milenaria sobre tácticas y resolución de conflictos.',
+            'status' => 'ready',
+        ]);
+
+        $response = $this->withHeaders([
+            'User-Agent' => 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+        ])->get(route('books.show', $book->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('property="og:title"', false);
+        $response->assertSee('El Arte de la Guerra Resumido', false);
+        $response->assertSee('property="og:description"', false);
+        $response->assertSee('Una guía estratégica milenaria', false);
+        $response->assertSee('property="og:image"', false);
+    }
+
+    public function test_unauthenticated_guest_can_access_shared_demo_book(): void
+    {
+        $demoBook = Book::create([
+            'user_id' => null,
+            'title' => 'Demo Pública Compartida',
+            'author' => 'Héctor Mota',
+            'original_filename' => 'demo.pdf',
+            'pdf_path' => 'pdfs/demo.pdf',
+            'summary' => 'Resumen de prueba accesible públicamente para enlaces de WhatsApp.',
+            'status' => 'ready',
+        ]);
+
+        $response = $this->get(route('books.show', $demoBook->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('Demo Pública Compartida');
+        $response->assertSee('property="og:title"', false);
+    }
 }
 
 

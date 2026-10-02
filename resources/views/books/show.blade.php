@@ -1,6 +1,27 @@
 @extends('layouts.app')
 
+@php
+    $cleanSummary = !empty($book->summary) ? trim(preg_replace('/\s+/', ' ', strip_tags($book->summary))) : '';
+    $ogDescription = !empty($cleanSummary) 
+        ? \Illuminate\Support\Str::limit($cleanSummary, 180, '...')
+        : "Escucha '{$book->title}' de " . ($book->author ?: 'Documento personal') . " en formato audiolibro neuronal ({$book->chapters->count()} pistas, {$book->formatted_duration}). Generado con MotaCastAudio.";
+
+    $ext = strtolower(pathinfo($book->original_filename ?? $book->pdf_path, PATHINFO_EXTENSION));
+    $isImageUpload = in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'bmp']);
+    $ogImage = ($isImageUpload && \Illuminate\Support\Facades\Storage::disk('public')->exists($book->pdf_path))
+        ? asset('storage/' . $book->pdf_path)
+        : asset('images/motacast-og-banner.jpg');
+@endphp
+
 @section('title', $book->title . ' - MotaCastAudio')
+@section('meta_description', $ogDescription)
+@section('meta_author', $book->author ?: 'MotaCastAudio')
+@section('og_title', $book->title . ' - Audiolibro en MotaCastAudio')
+@section('og_description', $ogDescription)
+@section('og_type', 'book')
+@section('og_url', route('books.show', $book->id))
+@section('og_image', $ogImage)
+@section('og_image_alt', 'Audiolibro: ' . $book->title)
 
 @section('content')
 <div class="space-y-4 pb-36 sm:pb-28">

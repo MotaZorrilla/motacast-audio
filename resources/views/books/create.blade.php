@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Agregar Documento o Libro - MotaCastAudio')
+@section('title', 'Convertir Documento a Audiolibro - MotaCastAudio')
+@section('meta_description', 'Convierte PDFs, Word (DOCX), texto directo e imágenes (OCR) en audiolibros interactivos con voces neuronales ultranaturales y resúmenes ejecutivos.')
+@section('og_title', 'MotaCastAudio - Documentos a Audiolibros con IA')
+@section('og_description', 'Sube tus libros, documentos o imágenes y escúchalos al instante con voces neuronales de alta fidelidad, navegación por capítulos y reproductor interactivo.')
+@section('og_type', 'website')
+@section('og_url', route('books.create'))
+@section('og_image', asset('images/motacast-og-banner.jpg'))
+@section('og_image_alt', 'MotaCastAudio - Conversión Inteligente a Audiolibros')
 
 @section('content')
 <div class="max-w-3xl mx-auto space-y-6">

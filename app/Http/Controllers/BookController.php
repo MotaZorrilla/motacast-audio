@@ -405,27 +405,35 @@ class BookController extends Controller
     }
 
     /**
-     * Verify whether the authenticated user or guest is authorized to access the book.
+     * Verify whether the authenticated user, guest, or social media crawler is authorized to access the book.
      */
     protected function authorizeBookAccess(Book $book): void
     {
+        // 1. Social media crawlers (WhatsApp, Facebook, Twitter, Telegram, etc.)
+        // always allowed so they can parse Open Graph metadata for rich link previews.
+        $userAgent = request()->header('User-Agent', '');
+        if (preg_match('/(facebookexternalhit|WhatsApp|Twitterbot|TelegramBot|LinkedInBot|Slackbot|Discordbot|meta-externalagent)/i', $userAgent)) {
+            return;
+        }
+
+        // 2. Allow shared demo / guest books (user_id === null) so WhatsApp recipients can listen
+        if (is_null($book->user_id) || $this->guestSession->guestOwnsBook($book)) {
+            return;
+        }
+
+        // 3. For registered private books, require login and owner/admin check
         if (!Auth::check()) {
-            if ($this->guestSession->guestOwnsBook($book)) {
-                return;
-            }
             throw new \Illuminate\Http\Exceptions\HttpResponseException(
                 redirect()->route('login')
-                    ->with('info', 'Debes iniciar sesión o registrarte para acceder a este audiolibro.')
+                    ->with('info', 'Debes iniciar sesión para acceder a este audiolibro.')
             );
         }
 
         $user = Auth::user();
-        if ($user->isAdmin()) {
+        if ($user->isAdmin() || $book->user_id === $user->id) {
             return;
         }
 
-        if ($book->user_id && $book->user_id !== $user->id) {
-            abort(403, 'No tienes autorización para acceder a este audiolibro.');
-        }
+        abort(403, 'No tienes autorización para acceder a este audiolibro.');
     }
 }
