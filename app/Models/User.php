@@ -23,6 +23,8 @@ class User extends Authenticatable
         'role',
         'status',
         'book_limit',
+        'beta_disclaimer_accepted_at',
+        'auto_extension_used',
     ];
 
     /**
@@ -44,6 +46,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'beta_disclaimer_accepted_at' => 'datetime',
+            'auto_extension_used' => 'boolean',
             'password' => 'hashed',
         ];
     }
@@ -55,11 +59,17 @@ class User extends Authenticatable
         'role' => 'user',
         'status' => 'active',
         'book_limit' => 3,
+        'auto_extension_used' => false,
     ];
 
     public function books()
     {
         return $this->hasMany(Book::class);
+    }
+
+    public function supportTickets()
+    {
+        return $this->hasMany(SupportTicket::class);
     }
 
     public function isAdmin(): bool
@@ -97,5 +107,20 @@ class User extends Authenticatable
 
         $current = $this->books()->count();
         return max(0, $limit - $current);
+    }
+
+    public function canRequestAutoExtension(): bool
+    {
+        return !$this->auto_extension_used && !$this->isAdmin();
+    }
+
+    public function grantCourtesyExtension(int $additionalBooks = 1): void
+    {
+        $currentLimit = $this->book_limit ?? 3;
+        if ($currentLimit !== -1) {
+            $this->book_limit = $currentLimit + $additionalBooks;
+        }
+        $this->auto_extension_used = true;
+        $this->save();
     }
 }

@@ -202,6 +202,21 @@
     {{-- Executive Summary Card (Modular Partial) --}}
     @include('books.partials.summary-card')
 
+    <!-- Early Access Audio Download Recommendation Banner -->
+    <div class="p-3 rounded-2xl bg-slate-100/80 dark:bg-[#071014]/80 border border-slate-200/80 dark:border-cyan-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs shadow-sm">
+        <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex-shrink-0">
+                ⚠️ Beta Tip
+            </span>
+            <span class="text-slate-600 dark:text-sky-300">
+                Recuerda pulsar el botón <strong class="text-slate-900 dark:text-cyan-200 font-mono font-bold">MP3</strong> en tus pistas para descargar y guardar tus audios permanentemente.
+            </span>
+        </div>
+        <button type="button" onclick="openSupportModal()" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline self-end sm:self-auto flex-shrink-0">
+            ¿Comentarios o sugerencias? &rarr;
+        </button>
+    </div>
+
     <!-- Chapter Playlist Section -->
     <div class="card-tactile rounded-2xl overflow-hidden">
         <div class="p-3.5 sm:p-4 border-b border-slate-200 dark:border-cyan-950/60 bg-slate-50/70 dark:bg-[#071014]/60 flex items-center justify-between">

@@ -100,16 +100,26 @@
                             </a>
 
                             @if (Auth::user()->isAdmin())
-                                <a href="{{ route('admin.users.index') }}" class="px-3 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.users.*') ? 'text-teal-700 dark:text-cyan-300 bg-teal-500/10 dark:bg-cyan-950/40 border border-teal-500/30 dark:border-cyan-500/30' : 'text-slate-600 dark:text-sky-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
+                                <a href="{{ route('admin.users.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.users.*') ? 'text-teal-700 dark:text-cyan-300 bg-teal-500/10 dark:bg-cyan-950/40 border border-teal-500/30 dark:border-cyan-500/30' : 'text-slate-600 dark:text-sky-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Usuarios">
                                     <span>Usuarios</span>
+                                </a>
+                                <a href="{{ route('admin.telemetry.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.telemetry.*') ? 'text-teal-700 dark:text-cyan-300 bg-teal-500/10 dark:bg-cyan-950/40 border border-teal-500/30 dark:border-cyan-500/30' : 'text-slate-600 dark:text-sky-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Telemetría">
+                                    <span>Telemetría</span>
+                                </a>
+                                <a href="{{ route('admin.tickets.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.tickets.*') ? 'text-teal-700 dark:text-cyan-300 bg-teal-500/10 dark:bg-cyan-950/40 border border-teal-500/30 dark:border-cyan-500/30' : 'text-slate-600 dark:text-sky-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Tickets">
+                                    <span>Tickets</span>
                                 </a>
                             @endif
 
-                            <a href="{{ route('books.create') }}" class="btn-neon-tactile inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <button type="button" onclick="openSupportModal()" class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-sky-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition inline-flex items-center gap-1" title="Enviar nota o consulta al Administrador">
+                                <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                </svg>
+                                <span>Soporte</span>
+                            </button>
+
+                            <a href="{{ route('books.create') }}" class="btn-neon-tactile inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition">
+                                <svg class="w-3.5 h-3.5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                                 </svg>
                                 <span>Agregar</span>
@@ -231,41 +241,57 @@
     <!-- Mobile-First Bottom Navigation Dock (Fixed for Ergonomic Thumb Interaction) -->
     @auth
     @if (!request()->routeIs('books.show'))
-    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#080d0f]/95 backdrop-blur-lg border-t border-slate-200 dark:border-cyan-950/60 z-40 px-3 py-2 flex items-center justify-around shadow-2xl">
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#080d0f]/95 backdrop-blur-lg border-t border-slate-200 dark:border-cyan-950/60 z-40 px-2 py-2 flex items-center justify-around shadow-2xl">
         <!-- Tab 1: Mis Libros -->
-        <a href="{{ route('books.index') }}" class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl {{ request()->routeIs('books.index') && !request()->routeIs('admin.*') ? 'text-[#00c965] dark:text-[#00ff87] font-bold' : 'text-slate-500 dark:text-sky-400' }} transition">
+        <a href="{{ route('books.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('books.index') && !request()->routeIs('admin.*') ? 'text-[#00c965] dark:text-[#00ff87] font-bold' : 'text-slate-500 dark:text-sky-400' }} transition">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <span class="text-[10px]">Libros</span>
+            <span class="text-[9px]">Libros</span>
         </a>
 
-        <!-- Admin Tab if admin -->
+        <!-- Admin Links or User Support -->
         @if (Auth::user()->isAdmin())
-            <a href="{{ route('admin.users.index') }}" class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl {{ request()->routeIs('admin.users.*') ? 'text-teal-600 dark:text-cyan-300 font-bold' : 'text-slate-500 dark:text-sky-400' }} transition">
+            <a href="{{ route('admin.telemetry.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('admin.*') ? 'text-teal-600 dark:text-cyan-300 font-bold' : 'text-slate-500 dark:text-sky-400' }} transition">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-                <span class="text-[10px]">Usuarios</span>
+                <span class="text-[9px]">Métricas</span>
             </a>
+        @else
+            <button type="button" onclick="openSupportModal()" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-slate-500 dark:text-sky-400 hover:text-amber-500 transition">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                <span class="text-[9px]">Soporte</span>
+            </button>
         @endif
 
         <!-- Tab Central: + Agregar Documento (Destacado y Radiante 3D) -->
-        <a href="{{ route('books.create') }}" class="flex flex-col items-center justify-center w-12 h-12 -mt-5 btn-neon-tactile rounded-2xl shadow-neon-md transition transform active:scale-95" title="Agregar nuevo documento">
-            <svg class="w-6 h-6 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <a href="{{ route('books.create') }}" class="flex flex-col items-center justify-center w-11 h-11 -mt-4 btn-neon-tactile rounded-2xl shadow-neon-md transition transform active:scale-95" title="Agregar nuevo documento">
+            <svg class="w-5 h-5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
             </svg>
         </a>
 
+        @if (Auth::user()->isAdmin())
+            <a href="{{ route('admin.tickets.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('admin.tickets.*') ? 'text-teal-600 dark:text-cyan-300 font-bold' : 'text-slate-500 dark:text-sky-400' }} transition relative">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                <span class="text-[9px]">Tickets</span>
+            </a>
+        @endif
+
         <!-- Tab: Reproductor / Streaming con Estado Reactivo -->
-        <button type="button" id="mobileAudioDockBtn" onclick="handleDockAudioClick(event)" class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-slate-500 dark:text-sky-400 hover:text-[#00c965] dark:hover:text-[#00ff87] transition cursor-pointer" title="Control de Audio">
-            <div id="dockSoundwave" class="flex items-center gap-0.5 h-5 transition-all">
-                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-1 transition-all duration-200"></span>
-                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-2 transition-all duration-200"></span>
-                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-3 transition-all duration-200"></span>
-                <span class="w-1 bg-[#00ff87] rounded-full bar-wave-4 transition-all duration-200"></span>
+        <button type="button" id="mobileAudioDockBtn" onclick="handleDockAudioClick(event)" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-slate-500 dark:text-sky-400 hover:text-[#00c965] dark:hover:text-[#00ff87] transition cursor-pointer" title="Control de Audio">
+            <div id="dockSoundwave" class="flex items-center gap-0.5 h-4 transition-all">
+                <span class="w-0.5 bg-[#00ff87] rounded-full bar-wave-1 transition-all duration-200"></span>
+                <span class="w-0.5 bg-[#00ff87] rounded-full bar-wave-2 transition-all duration-200"></span>
+                <span class="w-0.5 bg-[#00ff87] rounded-full bar-wave-3 transition-all duration-200"></span>
+                <span class="w-0.5 bg-[#00ff87] rounded-full bar-wave-4 transition-all duration-200"></span>
             </div>
-            <span id="dockAudioLabel" class="text-[10px]">Audio</span>
+            <span id="dockAudioLabel" class="text-[9px]">Audio</span>
         </button>
     </nav>
     @endif
@@ -490,6 +516,88 @@
             checkAndAttach();
             setInterval(checkAndAttach, 1000);
         });
+    </script>
+
+    <!-- Global Support / Feedback / Admin Note Modal -->
+    <div id="supportTicketModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="card-tactile w-full max-w-lg rounded-3xl p-6 sm:p-7 space-y-4 relative shadow-2xl">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-cyan-950/60">
+                <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-base font-black text-slate-900 dark:text-cyan-200 tracking-tight">Contactar al Administrador</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-sky-400">Consulta, reporte de fallo, sugerencia o solicitud de cuota</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeSupportModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <form action="{{ route('tickets.store') }}" method="POST" class="space-y-3.5">
+                @csrf
+
+                <!-- Category -->
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase">Tipo de Mensaje</label>
+                    <select name="type" required class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/60 rounded-xl text-slate-900 dark:text-cyan-100">
+                        <option value="consulta">💬 Consulta General</option>
+                        <option value="extension_limite">⚡ Solicitud de Ampliación de Cuota</option>
+                        <option value="bug">🐛 Reporte de Fallo / Bug</option>
+                        <option value="sugerencia">💡 Sugerencia para Fase Beta</option>
+                    </select>
+                </div>
+
+                @guest
+                    <!-- Guest Email Input -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase">Tu Correo Electrónico</label>
+                        <input type="email" name="guest_email" required placeholder="correo@ejemplo.com" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/60 rounded-xl text-slate-900 dark:text-cyan-100 placeholder-slate-400">
+                    </div>
+                @endguest
+
+                <!-- Subject -->
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase">Asunto Breve</label>
+                    <input type="text" name="subject" required placeholder="Ej. Solicitud de cuota para tesis / Error al procesar audio" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/60 rounded-xl text-slate-900 dark:text-cyan-100 placeholder-slate-400">
+                </div>
+
+                <!-- Message -->
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase">Detalle del Mensaje</label>
+                    <textarea name="message" rows="3" required placeholder="Cuéntanos con detalle lo que necesitas o experimentaste..." class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/60 rounded-xl text-slate-900 dark:text-cyan-100 placeholder-slate-400"></textarea>
+                </div>
+
+                <!-- Beta Notice -->
+                <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-200/90 leading-relaxed">
+                    <strong>Fase Early Access:</strong> MotaCastAudio está en pruebas activas. Cada mensaje llega directamente a la bandeja del Administrador para su seguimiento inmediato.
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeSupportModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-neon-tactile px-5 py-2.5 rounded-xl text-xs font-black shadow-md transition">
+                        Enviar al Administrador
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openSupportModal() {
+            document.getElementById('supportTicketModal').classList.remove('hidden');
+        }
+        function closeSupportModal() {
+            document.getElementById('supportTicketModal').classList.add('hidden');
+        }
     </script>
 
     @stack('scripts')

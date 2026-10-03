@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\TelemetryController;
+use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\SupportTicketController;
 use Illuminate\Support\Facades\Route;
 
 // Guest Auth Routes
@@ -67,11 +70,15 @@ Route::get('/', function (\Illuminate\Http\Request $request) {
     return app(BookController::class)->create($request);
 })->name('home');
 
+// Support & Feedback Routes (Tickets & Quota Extensions)
+Route::post('/support/tickets', [SupportTicketController::class, 'store'])->name('tickets.store');
+Route::post('/support/request-extension', [SupportTicketController::class, 'requestExtension'])->name('tickets.request-extension')->middleware('auth');
+
 // Authenticated Main Library
 Route::middleware('auth')->group(function () {
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
 
-    // Admin Control Center: User Management & Quotas
+    // Admin Control Center: User Management, Telemetry & Support Tickets
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
@@ -81,5 +88,15 @@ Route::middleware('auth')->group(function () {
         Route::match(['post', 'patch'], '/users/{user}/adjust-limit', [UserController::class, 'adjustLimit'])->name('users.adjust-limit');
         Route::match(['post', 'patch'], '/users/{user}/limit', [UserController::class, 'adjustLimit'])->name('users.limit');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        // Telemetry & Metrics
+        Route::get('/telemetry', [TelemetryController::class, 'index'])->name('telemetry.index');
+        Route::post('/telemetry/clear-logs', [TelemetryController::class, 'clearLogs'])->name('telemetry.clear-logs');
+
+        // Support Tickets & Quota Extensions
+        Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
+        Route::post('/tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
+        Route::post('/tickets/{ticket}/approve-extension', [TicketController::class, 'approveExtension'])->name('tickets.approve-extension');
+        Route::delete('/tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
     });
 });

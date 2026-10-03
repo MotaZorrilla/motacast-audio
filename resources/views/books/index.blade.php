@@ -103,6 +103,49 @@
         @endauth
     </div>
 
+    <!-- Quota Limit & Semi-Automatic Extension Banner for Users -->
+    @auth
+        @if (!Auth::user()->isAdmin() && !Auth::user()->canUploadBook())
+            <div class="card-tactile rounded-2xl p-4 sm:p-5 border border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+                <div class="flex items-start sm:items-center gap-3">
+                    <span class="p-2.5 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-amber-200">
+                            Has alcanzado el límite de tu cuenta ({{ Auth::user()->books()->count() }} de {{ Auth::user()->book_limit }} libros)
+                        </h3>
+                        <p class="text-[11px] sm:text-xs text-slate-600 dark:text-sky-300/80 mt-0.5 leading-relaxed">
+                            @if (Auth::user()->canRequestAutoExtension())
+                                Como usuario de fase Beta, puedes activar una <strong>extensión de cortesía inmediata (+1 libro)</strong> con un solo toque.
+                            @else
+                                Ya utilizaste tu cortesía inicial. Puedes solicitar una ampliación adicional personalizada al Administrador.
+                            @endif
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <form action="{{ route('tickets.request-extension') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="btn-neon-tactile px-3.5 py-2 rounded-xl text-xs font-black shadow-md transition">
+                            @if (Auth::user()->canRequestAutoExtension())
+                                ⚡ Activar Cortesía (+1 Libro)
+                            @else
+                                📩 Solicitar Ampliación
+                            @endif
+                        </button>
+                    </form>
+                    <button type="button" onclick="openSupportModal()" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                        Escribir Nota
+                    </button>
+                </div>
+            </div>
+        @endif
+    @endauth
+
     <!-- Filter & Search Bar -->
     <div class="card-tactile rounded-xl p-3 flex flex-col md:flex-row items-center justify-between gap-3">
         <form action="{{ route('books.index') }}" method="GET" class="w-full md:w-auto flex-grow max-w-md">

@@ -31,16 +31,21 @@
     <!-- User Quota or Guest Mode Notice -->
     @auth
         @if (!Auth::user()->isAdmin())
-            <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/50 text-xs flex items-center justify-between">
+            <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/50 text-xs flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-[#00ff87]"></span>
                     <span class="text-slate-700 dark:text-sky-300">
-                        Estado de tu cuota: <strong>{{ Auth::user()->books()->count() }}</strong> de {{ Auth::user()->book_limit === -1 ? 'Ilimitados' : Auth::user()->book_limit }} libros utilizados.
+                        Cuota Beta: <strong>{{ Auth::user()->books()->count() }}</strong> de {{ Auth::user()->book_limit === -1 ? 'Ilimitados' : Auth::user()->book_limit }} libros utilizados.
                     </span>
                 </div>
-                <span class="font-bold text-[#00c965] dark:text-[#00ff87]">
-                    {{ Auth::user()->remainingBooks() === -1 ? 'Sin límite' : Auth::user()->remainingBooks() . ' restantes' }}
-                </span>
+                <div class="flex items-center gap-2.5">
+                    <span class="font-bold text-[#00c965] dark:text-[#00ff87]">
+                        {{ Auth::user()->remainingBooks() === -1 ? 'Sin límite' : Auth::user()->remainingBooks() . ' restantes' }}
+                    </span>
+                    <button type="button" onclick="openSupportModal()" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline">
+                        ¿Necesitas más?
+                    </button>
+                </div>
             </div>
         @endif
     @else

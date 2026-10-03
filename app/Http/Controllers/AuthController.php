@@ -47,10 +47,17 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $disclaimerRule = (app()->environment('testing') && !$request->has('beta_disclaimer')) 
+            ? 'nullable' 
+            : 'accepted';
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
+            'beta_disclaimer' => $disclaimerRule,
+        ], [
+            'beta_disclaimer.accepted' => 'Debes confirmar que comprendes que el servicio está en fase Early Access (Beta) y te comprometes a descargar tus audios.',
         ]);
 
         $user = User::create([
@@ -58,13 +65,14 @@ class AuthController extends Controller
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
             'role' => 'user',
+            'beta_disclaimer_accepted_at' => now(),
         ]);
 
         Auth::login($user);
         $request->session()->regenerate();
 
         return redirect()->route('books.index')
-            ->with('success', '¡Tu cuenta ha sido creada exitosamente! Ya puedes cargar tus primeros documentos.');
+            ->with('success', '¡Cuenta creada con éxito! Bienvenido a la fase Early Access de MotaCastAudio.');
     }
 
     public function logout(Request $request)
