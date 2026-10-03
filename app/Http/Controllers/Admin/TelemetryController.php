@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Chapter;
 use App\Models\SupportTicket;
+use App\Models\TrafficLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,7 +98,46 @@ class TelemetryController extends Controller
             'resolved_tickets' => SupportTicket::where('status', 'resuelto')->count(),
         ];
 
-        // 5. Live Log Tail (Last 70 lines)
+        // 5. Traffic, Visitors & Connections Telemetry
+        $totalHits = TrafficLog::count();
+        $todayHits = TrafficLog::whereDate('created_at', today())->count();
+        $uniqueVisitorsToday = TrafficLog::whereDate('created_at', today())->distinct('ip_hash')->count('ip_hash');
+        $uniqueVisitorsTotal = TrafficLog::distinct('ip_hash')->count('ip_hash');
+        $guestHits = TrafficLog::whereNull('user_id')->where('is_crawler', false)->count();
+        $authHits = TrafficLog::whereNotNull('user_id')->count();
+        $crawlerHits = TrafficLog::where('is_crawler', true)->count();
+        $mobileHits = TrafficLog::where('device_type', 'mobile')->count();
+        $desktopHits = TrafficLog::where('device_type', 'desktop')->count();
+        $mobilePercentage = ($mobileHits + $desktopHits) > 0 ? round(($mobileHits / ($mobileHits + $desktopHits)) * 100, 1) : 0;
+
+        $topPaths = TrafficLog::selectRaw('path, count(*) as hits')
+            ->where('is_crawler', false)
+            ->groupBy('path')
+            ->orderByDesc('hits')
+            ->limit(6)
+            ->get();
+
+        $recentVisits = TrafficLog::with('user:id,name,email')
+            ->latest('id')
+            ->limit(25)
+            ->get();
+
+        $trafficMetrics = [
+            'total_hits' => $totalHits,
+            'today_hits' => $todayHits,
+            'unique_today' => $uniqueVisitorsToday,
+            'unique_total' => $uniqueVisitorsTotal,
+            'guest_hits' => $guestHits,
+            'auth_hits' => $authHits,
+            'crawler_hits' => $crawlerHits,
+            'mobile_hits' => $mobileHits,
+            'desktop_hits' => $desktopHits,
+            'mobile_percent' => $mobilePercentage,
+            'top_paths' => $topPaths,
+            'recent_visits' => $recentVisits,
+        ];
+
+        // 6. Live Log Tail (Last 70 lines)
         $logs = $this->getRecentLogs(70);
 
         return view('admin.telemetry', compact(
@@ -105,6 +145,7 @@ class TelemetryController extends Controller
             'conversionMetrics',
             'userMetrics',
             'ticketMetrics',
+            'trafficMetrics',
             'logs'
         ));
     }

@@ -193,6 +193,159 @@
 
     </div>
 
+    <!-- Web Traffic, Audience & Group Sharing Telemetry -->
+    <div class="card-tactile rounded-2xl p-5 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-cyan-950/60 pb-3">
+            <div class="flex items-center gap-2.5">
+                <span class="p-2 rounded-xl bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
+                    <svg class="w-5 h-5 text-cyan-500 dark:text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                </span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span> Tráfico en Vivo
+                        </span>
+                        <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">&bull; Grupos & Enlaces</span>
+                    </div>
+                    <h2 class="text-base sm:text-lg font-black text-slate-900 dark:text-cyan-200 tracking-tight mt-0.5">
+                        Conexiones, Visitas & Audiencia
+                    </h2>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-900/40 text-xs font-mono text-slate-600 dark:text-sky-300">
+                    Únicos Hoy: <strong class="text-emerald-600 dark:text-[#00ff87]">{{ $trafficMetrics['unique_today'] }}</strong>
+                </span>
+            </div>
+        </div>
+
+        <!-- 5 Traffic KPI Bento Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-sky-400 uppercase">Peticiones Totales</p>
+                <p class="text-xl font-black text-slate-900 dark:text-cyan-200 mt-0.5">{{ number_format($trafficMetrics['total_hits']) }}</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{{ number_format($trafficMetrics['today_hits']) }} registradas hoy</p>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-sky-400 uppercase">Visitantes Únicos</p>
+                <p class="text-xl font-black text-[#00c965] dark:text-[#00ff87] mt-0.5">{{ number_format($trafficMetrics['unique_today']) }}</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{{ number_format($trafficMetrics['unique_total']) }} total histórico</p>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-sky-400 uppercase">Invitados Anónimos</p>
+                <p class="text-xl font-black text-cyan-600 dark:text-cyan-300 mt-0.5">{{ number_format($trafficMetrics['guest_hits']) }}</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">vs. {{ number_format($trafficMetrics['auth_hits']) }} de miembros</p>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-sky-400 uppercase">Impacto en Grupos</p>
+                <p class="text-xl font-black text-amber-500 dark:text-amber-400 mt-0.5">{{ number_format($trafficMetrics['crawler_hits']) }}</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">previews WhatsApp / bots</p>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30 col-span-2 sm:col-span-1">
+                <p class="text-[10px] font-bold text-slate-400 dark:text-sky-400 uppercase">Tráfico Móvil</p>
+                <p class="text-xl font-black text-teal-600 dark:text-cyan-300 mt-0.5">{{ $trafficMetrics['mobile_percent'] }}%</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{{ $trafficMetrics['mobile_hits'] }} móvil &bull; {{ $trafficMetrics['desktop_hits'] }} PC</p>
+            </div>
+        </div>
+
+        <!-- 2 Subcolumns: Top Paths & Live Recent Stream -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-2">
+            <!-- Top Paths / Enlaces más visitados -->
+            <div class="space-y-3">
+                <h3 class="text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    <span>Rutas Más Solicitadas</span>
+                </h3>
+
+                <div class="space-y-1.5">
+                    @forelse ($trafficMetrics['top_paths'] as $top)
+                        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30 flex items-center justify-between gap-2 text-xs">
+                            <span class="font-mono text-slate-800 dark:text-cyan-100 truncate max-w-[200px]" title="{{ $top->path }}">
+                                {{ $top->path }}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md font-mono font-bold text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-[#00ff87] border border-emerald-500/20">
+                                {{ $top->hits }} hits
+                            </span>
+                        </div>
+                    @empty
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#071014] text-xs text-slate-400 italic text-center">
+                            Aún no hay rutas registradas.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Live Stream of Recent Visits (2 Columns Wide on Desktop) -->
+            <div class="lg:col-span-2 space-y-3">
+                <h3 class="text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-cyan-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Últimas 25 Conexiones al Servidor</span>
+                </h3>
+
+                <div class="max-h-72 overflow-y-auto space-y-1.5 pr-1">
+                    @forelse ($trafficMetrics['recent_visits'] as $visit)
+                        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30 flex items-center justify-between gap-2 text-xs">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <!-- Device Icon -->
+                                <span class="p-1.5 rounded-lg bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-sky-300 flex-shrink-0" title="{{ $visit->device_type }}">
+                                    @if ($visit->is_crawler)
+                                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    @elseif ($visit->device_type === 'mobile')
+                                        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                    @else
+                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                    @endif
+                                </span>
+
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-mono text-[11px] font-bold text-slate-900 dark:text-cyan-200 truncate">
+                                            {{ $visit->path }}
+                                        </span>
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-mono {{ $visit->status_code < 400 ? 'bg-emerald-500/10 text-emerald-600 dark:text-[#00ff87]' : 'bg-rose-500/10 text-rose-500' }}">
+                                            {{ $visit->status_code }}
+                                        </span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 dark:text-slate-400 truncate">
+                                        @if ($visit->is_crawler)
+                                            <span class="text-amber-500 font-bold">Rastreador Social / Bot</span> &bull; preview
+                                        @elseif ($visit->user)
+                                            <span class="text-emerald-500 font-semibold">{{ $visit->user->name }}</span>
+                                        @else
+                                            <span class="text-cyan-400 font-semibold">Invitado Anónimo</span>
+                                        @endif
+                                        @if ($visit->referer)
+                                            &bull; desde {{ parse_url($visit->referer, PHP_URL_HOST) ?? $visit->referer }}
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+
+                            <span class="text-[10px] text-slate-400 font-mono whitespace-nowrap flex-shrink-0">
+                                {{ $visit->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                    @empty
+                        <div class="p-6 rounded-xl bg-slate-50 dark:bg-[#071014] text-xs text-slate-400 italic text-center">
+                            Aún no se han registrado conexiones.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Live Server Logs Viewer (Web Monospace Terminal) -->
     <div class="card-tactile rounded-2xl overflow-hidden">
         <div class="p-4 border-b border-slate-200/80 dark:border-cyan-950/60 bg-slate-50/70 dark:bg-[#071014]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
