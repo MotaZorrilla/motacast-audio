@@ -335,8 +335,14 @@ class BookController extends Controller
     {
         $this->authorizeBookAccess($chapter->book);
 
-        if (!$chapter->audio_path) {
-            abort(404, 'Audio aún no disponible para este capítulo.');
+        // Self-healing: verify audio_path existence on disk; if missing check standard book chapter path
+        if (!$chapter->audio_path || !Storage::disk('public')->exists($chapter->audio_path)) {
+            $candidate = "audiobooks/{$chapter->book_id}/chapter_{$chapter->chapter_number}.mp3";
+            if (Storage::disk('public')->exists($candidate)) {
+                $chapter->update(['audio_path' => $candidate]);
+            } else {
+                abort(404, 'Audio aún no disponible para este capítulo.');
+            }
         }
 
         $fullPath = Storage::disk('public')->path($chapter->audio_path);
@@ -369,8 +375,13 @@ class BookController extends Controller
     {
         $this->authorizeBookAccess($chapter->book);
 
-        if (!$chapter->audio_path) {
-            abort(404, 'Audio no generado.');
+        if (!$chapter->audio_path || !Storage::disk('public')->exists($chapter->audio_path)) {
+            $candidate = "audiobooks/{$chapter->book_id}/chapter_{$chapter->chapter_number}.mp3";
+            if (Storage::disk('public')->exists($candidate)) {
+                $chapter->update(['audio_path' => $candidate]);
+            } else {
+                abort(404, 'Audio no generado.');
+            }
         }
 
         $safeName = sprintf(

@@ -155,20 +155,20 @@
                 </div>
 
                 <!-- Early Access & Beta Disclaimer Notice -->
-                <div class="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 space-y-2.5">
+                <div class="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 space-y-3">
                     <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                             ⚠️ Early Access &bull; Fase Experimental
                         </span>
                     </div>
-                    <p class="text-xs text-slate-700 dark:text-amber-200/90 leading-relaxed">
+                    <p class="text-xs text-slate-700 dark:text-amber-100 leading-relaxed">
                         <strong>MotaCastAudio</strong> está en fase de pruebas activas. Durante esta etapa pueden ocurrir ajustes técnicos, errores imprevistos o depuración periódica de archivos.
                     </p>
-                    <div class="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-start gap-2">
+                    <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-start gap-2.5">
                         <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        <p class="text-[11px] font-semibold text-slate-800 dark:text-amber-100 leading-snug">
+                        <p class="text-xs font-semibold text-slate-800 dark:text-amber-200 leading-snug">
                             <strong>Recomendación importante:</strong> Te recomendamos descargar tus audios en MP3 a tu dispositivo una vez generados para garantizar que no los pierdas.
                         </p>
                     </div>
