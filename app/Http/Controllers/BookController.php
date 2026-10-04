@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\AudioStreamingService;
 use App\Services\AudioSynthesisService;
 use App\Services\DocumentIngestService;
+use App\Services\GuestFingerprintService;
 use App\Services\GuestSessionService;
 use App\Services\PdfExtractorService;
 use Illuminate\Http\JsonResponse;
@@ -182,8 +183,12 @@ class BookController extends Controller
                 : $currentUser->id;
         }
 
+        $geo = GuestFingerprintService::resolve($request);
+
         $book = Book::create([
             'user_id' => $ownerId,
+            'guest_fingerprint' => Auth::check() ? null : $geo['alias'],
+            'country_code' => $geo['country_code'],
             'title' => $ingested['title'],
             'author' => $ingested['author'],
             'original_filename' => $ingested['original_filename'],

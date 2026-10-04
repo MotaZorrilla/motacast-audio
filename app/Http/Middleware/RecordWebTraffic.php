@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\TrafficLog;
+use App\Services\GuestFingerprintService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,11 +49,20 @@ class RecordWebTraffic
                 $sessionId = $request->session()->getId();
             }
 
+            // High-speed deterministic Guest Fingerprint, Country & Action resolution
+            $geo = GuestFingerprintService::resolve($request, $response);
+
             TrafficLog::create([
                 'ip_hash' => $ipHash,
                 'user_id' => $userId,
+                'country_code' => $geo['country_code'],
+                'country_name' => $geo['country_name'],
+                'country_flag' => $geo['country_flag'],
                 'session_id' => $sessionId ? mb_substr($sessionId, 0, 64) : null,
+                'guest_fingerprint' => $userId ? null : $geo['alias'],
+                'book_id' => $geo['book_id'],
                 'path' => mb_substr($path, 0, 255),
+                'action_details' => $geo['action_details'],
                 'method' => mb_substr($request->method(), 0, 10),
                 'status_code' => $response->getStatusCode(),
                 'referer' => $referer,

@@ -15,8 +15,14 @@ class TrafficLog extends Model
     protected $fillable = [
         'ip_hash',
         'user_id',
+        'country_code',
+        'country_name',
+        'country_flag',
         'session_id',
+        'guest_fingerprint',
+        'book_id',
         'path',
+        'action_details',
         'method',
         'status_code',
         'referer',
@@ -35,6 +41,11 @@ class TrafficLog extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function book(): BelongsTo
+    {
+        return $this->belongsTo(Book::class);
     }
 
     public function scopeRealUsers($query)

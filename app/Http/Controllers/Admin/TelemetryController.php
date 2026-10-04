@@ -117,9 +117,17 @@ class TelemetryController extends Controller
             ->limit(6)
             ->get();
 
-        $recentVisits = TrafficLog::with('user:id,name,email')
+        $topCountries = TrafficLog::selectRaw('country_code, country_name, country_flag, count(*) as hits')
+            ->whereNotNull('country_code')
+            ->where('is_crawler', false)
+            ->groupBy('country_code', 'country_name', 'country_flag')
+            ->orderByDesc('hits')
+            ->limit(8)
+            ->get();
+
+        $recentVisits = TrafficLog::with(['user:id,name,email', 'book:id,title,status'])
             ->latest('id')
-            ->limit(25)
+            ->limit(200)
             ->get();
 
         $trafficMetrics = [
@@ -134,6 +142,7 @@ class TelemetryController extends Controller
             'desktop_hits' => $desktopHits,
             'mobile_percent' => $mobilePercentage,
             'top_paths' => $topPaths,
+            'top_countries' => $topCountries,
             'recent_visits' => $recentVisits,
         ];
 

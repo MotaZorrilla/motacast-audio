@@ -255,86 +255,216 @@
             </div>
         </div>
 
-        <!-- 2 Subcolumns: Top Paths & Live Recent Stream -->
+        <!-- 2 Subcolumns: Top Paths & Countries + Live Recent 200 Stream -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-2">
-            <!-- Top Paths / Enlaces más visitados -->
-            <div class="space-y-3">
-                <h3 class="text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
-                    <span>Rutas Más Solicitadas</span>
-                </h3>
+            <!-- Left Column: Top Paths & GeoIP Origin Countries -->
+            <div class="space-y-4">
+                <!-- Top Paths -->
+                <div class="space-y-2">
+                    <h3 class="text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        <span>Rutas Más Solicitadas</span>
+                    </h3>
 
-                <div class="space-y-1.5">
-                    @forelse ($trafficMetrics['top_paths'] as $top)
-                        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30 flex items-center justify-between gap-2 text-xs">
-                            <span class="font-mono text-slate-800 dark:text-cyan-100 truncate max-w-[200px]" title="{{ $top->path }}">
-                                {{ $top->path }}
-                            </span>
-                            <span class="px-2 py-0.5 rounded-md font-mono font-bold text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-[#00ff87] border border-emerald-500/20">
-                                {{ $top->hits }} hits
-                            </span>
-                        </div>
-                    @empty
-                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#071014] text-xs text-slate-400 italic text-center">
-                            Aún no hay rutas registradas.
-                        </div>
-                    @endforelse
+                    <div class="space-y-1.5">
+                        @forelse ($trafficMetrics['top_paths'] as $top)
+                            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30 flex items-center justify-between gap-2 text-xs">
+                                <span class="font-mono text-slate-800 dark:text-cyan-100 truncate max-w-[200px]" title="{{ $top->path }}">
+                                    {{ $top->path }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-md font-mono font-bold text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-[#00ff87] border border-emerald-500/20">
+                                    {{ $top->hits }} hits
+                                </span>
+                            </div>
+                        @empty
+                            <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#071014] text-xs text-slate-400 italic text-center">
+                                Aún no hay rutas registradas.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- GeoIP Country Breakdown -->
+                <div class="space-y-2 pt-1">
+                    <h3 class="text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="text-sm">🌍</span>
+                        <span>Países de Origen (GeoIP)</span>
+                    </h3>
+
+                    <div class="space-y-1.5">
+                        @forelse ($trafficMetrics['top_countries'] as $country)
+                            <div class="p-2 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30 flex items-center justify-between gap-2 text-xs">
+                                <div class="flex items-center gap-2 truncate min-w-0">
+                                    <span class="text-base leading-none flex-shrink-0">{{ $country->country_flag ?? '🌐' }}</span>
+                                    <span class="font-bold text-slate-800 dark:text-cyan-100 truncate">
+                                        {{ $country->country_name ?? $country->country_code }}
+                                    </span>
+                                    <span class="text-[10px] font-mono text-slate-400">({{ $country->country_code }})</span>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-md font-mono font-bold text-[10px] bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20 flex-shrink-0">
+                                    {{ $country->hits }} hits
+                                </span>
+                            </div>
+                        @empty
+                            <div class="p-3 rounded-xl bg-slate-50 dark:bg-[#071014] text-xs text-slate-400 italic text-center">
+                                Sin datos geográficos registrados aún.
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
 
-            <!-- Live Stream of Recent Visits (2 Columns Wide on Desktop) -->
+            <!-- Right Column: Live Stream of Recent 200 Visits with Search & Filters -->
             <div class="lg:col-span-2 space-y-3">
-                <h3 class="text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-cyan-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Últimas 25 Conexiones al Servidor</span>
-                </h3>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h3 class="text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-cyan-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Últimas 200 Conexiones al Servidor</span>
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10.5px] font-mono text-slate-500 dark:text-cyan-400 bg-slate-100 dark:bg-[#071014] px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-cyan-900/30">
+                            Mostrando: <strong id="visibleCount" class="text-cyan-600 dark:text-cyan-300">{{ count($trafficMetrics['recent_visits']) }}</strong> de {{ count($trafficMetrics['recent_visits']) }}
+                        </span>
+                    </div>
+                </div>
 
-                <div class="max-h-72 overflow-y-auto space-y-1.5 pr-1">
+                <!-- Instant Search & Filter Controls -->
+                <div class="space-y-2">
+                    <div class="relative">
+                        <input type="text" id="trafficSearchInput" placeholder="Buscar por IP, país (VE, ES), alias (Invitado-VE), ruta o libro..." class="w-full px-3 py-1.5 pl-8 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200 dark:border-cyan-900/50 text-xs text-slate-800 dark:text-cyan-100 placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+                        <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <button type="button" id="clearSearchBtn" class="hidden absolute right-2.5 top-2 text-slate-400 hover:text-slate-200 text-xs">✕</button>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                        <button type="button" class="traffic-filter-btn px-2.5 py-1 rounded-lg font-semibold border transition bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border-cyan-500/40" data-filter="all">
+                            Todos ({{ count($trafficMetrics['recent_visits']) }})
+                        </button>
+                        <button type="button" class="traffic-filter-btn px-2.5 py-1 rounded-lg font-semibold border transition bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700" data-filter="guest">
+                            👤 Solo Invitados
+                        </button>
+                        <button type="button" class="traffic-filter-btn px-2.5 py-1 rounded-lg font-semibold border transition bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700" data-filter="book">
+                            📖 Libros / Lecturas
+                        </button>
+                        <button type="button" class="traffic-filter-btn px-2.5 py-1 rounded-lg font-semibold border transition bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700" data-filter="bot">
+                            🤖 Previews / Bots
+                        </button>
+                        <button type="button" class="traffic-filter-btn px-2.5 py-1 rounded-lg font-semibold border transition bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700" data-filter="error">
+                            ⚠️ Errores (4xx/5xx)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 200 Connections Scrollable Stream -->
+                <div id="trafficVisitsContainer" class="max-h-[500px] overflow-y-auto space-y-1.5 pr-1">
                     @forelse ($trafficMetrics['recent_visits'] as $visit)
-                        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30 flex items-center justify-between gap-2 text-xs">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <!-- Device Icon -->
-                                <span class="p-1.5 rounded-lg bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-sky-300 flex-shrink-0" title="{{ $visit->device_type }}">
-                                    @if ($visit->is_crawler)
-                                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                    @elseif ($visit->device_type === 'mobile')
-                                        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                                    @else
-                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                    @endif
-                                </span>
+                        @php
+                            $cat = 'all';
+                            if ($visit->is_crawler) {
+                                $cat .= ' bot';
+                            } elseif ($visit->user_id === null) {
+                                $cat .= ' guest';
+                            }
+                            if ($visit->book_id || str_contains($visit->path, '/books')) {
+                                $cat .= ' book';
+                            }
+                            if ($visit->status_code >= 400) {
+                                $cat .= ' error';
+                            }
+                            $searchHaystack = strtolower(implode(' ', array_filter([
+                                $visit->path,
+                                $visit->guest_fingerprint,
+                                $visit->country_name,
+                                $visit->country_code,
+                                $visit->action_details,
+                                $visit->user?->name,
+                                $visit->user?->email,
+                                $visit->book?->title,
+                                $visit->method,
+                                $visit->status_code,
+                                $visit->ip_hash,
+                                $visit->device_type,
+                            ])));
+                        @endphp
+                        <div class="traffic-visit-item p-2.5 rounded-xl bg-slate-50 dark:bg-[#071014] border border-slate-200/80 dark:border-cyan-900/30 space-y-1 text-xs"
+                             data-categories="{{ $cat }}"
+                             data-search="{{ $searchHaystack }}">
+                            <!-- Line 1: Flags, Alias/User, Method, Path, Status, Time -->
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <!-- Country Flag & Code -->
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-200/70 dark:bg-slate-800 text-[10px] font-mono font-bold text-slate-700 dark:text-cyan-200 flex-shrink-0" title="{{ $visit->country_name ?? 'Origen' }} ({{ $visit->country_code ?? 'LOC' }})">
+                                        <span>{{ $visit->country_flag ?? '🌐' }}</span>
+                                        <span>{{ $visit->country_code ?? 'LOC' }}</span>
+                                    </span>
 
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-mono text-[11px] font-bold text-slate-900 dark:text-cyan-200 truncate">
-                                            {{ $visit->path }}
+                                    <!-- Identity Badge -->
+                                    @if ($visit->is_crawler)
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate max-w-[130px]" title="{{ $visit->user_agent }}">
+                                            🤖 {{ Str::limit($visit->user_agent, 20) }}
                                         </span>
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-mono {{ $visit->status_code < 400 ? 'bg-emerald-500/10 text-emerald-600 dark:text-[#00ff87]' : 'bg-rose-500/10 text-rose-500' }}">
-                                            {{ $visit->status_code }}
+                                    @elseif ($visit->user)
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-[#00ff87] border border-emerald-500/20 truncate max-w-[140px]" title="{{ $visit->user->email }}">
+                                            👤 {{ $visit->user->name }}
                                         </span>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400 dark:text-slate-400 truncate">
-                                        @if ($visit->is_crawler)
-                                            <span class="text-amber-500 font-bold">Rastreador Social / Bot</span> &bull; preview
-                                        @elseif ($visit->user)
-                                            <span class="text-emerald-500 font-semibold">{{ $visit->user->name }}</span>
-                                        @else
-                                            <span class="text-cyan-400 font-semibold">Invitado Anónimo</span>
-                                        @endif
-                                        @if ($visit->referer)
-                                            &bull; desde {{ parse_url($visit->referer, PHP_URL_HOST) ?? $visit->referer }}
-                                        @endif
-                                    </p>
+                                    @else
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border border-cyan-500/20 truncate max-w-[190px]" title="{{ $visit->guest_fingerprint ?? 'Invitado' }}">
+                                            {{ $visit->guest_fingerprint ?? 'Invitado Anónimo' }}
+                                        </span>
+                                    @endif
+
+                                    <!-- Method Pill -->
+                                    <span class="px-1 py-0.2 rounded font-mono text-[9px] font-bold {{ $visit->method === 'POST' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}">
+                                        {{ $visit->method }}
+                                    </span>
+
+                                    <!-- Path -->
+                                    <span class="font-mono text-[11px] font-bold text-slate-900 dark:text-cyan-200 truncate max-w-[130px] sm:max-w-[210px]" title="{{ $visit->path }}">
+                                        {{ $visit->path }}
+                                    </span>
+                                </div>
+
+                                <!-- Status & Time -->
+                                <div class="flex items-center gap-1.5 flex-shrink-0">
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold {{ $visit->status_code < 400 ? 'bg-emerald-500/10 text-emerald-600 dark:text-[#00ff87]' : 'bg-rose-500/10 text-rose-500' }}">
+                                        {{ $visit->status_code }}
+                                    </span>
+                                    <span class="text-[10px] text-slate-400 font-mono whitespace-nowrap" title="{{ $visit->created_at->format('Y-m-d H:i:s') }}">
+                                        {{ $visit->created_at->diffForHumans() }}
+                                    </span>
                                 </div>
                             </div>
 
-                            <span class="text-[10px] text-slate-400 font-mono whitespace-nowrap flex-shrink-0">
-                                {{ $visit->created_at->diffForHumans() }}
-                            </span>
+                            <!-- Line 2: Action Description & Interactive Book Link & Referer -->
+                            @if ($visit->action_details || $visit->book || $visit->referer)
+                                <div class="flex flex-wrap items-center gap-1.5 text-[10.5px] pt-0.5 text-slate-500 dark:text-slate-400 pl-1 border-t border-slate-100 dark:border-cyan-950/40">
+                                    @if ($visit->action_details)
+                                        <span class="text-slate-700 dark:text-cyan-300 font-medium flex items-center gap-1">
+                                            <svg class="w-3 h-3 text-cyan-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                            {{ $visit->action_details }}
+                                        </span>
+                                    @endif
+
+                                    @if ($visit->book)
+                                        <a href="{{ route('books.show', $visit->book->id) }}" target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-bold border border-cyan-500/30 hover:bg-cyan-500/25 transition">
+                                            <span>📖 Libro #{{ $visit->book->id }}: {{ Str::limit($visit->book->title, 26) }}</span>
+                                            <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                        </a>
+                                    @endif
+
+                                    @if ($visit->referer)
+                                        <span class="text-[10px] text-slate-400 truncate max-w-[180px]" title="{{ $visit->referer }}">
+                                            &bull; desde {{ parse_url($visit->referer, PHP_URL_HOST) ?? $visit->referer }}
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     @empty
                         <div class="p-6 rounded-xl bg-slate-50 dark:bg-[#071014] text-xs text-slate-400 italic text-center">
@@ -344,6 +474,79 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Client-side Fast Filtering Script for 200 Connections -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('trafficSearchInput');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        const filterBtns = document.querySelectorAll('.traffic-filter-btn');
+        const items = document.querySelectorAll('.traffic-visit-item');
+        const visibleCounter = document.getElementById('visibleCount');
+
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        function applyFilters() {
+            let count = 0;
+            const q = currentSearch.trim().toLowerCase();
+
+            items.forEach(el => {
+                const categories = el.getAttribute('data-categories') || '';
+                const searchData = el.getAttribute('data-search') || '';
+
+                const matchesCategory = (currentFilter === 'all') || categories.includes(currentFilter);
+                const matchesSearch = !q || searchData.includes(q);
+
+                if (matchesCategory && matchesSearch) {
+                    el.style.display = '';
+                    count++;
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            if (visibleCounter) {
+                visibleCounter.textContent = count;
+            }
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                currentSearch = this.value;
+                if (clearBtn) {
+                    clearBtn.classList.toggle('hidden', !this.value);
+                }
+                applyFilters();
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                currentSearch = '';
+                clearBtn.classList.add('hidden');
+                searchInput.focus();
+                applyFilters();
+            });
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(b => {
+                    b.classList.remove('bg-cyan-500/20', 'text-cyan-600', 'dark:text-cyan-300', 'border-cyan-500/40');
+                    b.classList.add('bg-slate-100', 'dark:bg-slate-800/60', 'text-slate-600', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700/60');
+                });
+                this.classList.add('bg-cyan-500/20', 'text-cyan-600', 'dark:text-cyan-300', 'border-cyan-500/40');
+                this.classList.remove('bg-slate-100', 'dark:bg-slate-800/60', 'text-slate-600', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700/60');
+
+                currentFilter = this.getAttribute('data-filter') || 'all';
+                applyFilters();
+            });
+        });
+    });
+    </script>
     </div>
 
     <!-- Live Server Logs Viewer (Web Monospace Terminal) -->

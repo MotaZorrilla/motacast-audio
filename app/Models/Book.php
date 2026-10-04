@@ -8,6 +8,8 @@ class Book extends Model
 {
     protected $fillable = [
         'user_id',
+        'guest_fingerprint',
+        'country_code',
         'title',
         'author',
         'description',
@@ -36,6 +38,11 @@ class Book extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function trafficLogs()
+    {
+        return $this->hasMany(TrafficLog::class);
     }
 
     public function chapters()
