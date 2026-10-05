@@ -135,7 +135,12 @@ class BookController extends Controller
     public function ocrPreview(OcrPreviewRequest $request, PdfExtractorService $extractor): JsonResponse
     {
         $file = $request->file('image');
-        $tempPath = $file->getRealPath();
+        $ext = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'png');
+        if (! in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'bmp'])) {
+            $ext = 'png';
+        }
+        $tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ocr_preview_' . uniqid() . '.' . $ext;
+        copy($file->getRealPath(), $tempPath);
 
         try {
             $extraction = $extractor->extract($tempPath);
@@ -156,10 +161,21 @@ class BookController extends Controller
                 'words' => $extraction['total_words'] ?? str_word_count($fullText),
             ]);
         } catch (\Throwable $e) {
+            $msg = $e->getMessage();
+            $userMsg = 'No se pudo extraer texto de la imagen proporcionada.';
+            if (str_contains($msg, 'no contiene texto legible')) {
+                $userMsg = 'La imagen no contiene texto legible o la resolución es muy baja.';
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error procesando OCR: ' . $e->getMessage(),
+                'message' => $userMsg,
+                'detail' => $msg,
             ], 422);
+        } finally {
+            if (file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
         }
     }
 

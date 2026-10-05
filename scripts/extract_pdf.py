@@ -380,8 +380,11 @@ class ImageOcrExtractor(BaseExtractor):
     """Performs Optical Character Recognition (OCR) on image files (.png, .jpg, .webp, etc.)."""
 
     def extract(self, file_path: str) -> ExtractionResult:
-        import pytesseract
-        from PIL import Image
+        try:
+            import pytesseract
+            from PIL import Image
+        except ImportError:
+            raise Exception("El motor OCR (pytesseract/Pillow) no está disponible en el entorno de ejecución.")
 
         try:
             img = Image.open(file_path)
@@ -389,7 +392,11 @@ class ImageOcrExtractor(BaseExtractor):
                 img = img.convert('RGB')
 
             custom_config = r'--oem 3 --psm 3'
-            raw_text = pytesseract.image_to_string(img, lang='spa+eng', config=custom_config)
+            try:
+                raw_text = pytesseract.image_to_string(img, lang='spa+eng', config=custom_config)
+            except pytesseract.TesseractNotFoundError:
+                raise Exception("El binario de Tesseract OCR no está instalado en el servidor.")
+
             cleaned = TextNormalizer.clean(raw_text)
 
             if not cleaned or len(cleaned.split()) < 3:
@@ -401,6 +408,8 @@ class ImageOcrExtractor(BaseExtractor):
             pages_text = [cleaned] if cleaned else []
             return ExtractionResult(title="", author="OCR de Imagen", pages_text=pages_text, ocr_used=True)
         except Exception as e:
+            if "Tesseract" in str(e) or "motor OCR" in str(e):
+                raise
             raise Exception(f"Error procesando OCR de la imagen: {e}")
 
 
@@ -662,6 +671,37 @@ class UniversalExtractionEngine:
         '.flac': AudioTranscriptionExtractor,
     }
 
+    @staticmethod
+    def _detect_strategy_by_magic(file_path: str) -> Optional[Type[BaseExtractor]]:
+        try:
+            with open(file_path, 'rb') as f:
+                header = f.read(32)
+            if header.startswith(b'%PDF'):
+                return PdfExtractor
+            if (
+                header.startswith(b'\x89PNG\r\n\x1a\n') or
+                header.startswith(b'\xff\xd8\xff') or
+                header.startswith(b'BM') or
+                (header.startswith(b'RIFF') and b'WEBP' in header) or
+                header.startswith(b'GIF87a') or
+                header.startswith(b'GIF89a')
+            ):
+                return ImageOcrExtractor
+            if header.startswith(b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'):
+                return DocExtractor
+            if header.startswith(b'PK\x03\x04'):
+                return DocxExtractor
+            try:
+                from PIL import Image
+                with Image.open(file_path) as img:
+                    img.verify()
+                return ImageOcrExtractor
+            except Exception:
+                pass
+        except Exception:
+            pass
+        return None
+
     def process(self, file_path: str) -> Dict:
         if not os.path.exists(file_path):
             return {"success": False, "error": f"Archivo no encontrado: {file_path}"}
@@ -669,8 +709,13 @@ class UniversalExtractionEngine:
         ext = os.path.splitext(file_path)[1].lower()
         extractor_class = self.STRATEGY_MAP.get(ext)
 
+        if not extractor_class or ext in ('', '.tmp'):
+            detected = self._detect_strategy_by_magic(file_path)
+            if detected:
+                extractor_class = detected
+
         if not extractor_class:
-            return {"success": False, "error": f"Formato de archivo no soportado: {ext}"}
+            return {"success": False, "error": f"Formato de archivo no soportado: {ext or 'sin extensión'}"}
 
         try:
             strategy = extractor_class()

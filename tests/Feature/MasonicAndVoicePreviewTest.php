@@ -210,4 +210,38 @@ TXT;
         $response->assertSee('Mostrando');
         $response->assertSee('documentos');
     }
+
+    public function test_ocr_preview_endpoint_returns_structured_json_response(): void
+    {
+        $user = User::factory()->create();
+        $image = UploadedFile::fake()->image('prueba_escaneo.png', 400, 200);
+
+        $response = $this->actingAs($user)->postJson(route('books.ocr.preview'), [
+            'image' => $image,
+        ]);
+
+        // It should return 200 (if text detected) or 422 with structured JSON error ('success', 'message')
+        // Crucially, it must NEVER fail with an unhandled 500 error or blank error string
+        $this->assertContains($response->status(), [200, 422]);
+        $data = $response->json();
+        $this->assertArrayHasKey('success', $data);
+        if ($response->status() === 422) {
+            $this->assertFalse($data['success']);
+            $this->assertArrayHasKey('message', $data);
+            $this->assertNotEmpty($data['message']);
+            $this->assertStringNotContainsString('Error al ejecutar extractor de PDF:  ', $data['message']);
+        }
+    }
+
+    public function test_create_view_contains_custom_notice_modal_and_no_native_alerts(): void
+    {
+        $user = User::factory()->create();
+        $response = $this->actingAs($user)->get(route('books.create'));
+
+        $response->assertStatus(200);
+        $response->assertSee('id="motaNoticeModal"', false);
+        $response->assertSee('id="motaNoticeBox"', false);
+        $response->assertSee('showNoticeModal', false);
+        $response->assertSee('btn-neon-tactile', false);
+    }
 }

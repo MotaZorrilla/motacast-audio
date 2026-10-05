@@ -38,7 +38,17 @@ class PdfExtractorService
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new Exception('Error al ejecutar extractor de PDF: '.$process->getErrorOutput());
+            $err = trim($process->getErrorOutput());
+            if (empty($err)) {
+                $rawOut = trim($process->getOutput());
+                $decoded = json_decode($rawOut, true);
+                if (is_array($decoded) && ! empty($decoded['error'])) {
+                    $err = $decoded['error'];
+                } elseif (! empty($rawOut)) {
+                    $err = $rawOut;
+                }
+            }
+            throw new Exception('Error al ejecutar extractor de PDF: '.$err);
         }
 
         $output = trim($process->getOutput());

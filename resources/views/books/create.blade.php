@@ -511,6 +511,44 @@
         </div>
     </div>
 
+    <!-- Universal Stylish Notification & Error Modal (Replaces browser alert()) -->
+    <div id="motaNoticeModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity">
+        <div id="motaNoticeBox" class="card-tactile rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 border border-rose-500/40 shadow-2xl relative transform transition-all duration-200 scale-95 opacity-0">
+            <!-- Modal Header -->
+            <div class="flex items-start gap-3.5">
+                <div id="motaNoticeIconBox" class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center flex-shrink-0 text-rose-500 shadow-sm">
+                    <span id="motaNoticeIcon" class="text-xl">⚠️</span>
+                </div>
+                <div class="space-y-1 min-w-0 flex-1">
+                    <h3 id="motaNoticeTitle" class="text-base font-black text-slate-900 dark:text-cyan-200">Aviso</h3>
+                    <p id="motaNoticeMessage" class="text-xs text-slate-600 dark:text-sky-300 leading-relaxed"></p>
+                </div>
+                <button type="button" onclick="closeMotaNoticeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition" title="Cerrar ventana">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Optional Technical Details -->
+            <div id="motaNoticeDetailContainer" class="hidden p-3 rounded-xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-950/60 font-mono text-[11px] text-slate-700 dark:text-cyan-300/90 max-h-36 overflow-y-auto leading-relaxed break-words whitespace-pre-wrap">
+                <span id="motaNoticeDetail"></span>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex items-center justify-end gap-2 pt-1">
+                <button 
+                    type="button" 
+                    id="motaNoticeActionBtn"
+                    onclick="closeMotaNoticeModal()"
+                    class="w-full sm:w-auto px-5 py-2.5 btn-neon-tactile rounded-xl text-xs font-black transition flex items-center justify-center gap-2 shadow-sm"
+                >
+                    <span>Entendido</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -567,6 +605,94 @@
         }
         pendingExcessText = '';
     }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Custom Tactile Cyberpunk Notice Modal (Replaces browser alert())
+    // ──────────────────────────────────────────────────────────────────────────
+    function showNoticeModal({ title = 'Aviso', message = '', type = 'error', detail = null, onConfirm = null }) {
+        const modal = document.getElementById('motaNoticeModal');
+        const box = document.getElementById('motaNoticeBox');
+        const iconBox = document.getElementById('motaNoticeIconBox');
+        const icon = document.getElementById('motaNoticeIcon');
+        const titleEl = document.getElementById('motaNoticeTitle');
+        const msgEl = document.getElementById('motaNoticeMessage');
+        const detailContainer = document.getElementById('motaNoticeDetailContainer');
+        const detailEl = document.getElementById('motaNoticeDetail');
+        const actionBtn = document.getElementById('motaNoticeActionBtn');
+
+        if (!modal || !box) return;
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+
+        if (detail && String(detail).trim()) {
+            detailEl.textContent = String(detail).trim();
+            detailContainer.classList.remove('hidden');
+        } else {
+            detailContainer.classList.add('hidden');
+        }
+
+        // Reset base classes
+        box.className = "card-tactile rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 border shadow-2xl relative transform transition-all duration-200";
+        iconBox.className = "w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm border";
+
+        if (type === 'error') {
+            box.classList.add('border-rose-500/50', 'shadow-[0_0_25px_rgba(244,63,94,0.15)]');
+            iconBox.classList.add('bg-rose-500/10', 'border-rose-500/30', 'text-rose-500');
+            icon.textContent = '❌';
+        } else if (type === 'warning') {
+            box.classList.add('border-amber-500/50', 'shadow-[0_0_25px_rgba(245,158,11,0.15)]');
+            iconBox.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-500');
+            icon.textContent = '⚠️';
+        } else if (type === 'success') {
+            box.classList.add('border-[#00ff87]/50', 'shadow-[0_0_25px_rgba(0,255,135,0.15)]');
+            iconBox.classList.add('bg-[#00ff87]/10', 'border-[#00ff87]/30', 'text-[#00ff87]');
+            icon.textContent = '✅';
+        } else { // info
+            box.classList.add('border-cyan-500/50', 'shadow-[0_0_25px_rgba(6,182,212,0.15)]');
+            iconBox.classList.add('bg-cyan-500/10', 'border-cyan-500/30', 'text-cyan-400');
+            icon.textContent = 'ℹ️';
+        }
+
+        actionBtn.onclick = function() {
+            closeMotaNoticeModal();
+            if (typeof onConfirm === 'function') onConfirm();
+        };
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            box.classList.remove('scale-95', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeMotaNoticeModal() {
+        const modal = document.getElementById('motaNoticeModal');
+        const box = document.getElementById('motaNoticeBox');
+        if (!modal || !box) return;
+
+        box.classList.remove('scale-100', 'opacity-100');
+        box.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 150);
+    }
+
+    // Keyboard support: Escape closes modals
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const noticeModal = document.getElementById('motaNoticeModal');
+            if (noticeModal && !noticeModal.classList.contains('hidden')) {
+                closeMotaNoticeModal();
+            }
+            const limitModal = document.getElementById('textLimitModal');
+            if (limitModal && !limitModal.classList.contains('hidden')) {
+                closeTextLimitModal();
+            }
+        }
+    });
 
     function switchToUploadFromModal() {
         closeTextLimitModal();
@@ -652,7 +778,11 @@
     async function pasteFromClipboard() {
         try {
             if (!navigator.clipboard) {
-                alert('Por favor presiona Ctrl+V para pegar directamente.');
+                showNoticeModal({
+                    title: 'Acceso a Portapapeles',
+                    message: 'Tu navegador no permite lectura directa del portapapeles. Por favor presiona Ctrl+V en el área de texto.',
+                    type: 'info'
+                });
                 return;
             }
             const text = await navigator.clipboard.readText();
@@ -667,11 +797,19 @@
                 rawTextInput.value = (rawTextInput.value ? rawTextInput.value + "\n\n" : '') + text;
                 updateTextCounters();
             } else {
-                alert('El portapapeles de texto está vacío. Si copiaste una imagen, presiona Ctrl+V en esta pantalla para hacerle OCR.');
+                showNoticeModal({
+                    title: 'Portapapeles de Texto Vacío',
+                    message: 'No se detectó texto en el portapapeles. Si copiaste una imagen o captura de pantalla, puedes usar el botón «📸 OCR Imagen» o pulsar Ctrl+V.',
+                    type: 'warning'
+                });
             }
         } catch (err) {
             console.warn('Clipboard read error:', err);
-            alert('Por favor pega manualmente el texto usando Ctrl+V.');
+            showNoticeModal({
+                title: 'Permiso del Portapapeles',
+                message: 'No se pudo leer el portapapeles directamente. Por favor presiona Ctrl+V manualmente en el área de texto.',
+                type: 'info'
+            });
         }
     }
 
@@ -731,7 +869,12 @@
                     titleInput.value = data.title;
                 }
             } else {
-                alert(data.message || 'No se pudo extraer texto reconocible de la imagen.');
+                showNoticeModal({
+                    title: 'Incidencia en Extracción OCR',
+                    message: data.message || 'No se pudo extraer texto reconocible de la imagen.',
+                    detail: data.detail || null,
+                    type: 'warning'
+                });
             }
         })
         .catch(err => {
@@ -740,7 +883,12 @@
                 box.classList.add('hidden');
                 box.classList.remove('flex');
             }
-            alert('Error conectando con el servicio de OCR.');
+            showNoticeModal({
+                title: 'Error de Comunicación',
+                message: 'Ocurrió un error al enviar la imagen al servicio de OCR. Por favor verifica tu conexión o intenta con otra imagen.',
+                detail: err ? err.message : null,
+                type: 'error'
+            });
         });
     }
 
@@ -789,7 +937,11 @@
                 fileInput.files = files;
                 updateFileInfo(files[0]);
             } else {
-                alert('Formato no soportado. Puedes seleccionar PDF, DOCX, TXT, Markdown, Imágenes (PNG, JPG) o Audio (MP3, WAV).');
+                showNoticeModal({
+                    title: 'Formato no compatible',
+                    message: 'El archivo arrastrado no es compatible. Puedes subir documentos Word (.docx, .doc), PDF, TXT, Markdown, Imágenes (PNG, JPG, WEBP) o Audio (MP3, WAV).',
+                    type: 'warning'
+                });
             }
         }
     });
@@ -813,14 +965,22 @@
         if (currentInputMode === 'file') {
             if (!fileInput.files || fileInput.files.length === 0) {
                 e.preventDefault();
-                alert('Por favor selecciona un documento antes de comenzar.');
+                showNoticeModal({
+                    title: 'Documento Requerido',
+                    message: 'Por favor selecciona o arrastra un archivo antes de comenzar la síntesis.',
+                    type: 'warning'
+                });
                 return false;
             }
         } else {
             const textVal = rawTextInput ? rawTextInput.value.trim() : '';
             if (textVal.length < 10) {
                 e.preventDefault();
-                alert('Por favor ingresa o pega un texto con al menos 10 caracteres.');
+                showNoticeModal({
+                    title: 'Texto Insuficiente',
+                    message: 'Por favor ingresa o pega un texto con al menos 10 caracteres para sintetizar el audiolibro.',
+                    type: 'warning'
+                });
                 if (rawTextInput) rawTextInput.focus();
                 return false;
             }
