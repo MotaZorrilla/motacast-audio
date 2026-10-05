@@ -9,28 +9,29 @@ class TtsTextNormalizerService
      */
     public function isMasonicText(string $text): bool
     {
-        // 1. Unicode delta (∴), middle-dot tripods (.·.), or two-dot tripods (.. .)
-        if (preg_match('/[∴]/u', $text) || preg_match('/\.\s*·\s*\./u', $text) || preg_match('/\.\.\s*\./u', $text)) {
+        // 1. Unicode delta (∴), middle-dot tripods (.·.), two-dot tripods (.. .) or :.
+        if (preg_match('/[∴]/u', $text) || preg_match('/\.\s*·\s*\./u', $text) || preg_match('/\.\.\s*\./u', $text) || preg_match('/[:.]{2,3}/u', $text)) {
             return true;
         }
 
-        // 2. Typical Masonic acronyms and ritual formulas
-        if (preg_match('/\b(GADU|S\.?F\.?U\.?|T\.?A\.?F\.?|A\.?L\.?|E\.?V\.?|L\.?I\.?F\.?|R\.?E\.?A\.?A\.?|I\.?P\.?H\.?|M\.?R\.?G\.?M\.?)\b/i', $text)) {
+        // 2. Typical Masonic acronyms and ritual formulas (requiring explicit dots or all-caps GADU)
+        if (preg_match('/\b(GADU|G\.A\.D\.U\.|S\.F\.U\.|T\.A\.F\.|L\.I\.F\.|R\.E\.A\.A\.|I\.P\.H\.|M\.R\.G\.M\.)\b/u', $text) ||
+            preg_match('/\bA\s*∴\s*L\s*∴?\s*\d{4}\b/u', $text)) {
             return true;
         }
 
-        // 3. Parenthesis-based Masonic abbreviations (Word symbol/Wingdings legacy glyph mapping)
-        if (preg_match('/\b(A|L|G|D|U|I|Ven|Q|QQ|H|HH|VVig|Vig|VVisit|Visit|S|F|E|V|M|MM|Or|Resp|Log|Secr|Orad|Tes|Hosp|Exp|Prof)\s*\(/iu', $text)) {
+        // 3. Parenthesis-based Masonic abbreviations: require paired ritual formulas, not isolated single letters
+        if (preg_match('/(?:A\s*\(\s*L\s*\(|Ven\s*\(\s*M\s*\(|Q\s*\(\s*H\s*\(|QQ\s*\(\s*HH\s*\(|Resp\s*\(\s*Log\s*\(|VVig\s*\(|M\s*\(\s*M\s*\(|S\s*\(\s*F\s*\(\s*U\s*\()/iu', $text)) {
             return true;
         }
 
-        // 4. Dot-colon or colon-dot abbreviations (Q:. H:., V:. M:.)
+        // 4. Dot-colon or colon-dot paired abbreviations (Q:. H:., V:. M:.)
         if (preg_match('/[A-ZÁÉÍÓÚÑ]{1,4}\s*[:.·]{2,4}\s*[A-ZÁÉÍÓÚÑ]{1,4}\s*[:.·]{2,4}/iu', $text)) {
             return true;
         }
 
-        // 5. Explicit symbolic and ritual keywords
-        if (preg_match('/\b(francmas[oó]n|mas[oó]n|masones|masoner[ií]a|logia|taller|plancha|venerable\s+maestro|escuadra\s+y\s+comp[aá]s|gran\s+arquitecto|templo\s+mas[oó]nico|c[aá]mara\s+del\s+medio|tres\s+puntos|abreviatura\s+tripuntuada|palabra\s+sagrada|palabra\s+de\s+pase|tenida|oriente\s+de|salud,\s*fuerza\s*y\s*uni[oó]n|triple\s+abrazo)\b/iu', $text)) {
+        // 5. Explicit symbolic and ritual full multi-word formulas
+        if (preg_match('/\b(venerable\s+maestro|querido\s+hermano|queridos\s+hermanos|gran\s+arquitecto\s+del\s+universo|respetable\s+logia\s+simb[oó]lica|francmasoner[ií]a|salud,\s*fuerza\s*y\s*uni[oó]n|triple\s+abrazo\s+fraternal|abreviatura\s+tripuntuada|c[aá]mara\s+del\s+medio|templo\s+mas[oó]nico)\b/iu', $text)) {
             return true;
         }
 
@@ -71,6 +72,9 @@ class TtsTextNormalizerService
         // Remove [pic], [image], [imagen] artifacts
         $text = preg_replace('/\[(?:pic|image|imagen)\]/i', '', $text);
 
+        // Clean Markdown syntax so headers, bold, bullets and links speak naturally without reading symbols
+        $text = $this->cleanMarkdownForSpeech($text);
+
         // Check if Masonic mode should be engaged
         $isMasonic = $forceMasonic ?? $this->isMasonicText($text);
 
@@ -87,6 +91,59 @@ class TtsTextNormalizerService
         $text = $this->bridgeSentenceContinuity($text);
 
         return trim($text);
+    }
+
+    /**
+     * Sanitizes Markdown syntax for fluent, natural TTS speech synthesis:
+     * - Strips '#' headers and ensures punctuation pause
+     * - Converts links [text](url) to just 'text'
+     * - Removes code fences, backticks, bold/italic asterisks, and blockquote '>' symbols
+     * - Cleans unordered list bullets (*, -, +)
+     */
+    public function cleanMarkdownForSpeech(string $text): string
+    {
+        // 1. Markdown Headers: '# Header', '## Subheader', etc.
+        // Strip '#' symbols and ensure sentence pause (. or :) at the end so it doesn't rush into next line
+        $text = preg_replace_callback('/^[ \t]*#{1,6}[ \t]+([^\n\r]+)$/m', function ($matches) {
+            $heading = trim($matches[1]);
+            if (! preg_match('/[.:!?]$/u', $heading)) {
+                $heading .= '.';
+            }
+            return $heading;
+        }, $text);
+
+        // 2. Markdown Links: '[Visible Title](https://example.com)' -> 'Visible Title'
+        $text = preg_replace('/\[([^\]]+)\]\([^)]+\)/u', '$1', $text);
+
+        // 3. Code Blocks: ```lang ... ``` and inline code: `code`
+        $text = preg_replace('/```[a-zA-Z0-9_-]*\n?([\s\S]*?)```/u', '$1', $text);
+        $text = preg_replace('/`([^`]+)`/u', '$1', $text);
+
+        // 4. Blockquotes: '> Quotation text' -> 'Quotation text'
+        $text = preg_replace('/^[ \t]*>[ \t]*/m', '', $text);
+
+        // 5. Strikethrough: ~~text~~ -> text
+        $text = preg_replace('/~~([^~]+)~~/u', '$1', $text);
+
+        // 6. Bold and Italic: **bold**, *italic*, __bold__, _italic_
+        $text = preg_replace('/(?:\*\*|__)(.*?)(?:\*\*|__)/u', '$1', $text);
+        $text = preg_replace('/(?:\*|_)(.*?)(?:\*|_)/u', '$1', $text);
+
+        // 7. Unordered Lists: '- Item', '* Item', '+ Item'
+        $text = preg_replace('/^[ \t]*[-*+][ \t]+/m', '', $text);
+
+        // 8. Markdown Horizontal Dividers: '---', '***', '___'
+        $text = preg_replace('/^[ \t]*[-*_]{3,}[ \t]*$/m', '', $text);
+
+        // 9. Markdown Tables: strip divider rows |---|---| and remove pipes |
+        $text = preg_replace('/^[ \t]*\|[ \t]*:?[-]+:?[ \t]*(?:\|[ \t]*:?[-]+:?[ \t]*)+\|[ \t]*$/m', '', $text);
+        $text = preg_replace_callback('/^[ \t]*\|(.+)\|[ \t]*$/m', function ($matches) {
+            $cells = explode('|', $matches[1]);
+            $cleaned = array_filter(array_map('trim', $cells));
+            return implode(', ', $cleaned).'.';
+        }, $text);
+
+        return $text;
     }
 
     /**

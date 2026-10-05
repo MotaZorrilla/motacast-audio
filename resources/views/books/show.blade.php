@@ -519,6 +519,7 @@
     const isDocPdf = (bookFormat === 'pdf');
     let readerViewMode = isDocPdf ? 'canvas' : 'text'; // 'canvas' | 'text'
     let readerFontSize = parseInt(localStorage.getItem('motacast_reader_font_size') || '15', 10);
+    let readerFormatMode = localStorage.getItem('motacast_reader_format_mode') || 'markdown'; // 'markdown' | 'raw'
     let activeReaderChapter = 1;
     let pdfDoc = null;
     let pageNum = 1;
@@ -537,6 +538,7 @@
         const btnText = document.getElementById('btnModeText');
         const grpPdfZoom = document.getElementById('grpPdfZoomControls');
         const grpTextFont = document.getElementById('grpTextFontControls');
+        const grpTextFormat = document.getElementById('grpTextFormatControls');
         const drawerTitle = document.getElementById('drawerTitleText');
         const quickJumpBox = document.getElementById('drawerQuickJumpBox');
         const drawerToggleText = document.getElementById('lblDrawerToggleText');
@@ -549,6 +551,7 @@
 
             if (grpPdfZoom) grpPdfZoom.classList.remove('hidden');
             if (grpTextFont) grpTextFont.classList.add('hidden');
+            if (grpTextFormat) grpTextFormat.classList.add('hidden');
             if (quickJumpBox) quickJumpBox.classList.remove('hidden');
 
             if (btnCanvas) {
@@ -573,6 +576,7 @@
 
             if (grpPdfZoom) grpPdfZoom.classList.add('hidden');
             if (grpTextFont) grpTextFont.classList.remove('hidden');
+            if (grpTextFormat) grpTextFormat.classList.remove('hidden');
             if (quickJumpBox) quickJumpBox.classList.add('hidden');
 
             if (btnCanvas) {
@@ -586,6 +590,7 @@
 
             populateChapterDrawer();
             applyReaderFontSize();
+            applyReaderFormatMode();
         }
     }
 
@@ -598,9 +603,42 @@
     function applyReaderFontSize() {
         const lbl = document.getElementById('lblReaderFontSize');
         if (lbl) lbl.textContent = `${readerFontSize}px`;
-        document.querySelectorAll('.reader-chapter-body').forEach(el => {
+        document.querySelectorAll('.reader-chapter-body, .reader-markdown-view, .reader-raw-view').forEach(el => {
             el.style.fontSize = `${readerFontSize}px`;
         });
+    }
+
+    function setReaderFormatMode(mode) {
+        readerFormatMode = mode;
+        localStorage.setItem('motacast_reader_format_mode', mode);
+        applyReaderFormatMode();
+    }
+
+    function applyReaderFormatMode() {
+        const btnMd = document.getElementById('btnFormatMarkdown');
+        const btnRaw = document.getElementById('btnFormatRaw');
+        const mdViews = document.querySelectorAll('.reader-markdown-view');
+        const rawViews = document.querySelectorAll('.reader-raw-view');
+
+        if (readerFormatMode === 'raw') {
+            mdViews.forEach(el => el.classList.add('hidden'));
+            rawViews.forEach(el => el.classList.remove('hidden'));
+            if (btnRaw) {
+                btnRaw.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-[#071014] text-emerald-600 dark:text-[#00ff87] shadow-sm flex items-center gap-1";
+            }
+            if (btnMd) {
+                btnMd.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-cyan-200 flex items-center gap-1";
+            }
+        } else {
+            mdViews.forEach(el => el.classList.remove('hidden'));
+            rawViews.forEach(el => el.classList.add('hidden'));
+            if (btnMd) {
+                btnMd.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-[#071014] text-emerald-600 dark:text-[#00ff87] shadow-sm flex items-center gap-1";
+            }
+            if (btnRaw) {
+                btnRaw.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-cyan-200 flex items-center gap-1";
+            }
+        }
     }
 
     function populateChapterDrawer() {
@@ -915,6 +953,10 @@
         if (bookStatus !== 'ready' && bookStatus !== 'failed') {
             startStatusPolling();
         }
+
+        // Apply reader preferences
+        applyReaderFontSize();
+        applyReaderFormatMode();
 
         // Auto open book reader if #read hash is present
         if (window.location.hash === '#read') {

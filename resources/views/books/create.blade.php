@@ -1089,10 +1089,11 @@
             /[∴]/.test(combined) ||
             /\.\s*·\s*\./.test(combined) ||
             /\.\.\s*\./.test(combined) ||
-            /\b(gadu|s\.?f\.?u\.?|t\.?a\.?f\.?|l\.?i\.?f\.?|e\.?v\.?|a\.?l\.?|r\.?e\.?a\.?a\.?|i\.?p\.?h\.?|m\.?r\.?g\.?m\.?)\b/i.test(combined) ||
-            /\b(a|l|g|d|u|i|ven|q|qq|h|hh|vvig|vig|vvisit|visit|s|f|e|v|m|mm|or|resp|log|secr|orad|tes|hosp|exp)\s*\(/i.test(combined) ||
+            /:\./.test(combined) ||
+            /\b(gadu|g\.a\.d\.u\.|s\.f\.u\.|t\.a\.f\.|l\.i\.f\.|r\.e\.a\.a\.|i\.p\.h\.|m\.r\.g\.m\.)\b/i.test(combined) ||
+            /(?:a\s*\(\s*l\s*\(|ven\s*\(\s*m\s*\(|q\s*\(\s*h\s*\(|qq\s*\(\s*hh\s*\(|resp\s*\(\s*log\s*\(|vvig\s*\(|m\s*\(\s*m\s*\(|s\s*\(\s*f\s*\(\s*u\s*\()/i.test(combined) ||
             /[a-záéíóúñ]{1,4}\s*[:.·]{2,4}\s*[a-záéíóúñ]{1,4}\s*[:.·]{2,4}/i.test(combined) ||
-            /\b(venerable\s+maestro|querido\s+hermano|gran\s+arquitecto|respetable\s+logia|plancha|taller|tenida|oriente\s+de|salud,\s*fuerza|primer\s+vigilante|segundo\s+vigilante|francmas|mas[oó]n|la\s+plomada)/i.test(combined);
+            /\b(venerable\s+maestro|querido\s+hermano|queridos\s+hermanos|gran\s+arquitecto\s+del\s+universo|respetable\s+logia\s+simb[oó]lica|francmasoner[ií]a|salud,\s*fuerza\s*y\s*uni[oó]n|triple\s+abrazo\s+fraternal|abreviatura\s+tripuntuada|la\s+plomada\s*-\s*instrumento)/i.test(combined);
 
         const masonicBox = document.getElementById('masonicNoticeBox');
         if (masonicBox) {

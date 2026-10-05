@@ -78,6 +78,16 @@
                     </button>
                 </div>
 
+                <!-- Markdown vs Raw Text Format Toggle -->
+                <div id="grpTextFormatControls" class="{{ $isPdf ? 'hidden' : 'flex' }} items-center p-0.5 rounded-xl bg-slate-100 dark:bg-[#0c181d] border border-slate-200 dark:border-cyan-900/40">
+                    <button type="button" id="btnFormatMarkdown" onclick="setReaderFormatMode('markdown')" class="px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-[#071014] text-emerald-600 dark:text-[#00ff87] shadow-sm flex items-center gap-1" title="Visualización formateada con Markdown">
+                        <span>🎨 Markdown</span>
+                    </button>
+                    <button type="button" id="btnFormatRaw" onclick="setReaderFormatMode('raw')" class="px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-cyan-200 flex items-center gap-1" title="Visualización de texto plano original">
+                        <span>📝 Original</span>
+                    </button>
+                </div>
+
                 <!-- Open in external tab / download -->
                 <a href="{{ route('books.pdf', $book->id) }}" target="_blank" class="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 dark:bg-[#0d1c22] hover:bg-slate-200 dark:hover:bg-[#142831] text-slate-700 dark:text-cyan-300 text-xs font-semibold rounded-xl border border-slate-200 dark:border-cyan-900/50 transition" title="Abrir / descargar documento original">
                     <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -204,16 +214,17 @@
                                 </div>
                             </div>
 
-                            <!-- Chapter Body with Dynamic Styling -->
-                            <div class="reader-chapter-body prose prose-slate dark:prose-invert max-w-none text-xs sm:text-sm text-slate-700 dark:text-sky-200 leading-relaxed font-sans select-text space-y-3" style="font-size: var(--reader-font-size, 15px);">
-                                @php
-                                    $paras = preg_split('/\n\s*\n/', trim($ch->content_text ?? ''));
-                                @endphp
-                                @foreach ($paras as $p)
-                                    @if (trim($p))
-                                        <p class="leading-relaxed">{{ trim($p) }}</p>
-                                    @endif
-                                @endforeach
+                            <!-- Chapter Body: Markdown Formatted View & Raw Original View -->
+                            <div class="reader-chapter-body" style="font-size: var(--reader-font-size, 15px);">
+                                <!-- Formatted Markdown View -->
+                                <div class="reader-markdown-view prose prose-slate dark:prose-invert max-w-none text-xs sm:text-sm text-slate-700 dark:text-sky-200 leading-relaxed font-sans select-text">
+                                    {!! \Illuminate\Support\Str::markdown($ch->content_text ?? '', ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}
+                                </div>
+
+                                <!-- Raw Original Plain Text View -->
+                                <div class="reader-raw-view hidden prose prose-slate dark:prose-invert max-w-none text-xs sm:text-sm text-slate-700 dark:text-sky-200 leading-relaxed font-mono whitespace-pre-wrap select-text">
+                                    {{ $ch->content_text ?? '' }}
+                                </div>
                             </div>
                         </article>
                         @empty

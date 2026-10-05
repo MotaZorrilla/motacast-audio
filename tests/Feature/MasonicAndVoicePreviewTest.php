@@ -244,4 +244,112 @@ TXT;
         $response->assertSee('showNoticeModal', false);
         $response->assertSee('btn-neon-tactile', false);
     }
+
+    public function test_ordinary_spanish_text_does_not_trigger_masonic_detection(): void
+    {
+        $normalizer = app(TtsTextNormalizerService::class);
+
+        $commonTexts = [
+            "Vamos al cine este fin de semana con la familia.",
+            "En el taller de carpintería se reparan muebles antiguos.",
+            "De acuerdo a (1) las normas y (2) los reglamentos vigentes.",
+            "El sol sale por el oriente y se oculta por el poniente.",
+            "El hermano menor fue a comprar pan al supermercado.",
+            "# Título de prueba\n\nEste es un documento Markdown estándar con listas:\n- Elemento 1\n- Elemento 2",
+        ];
+
+        foreach ($commonTexts as $text) {
+            $this->assertFalse(
+                $normalizer->isMasonicText($text),
+                "El texto común no debe activar el modo masónico: {$text}"
+            );
+        }
+    }
+
+    public function test_markdown_syntax_is_cleaned_for_tts_speech(): void
+    {
+        $normalizer = app(TtsTextNormalizerService::class);
+
+        $markdownInput = <<<MD
+# Título Principal
+
+## Subtítulo de Sección
+
+Este es un párrafo con **texto en negrita**, *cursiva*, y un [enlace a la web](https://motazorrilla.com).
+
+Aquí hay una lista:
+- Primer elemento importante
+* Segundo elemento clave
++ Tercer elemento final
+
+> Esto es una cita inspiradora.
+
+Código en línea como `variable_x` y bloque de código:
+```php
+echo "hola mundo";
+```
+
+Texto con ~~tachado~~ y tablas | col1 | col2 |.
+MD;
+
+        $cleaned = $normalizer->cleanMarkdownForSpeech($markdownInput);
+        $normalized = $normalizer->normalize($markdownInput);
+
+        // Assert Markdown tokens are NOT present in cleaned TTS text
+        $this->assertStringNotContainsString('#', $cleaned);
+        $this->assertStringNotContainsString('##', $cleaned);
+        $this->assertStringNotContainsString('**', $cleaned);
+        $this->assertStringNotContainsString('[enlace a la web]', $cleaned);
+        $this->assertStringNotContainsString('https://motazorrilla.com', $cleaned);
+        $this->assertStringNotContainsString('```', $cleaned);
+        $this->assertStringNotContainsString('`variable_x`', $cleaned);
+        $this->assertStringNotContainsString('~~', $cleaned);
+        $this->assertStringNotContainsString('>', $cleaned);
+
+        // Assert words and speech pause periods are preserved
+        $this->assertStringContainsString('Título Principal.', $cleaned);
+        $this->assertStringContainsString('Subtítulo de Sección.', $cleaned);
+        $this->assertStringContainsString('enlace a la web', $cleaned);
+        $this->assertStringContainsString('Primer elemento importante', $cleaned);
+        $this->assertStringContainsString('Segundo elemento clave', $cleaned);
+        $this->assertStringContainsString('Tercer elemento final', $cleaned);
+
+        // Assert normalized result is speech-ready
+        $this->assertStringNotContainsString('#', $normalized);
+        $this->assertStringNotContainsString('https://', $normalized);
+    }
+
+    public function test_reader_modal_renders_both_markdown_view_and_raw_view(): void
+    {
+        $user = User::factory()->create();
+        $book = Book::create([
+            'user_id' => $user->id,
+            'title' => 'Libro de Ensayo Markdown',
+            'original_filename' => 'ensayo.md',
+            'pdf_path' => 'books/ensayo.md',
+            'status' => 'ready',
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+        ]);
+
+        $book->chapters()->create([
+            'chapter_number' => 1,
+            'title' => 'Introducción',
+            'content_text' => "# Bienvenidos al Ensayo\n\nEste es un texto **enriquecido** con [un link](https://test.com).",
+            'audio_path' => 'audio/ch1.mp3',
+            'duration_seconds' => 60,
+            'status' => 'ready',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('books.show', $book->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('reader-markdown-view', false);
+        $response->assertSee('reader-raw-view', false);
+        $response->assertSee('btnFormatMarkdown', false);
+        $response->assertSee('btnFormatRaw', false);
+        $response->assertSee('Bienvenidos al Ensayo', false);
+    }
 }
+
