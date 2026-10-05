@@ -237,6 +237,15 @@ class DocxExtractor(BaseExtractor):
 class DocExtractor(BaseExtractor):
     """Extracts text from binary Microsoft Word 97-2003 (.doc) documents using antiword or built-in OLE2 parser."""
 
+    def _normalize_masonic_glyphs(self, text: str) -> str:
+        """Reconstructs authentic tripunctuated symbols (∴) when legacy Word documents used custom fonts mapping to '('."""
+        return re.sub(
+            r'\b(A|L|G|D|U|I|Ven|Q|QQ|H|HH|VVig|Vig|VVisit|Visit|S|F|E|V|M|MM|Or|Resp|Log|Secr|Orad|Tes|Hosp|Exp|Prof)\s*\(\s*',
+            r'\1∴ ',
+            text,
+            flags=re.IGNORECASE
+        )
+
     def extract(self, file_path: str) -> ExtractionResult:
         # 1. Try antiword if available (standard in Linux container)
         antiword_cmd = shutil.which('antiword') or ('antiword' if os.name != 'nt' else None)
@@ -250,7 +259,7 @@ class DocExtractor(BaseExtractor):
                 )
                 if proc.stdout.strip():
                     parts = proc.stdout.split('\n\n')
-                    pages_text = [TextNormalizer.clean(p) for p in parts if TextNormalizer.clean(p)]
+                    pages_text = [TextNormalizer.clean(self._normalize_masonic_glyphs(p)) for p in parts if TextNormalizer.clean(p)]
                     if pages_text:
                         return ExtractionResult(title='', author='', pages_text=pages_text, ocr_used=False)
             except Exception as e:
@@ -321,7 +330,7 @@ class DocExtractor(BaseExtractor):
 
                                 full_text = ''.join(text_pieces)
                                 parts = full_text.split('\r')
-                                pages_text = [TextNormalizer.clean(p) for p in parts if TextNormalizer.clean(p)]
+                                pages_text = [TextNormalizer.clean(self._normalize_masonic_glyphs(p)) for p in parts if TextNormalizer.clean(p)]
                                 if pages_text:
                                     return ExtractionResult(title='', author='', pages_text=pages_text, ocr_used=False)
         except Exception as e:

@@ -69,12 +69,16 @@ class ProcessBookJob implements ShouldQueue
             $book->chapters()->delete();
 
             // Create chapters
+            $normalizer = app(\App\Services\TtsTextNormalizerService::class);
             foreach ($extraction['chapters'] as $chData) {
+                $rawText = $chData['text'] ?? '';
+                $cleanContent = $normalizer->reconstructTripunctuatedText($rawText);
+
                 Chapter::create([
                     'book_id' => $book->id,
                     'chapter_number' => $chData['chapter_number'],
                     'title' => $chData['title'],
-                    'content_text' => $chData['text'],
+                    'content_text' => $cleanContent,
                     'word_count' => $chData['word_count'],
                     'status' => 'pending',
                 ]);

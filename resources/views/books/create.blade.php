@@ -348,6 +348,7 @@
                     <select 
                         name="speed_rate" 
                         id="speed_rate" 
+                        onchange="onVariantChanged()"
                         class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/50 rounded-xl text-slate-900 dark:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-[#00ff87] transition"
                     >
                         <option value="-20%">Lenta (-20%)</option>
@@ -367,6 +368,7 @@
                     <select 
                         name="pitch" 
                         id="pitch" 
+                        onchange="onVariantChanged()"
                         class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/50 rounded-xl text-slate-900 dark:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-[#00ff87] transition"
                     >
                         <option value="-20Hz">Grave (-20Hz)</option>
@@ -378,16 +380,16 @@
                 </div>
             </div>
 
-            <!-- Intelligent Masonic & Normalization Badge -->
-            <div class="p-3 rounded-xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+            <!-- Intelligent Masonic & Normalization Badge (Hidden by default; appears only when detected) -->
+            <div id="masonicNoticeBox" class="hidden p-3 rounded-xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs transition duration-300">
                 <div class="flex items-center gap-2">
                     <span class="text-sm shrink-0">🏛️</span>
                     <div class="text-slate-700 dark:text-sky-300">
-                        <strong>Modo Simbólico & Masónico Inteligente:</strong> Detecta y expande automáticamente fórmulas y abreviaturas ritualísticas (Q∴H∴ ➔ Querido Hermano, V∴M∴, GADU, etc.) para que se escuchen solemnes y respetuosas.
+                        <strong>Modo Simbólico & Masónico Detectado:</strong> Expansión fonética activa de fórmulas litúrgicas y abreviaturas ritualísticas (Q∴H∴ ➔ Querido Hermano, V∴M∴, GADU, etc.).
                     </div>
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-[#00ff87] border border-emerald-500/30 shrink-0 self-start sm:self-auto">
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#00ff87]"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#00ff87] animate-pulse"></span>
                     Auto-Activado
                 </span>
             </div>
@@ -881,11 +883,16 @@
             });
         }
 
+        const speedSelect = document.getElementById('speed_rate');
+        const pitchSelect = document.getElementById('pitch');
+        const speedVal = speedSelect ? speedSelect.value : '+0%';
+        const pitchVal = pitchSelect ? pitchSelect.value : '+0Hz';
+
         const previewBaseUrl = "{{ route('voices.preview') }}";
-        previewAudio.src = `${previewBaseUrl}?voice=${encodeURIComponent(voiceId)}`;
+        previewAudio.src = `${previewBaseUrl}?voice=${encodeURIComponent(voiceId)}&speed_rate=${encodeURIComponent(speedVal)}&pitch=${encodeURIComponent(pitchVal)}`;
         if (btnText) btnText.textContent = 'Detener muestra';
         if (btnIcon) btnIcon.textContent = '⏹️';
-        if (statusText) statusText.textContent = `Reproduciendo: ${voiceSelect.options[voiceSelect.selectedIndex].text}`;
+        if (statusText) statusText.textContent = `Reproduciendo: ${voiceSelect.options[voiceSelect.selectedIndex].text} (${speedVal}, ${pitchVal})`;
         if (playerContainer) playerContainer.classList.remove('hidden');
 
         previewAudio.play().catch(e => {
@@ -901,5 +908,53 @@
             window.toggleVoicePreview();
         }
     };
+
+    window.onVariantChanged = function() {
+        if (previewAudio && !previewAudio.paused) {
+            window.toggleVoicePreview();
+        }
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Reactive Masonic & Symbolic Content Detector
+    // ──────────────────────────────────────────────────────────────────────────
+    function checkMasonicPresence() {
+        const textVal = rawTextInput ? rawTextInput.value : '';
+        const fileVal = fileInput && fileInput.files.length > 0 ? fileInput.files[0].name : '';
+        const titleInputEl = document.getElementById('title');
+        const titleVal = titleInputEl ? titleInputEl.value : '';
+        const combined = (textVal + ' ' + fileVal + ' ' + titleVal).toLowerCase();
+
+        const hasMasonic = 
+            /[∴]/.test(combined) ||
+            /\.\s*·\s*\./.test(combined) ||
+            /\.\.\s*\./.test(combined) ||
+            /\b(gadu|s\.?f\.?u\.?|t\.?a\.?f\.?|l\.?i\.?f\.?|e\.?v\.?|a\.?l\.?|r\.?e\.?a\.?a\.?|i\.?p\.?h\.?|m\.?r\.?g\.?m\.?)\b/i.test(combined) ||
+            /\b(a|l|g|d|u|i|ven|q|qq|h|hh|vvig|vig|vvisit|visit|s|f|e|v|m|mm|or|resp|log|secr|orad|tes|hosp|exp)\s*\(/i.test(combined) ||
+            /[a-záéíóúñ]{1,4}\s*[:.·]{2,4}\s*[a-záéíóúñ]{1,4}\s*[:.·]{2,4}/i.test(combined) ||
+            /\b(venerable\s+maestro|querido\s+hermano|gran\s+arquitecto|respetable\s+logia|plancha|taller|tenida|oriente\s+de|salud,\s*fuerza|primer\s+vigilante|segundo\s+vigilante|francmas|mas[oó]n|la\s+plomada)/i.test(combined);
+
+        const masonicBox = document.getElementById('masonicNoticeBox');
+        if (masonicBox) {
+            if (hasMasonic) {
+                masonicBox.classList.remove('hidden');
+            } else {
+                masonicBox.classList.add('hidden');
+            }
+        }
+    }
+
+    if (rawTextInput) {
+        rawTextInput.addEventListener('input', checkMasonicPresence);
+        rawTextInput.addEventListener('paste', () => setTimeout(checkMasonicPresence, 100));
+    }
+    const titleInput = document.getElementById('title');
+    if (titleInput) {
+        titleInput.addEventListener('input', checkMasonicPresence);
+    }
+    if (fileInput) {
+        fileInput.addEventListener('change', checkMasonicPresence);
+    }
+    checkMasonicPresence();
 </script>
 @endpush

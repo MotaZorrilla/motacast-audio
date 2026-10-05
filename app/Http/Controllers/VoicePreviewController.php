@@ -23,11 +23,23 @@ class VoicePreviewController extends Controller
     ];
 
     /**
-     * Stream a quick audio preview of the chosen voice.
+     * Stream a quick audio preview of the chosen voice, speed rate, and pitch combination.
      */
     public function preview(Request $request, AudioSynthesisService $synthesisService): BinaryFileResponse
     {
         $voice = (string) $request->query('voice', 'es-VE-SebastianNeural');
+        $speedRate = (string) $request->query('speed_rate', '+0%');
+        $pitch = (string) $request->query('pitch', '+0Hz');
+
+        $allowedRates = ['-20%', '-10%', '+0%', '+10%', '+20%', '+30%'];
+        $allowedPitches = ['-20Hz', '-10Hz', '+0Hz', '+10Hz', '+20Hz'];
+
+        if (! in_array($speedRate, $allowedRates, true)) {
+            $speedRate = '+0%';
+        }
+        if (! in_array($pitch, $allowedPitches, true)) {
+            $pitch = '+0Hz';
+        }
 
         $availableVoices = collect(AudioSynthesisService::getAvailableVoices())->pluck('id')->all();
         if (! in_array($voice, $availableVoices, true)) {
@@ -39,11 +51,18 @@ class VoicePreviewController extends Controller
             mkdir($previewDir, 0755, true);
         }
 
-        $filePath = $previewDir . DIRECTORY_SEPARATOR . $voice . '.mp3';
+        // Standard default rate & pitch uses canonical single filename if available
+        if ($speedRate === '+0%' && $pitch === '+0Hz') {
+            $filePath = $previewDir . DIRECTORY_SEPARATOR . $voice . '.mp3';
+        } else {
+            $safeRate = str_replace(['+', '%', '-'], ['p', 'pct', 'm'], $speedRate);
+            $safePitch = str_replace(['+', 'Hz', 'hz', '-'], ['p', 'hz', 'hz', 'm'], $pitch);
+            $filePath = $previewDir . DIRECTORY_SEPARATOR . "{$voice}_{$safeRate}_{$safePitch}.mp3";
+        }
 
         if (! file_exists($filePath)) {
             $text = self::SAMPLE_PHRASES[$voice] ?? 'Hola, esta es una muestra de voz natural en MotaCastAudio.';
-            $synthesisService->synthesize($text, $filePath, $voice, '+0%', '+0Hz');
+            $synthesisService->synthesize($text, $filePath, $voice, $speedRate, $pitch);
         }
 
         return response()->file($filePath, [

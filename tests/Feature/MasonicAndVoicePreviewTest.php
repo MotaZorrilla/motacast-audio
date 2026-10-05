@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Book;
 use App\Models\User;
 use App\Services\PdfExtractorService;
 use App\Services\TtsTextNormalizerService;
@@ -59,7 +60,7 @@ TXT;
         $this->assertStringContainsString('Maestro Masón', $normalized);
         $this->assertStringContainsString('Respetable Logia', $normalized);
         $this->assertStringContainsString('Oriente de Ciudad Guayana', $normalized);
-        $this->assertStringContainsString('Salud, Fuerza, Unión', $normalized);
+        $this->assertStringContainsString('Salud, Fuerza y Unión', $normalized);
     }
 
     public function test_masonic_delta_unicode_abbreviations_expansion(): void
@@ -76,6 +77,38 @@ TXT;
         $this->assertStringContainsString('Venerable Maestro', $normalized);
         $this->assertStringContainsString('Gran Arquitecto del Universo', $normalized);
         $this->assertStringContainsString('Triple Abrazo Fraternal', $normalized);
+    }
+
+    public function test_reconstruct_tripunctuated_text_restores_dotted_masonic_notation(): void
+    {
+        $normalizer = app(TtsTextNormalizerService::class);
+
+        $legacyText = "Ven( M( y Q( H( se reunieron en la Resp(Log( de este Or(de Ciudad Bolívar. S(F(U(";
+
+        $reconstructed = $normalizer->reconstructTripunctuatedText($legacyText);
+
+        $this->assertStringContainsString('Ven∴', $reconstructed);
+        $this->assertStringContainsString('Q∴', $reconstructed);
+        $this->assertStringContainsString('Resp∴', $reconstructed);
+        $this->assertStringContainsString('S∴ F∴ U∴', $reconstructed);
+    }
+
+    public function test_canonical_masonic_manual_abbreviations_expansion(): void
+    {
+        $normalizer = app(TtsTextNormalizerService::class);
+
+        $sample = 'El M∴ R∴ G∴ M∴ acompañado por el I∴ P∴ H∴ y el V∴ H∴ transmitieron los ss∴ pp∴ tt∴ en la G∴ L∴ R∴ V∴ según el R∴ E∴ A∴ A∴.';
+
+        $this->assertTrue($normalizer->isMasonicText($sample));
+
+        $normalized = $normalizer->normalize($sample);
+
+        $this->assertStringContainsString('Muy Respetable Gran Maestro', $normalized);
+        $this->assertStringContainsString('Ilustre y Poderoso Hermano', $normalized);
+        $this->assertStringContainsString('Venerable Hermano', $normalized);
+        $this->assertStringContainsString('signos, palabras y tocamientos', $normalized);
+        $this->assertStringContainsString('Gran Logia de la República de Venezuela', $normalized);
+        $this->assertStringContainsString('Rito Escocés Antiguo y Aceptado', $normalized);
     }
 
     public function test_general_symbols_and_spanish_abbreviations(): void
@@ -101,6 +134,19 @@ TXT;
     public function test_voice_preview_endpoint_returns_audio_stream(): void
     {
         $response = $this->get(route('voices.preview', ['voice' => 'es-VE-SebastianNeural']));
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'audio/mpeg');
+        $response->assertHeader('Cache-Control', 'max-age=86400, public');
+    }
+
+    public function test_voice_preview_with_speed_and_pitch_variants_returns_audio_stream(): void
+    {
+        $response = $this->get(route('voices.preview', [
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+30%',
+            'pitch' => '+20Hz',
+        ]));
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'audio/mpeg');
@@ -139,5 +185,29 @@ TXT;
             'user_id' => $user->id,
             'original_filename' => 'la_plomada.doc',
         ]);
+    }
+
+    public function test_pagination_custom_view_renders_clean_theme(): void
+    {
+        $user = User::factory()->create();
+        for ($i = 1; $i <= 15; $i++) {
+            Book::create([
+                'user_id' => $user->id,
+                'title' => "Documento Paginado {$i}",
+                'original_filename' => "doc_{$i}.pdf",
+                'pdf_path' => "test/doc_{$i}.pdf",
+                'status' => 'ready',
+                'voice' => 'es-VE-SebastianNeural',
+                'speed_rate' => '+0%',
+                'pitch' => '+0Hz',
+            ]);
+        }
+
+        $response = $this->actingAs($user)->get(route('books.index'));
+
+        $response->assertStatus(200);
+        // Ensure our custom pagination with 'Mostrando' and dark neon classes is rendered
+        $response->assertSee('Mostrando');
+        $response->assertSee('documentos');
     }
 }
