@@ -18,8 +18,16 @@ import re
 import argparse
 import tempfile
 import glob
+import subprocess
+import shutil
+import struct
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple, Type
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -40,7 +48,8 @@ class TextNormalizer:
         text = re.sub(r'([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)-\n([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)', r'\1\2', text)
 
         # Fix soft hyphens and unusual whitespace
-        text = text.replace('\xad', '')
+        text = text.replace('\xad', '').replace('\xa0', ' ')
+        text = re.sub(r'\[(?:pic|image|imagen)\]', '', text, flags=re.IGNORECASE)
         text = re.sub(r'[ \t\f\v]+', ' ', text)
 
         # Remove standalone page numbers
@@ -223,6 +232,111 @@ class DocxExtractor(BaseExtractor):
 
         pages_text = [TextNormalizer.clean(p) for p in paragraphs if TextNormalizer.clean(p)]
         return ExtractionResult(title=title, author=author, pages_text=pages_text, ocr_used=False)
+
+
+class DocExtractor(BaseExtractor):
+    """Extracts text from binary Microsoft Word 97-2003 (.doc) documents using antiword or built-in OLE2 parser."""
+
+    def extract(self, file_path: str) -> ExtractionResult:
+        # 1. Try antiword if available (standard in Linux container)
+        antiword_cmd = shutil.which('antiword') or ('antiword' if os.name != 'nt' else None)
+        if antiword_cmd:
+            try:
+                proc = subprocess.run(
+                    [antiword_cmd, '-m', 'UTF-8', file_path],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                if proc.stdout.strip():
+                    parts = proc.stdout.split('\n\n')
+                    pages_text = [TextNormalizer.clean(p) for p in parts if TextNormalizer.clean(p)]
+                    if pages_text:
+                        return ExtractionResult(title='', author='', pages_text=pages_text, ocr_used=False)
+            except Exception as e:
+                sys.stderr.write(f"[DOC] antiword fallo, intentando extractor OLE2 nativo: {e}\n")
+
+        # 2. Resilient Pure-Python OLE2 Piece Table Parser
+        try:
+            with open(file_path, 'rb') as f:
+                data = f.read()
+
+            if len(data) >= 512 and data[:8] == b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1':
+                fat_sec = struct.unpack_from('<I', data, 76)[0]
+                fat_offset = (fat_sec + 1) * 512
+                fat = struct.unpack_from(f'<{128}I', data, fat_offset)
+
+                def get_stream(start_sec, size):
+                    cur = start_sec
+                    res = bytearray()
+                    while cur < 0xFFFFFFFE and len(res) < size:
+                        offset = (cur + 1) * 512
+                        chunk = data[offset : offset + 512]
+                        res.extend(chunk)
+                        cur = fat[cur]
+                    return bytes(res[:size])
+
+                sec_dir = struct.unpack_from('<I', data, 48)[0]
+                dir_offset = (sec_dir + 1) * 512
+                streams = {}
+                for i in range(32):
+                    entry = data[dir_offset + i*128 : dir_offset + (i+1)*128]
+                    if len(entry) < 128:
+                        break
+                    name_len = struct.unpack_from('<H', entry, 64)[0]
+                    if name_len == 0:
+                        continue
+                    name = entry[:name_len-2].decode('utf-16le', errors='ignore')
+                    sec_start = struct.unpack_from('<I', entry, 116)[0]
+                    size = struct.unpack_from('<I', entry, 120)[0]
+                    streams[name] = (sec_start, size)
+
+                if 'WordDocument' in streams:
+                    word_doc = get_stream(*streams['WordDocument'])
+                    flags = struct.unpack_from('<H', word_doc, 0x000A)[0]
+                    tbl_name = '1Table' if (flags & 0x0200) else '0Table'
+                    if tbl_name in streams:
+                        tbl_doc = get_stream(*streams[tbl_name])
+                        fcClx = struct.unpack_from('<I', word_doc, 0x01A2)[0]
+                        lcbClx = struct.unpack_from('<I', word_doc, 0x01A6)[0]
+                        if fcClx < len(tbl_doc):
+                            clx = tbl_doc[fcClx : fcClx + lcbClx]
+                            if len(clx) >= 5 and clx[0] == 2:
+                                cb = struct.unpack_from('<I', clx, 1)[0]
+                                n = (cb - 4) // 12
+                                cps = struct.unpack_from(f'<{n+1}I', clx, 5)
+                                pcds_offset = 5 + (n+1)*4
+                                text_pieces = []
+                                for i in range(n):
+                                    fc = struct.unpack_from('<I', clx, pcds_offset + i*8 + 2)[0]
+                                    is_unicode = (fc & 0x40000000) == 0
+                                    raw_fc = fc & 0x3FFFFFFF
+                                    cp_len = cps[i+1] - cps[i]
+                                    if not is_unicode:
+                                        offset = raw_fc // 2
+                                        text_pieces.append(word_doc[offset : offset + cp_len].decode('cp1252', errors='replace'))
+                                    else:
+                                        offset = raw_fc
+                                        text_pieces.append(word_doc[offset : offset + cp_len*2].decode('utf-16le', errors='replace'))
+
+                                full_text = ''.join(text_pieces)
+                                parts = full_text.split('\r')
+                                pages_text = [TextNormalizer.clean(p) for p in parts if TextNormalizer.clean(p)]
+                                if pages_text:
+                                    return ExtractionResult(title='', author='', pages_text=pages_text, ocr_used=False)
+        except Exception as e:
+            sys.stderr.write(f"[DOC] Parser OLE2 fallo: {e}\n")
+
+        # 3. Last-resort fallback: extract printable character sequences
+        try:
+            with open(file_path, 'rb') as f:
+                raw_bytes = f.read()
+            matches = re.findall(b'[\x20-\x7e\xa0-\xff]{10,}', raw_bytes)
+            lines = [m.decode('cp1252', errors='ignore') for m in matches]
+            pages_text = [TextNormalizer.clean(p) for p in lines if TextNormalizer.clean(p)]
+            return ExtractionResult(title='', author='', pages_text=pages_text, ocr_used=False)
+        except Exception as e:
+            raise Exception(f"No se pudo extraer texto del archivo .doc: {e}")
 
 
 class PlainTextExtractor(BaseExtractor):
@@ -522,7 +636,7 @@ class UniversalExtractionEngine:
     STRATEGY_MAP: Dict[str, Type[BaseExtractor]] = {
         '.pdf': PdfExtractor,
         '.docx': DocxExtractor,
-        '.doc': DocxExtractor,
+        '.doc': DocExtractor,
         '.txt': PlainTextExtractor,
         '.md': PlainTextExtractor,
         '.markdown': PlainTextExtractor,

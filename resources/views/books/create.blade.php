@@ -23,8 +23,41 @@
             </a>
             <h1 class="text-2xl font-black text-slate-900 dark:text-cyan-200 tracking-tight">Agregar Documento o Libro</h1>
             <p class="text-xs sm:text-sm text-slate-500 dark:text-sky-300/80 mt-1">
-                Sube tu archivo PDF técnico, artículo o libro para convertirlo en audiolibro con voz neuronal natural.
+                Convierte tus documentos Word, PDFs o textos en audiolibros con voces neuronales naturales de alta calidad.
             </p>
+        </div>
+    </div>
+
+    <!-- Guía Visual para Usuarios (Onboarding Simple en 3 Pasos) -->
+    <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-teal-500/10 via-emerald-500/10 to-cyan-500/10 border border-teal-500/30 text-slate-800 dark:text-cyan-100 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="text-base">🎧</span>
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-wider text-teal-900 dark:text-[#00ff87]">
+                ¿Cómo usar MotaCastAudio? — Fácil en 3 Pasos
+            </h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/70 dark:bg-[#071014]/70 border border-slate-200/80 dark:border-cyan-900/50 shadow-xs">
+                <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-xs shrink-0">1</span>
+                <div>
+                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Elige tu lectura</strong>
+                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Sube Word (.doc/.docx), PDF o pega cualquier texto directo.</span>
+                </div>
+            </div>
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/70 dark:bg-[#071014]/70 border border-slate-200/80 dark:border-cyan-900/50 shadow-xs">
+                <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-xs shrink-0">2</span>
+                <div>
+                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Prueba la voz</strong>
+                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Pulsa <strong>«Escuchar muestra»</strong> para elegir la voz que prefieras.</span>
+                </div>
+            </div>
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/70 dark:bg-[#071014]/70 border border-slate-200/80 dark:border-cyan-900/50 shadow-xs">
+                <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-xs shrink-0">3</span>
+                <div>
+                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Escucha de inmediato</strong>
+                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Tu audiolibro comenzará al instante. Podrás escucharlo o descargarlo en MP3.</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -113,11 +146,10 @@
                         </svg>
                     </div>
                     <div class="text-center">
-                        <p class="text-sm font-bold text-slate-800 dark:text-cyan-200" id="fileLabel">Toca para seleccionar o arrastra tu archivo aquí</p>
-                        <p class="text-xs text-slate-500 dark:text-sky-400/80 mt-1">PDF, DOCX, TXT, MD, Imágenes (PNG, JPG) o Audio (MP3, WAV) — hasta 100 MB</p>
+                        <p class="text-xs text-slate-500 dark:text-sky-400/80 mt-1">Word (.docx, .doc), PDF, TXT, MD, Fotos (PNG, JPG) o Audio (MP3, WAV) — hasta 100 MB</p>
                         <div class="flex items-center justify-center gap-2 mt-2 flex-wrap">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">WORD (.DOCX, .DOC)</span>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40">PDF</span>
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">DOCX</span>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/40">TXT/MD</span>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">📸 IMG (OCR)</span>
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">🎙️ AUDIO (STT)</span>
@@ -274,12 +306,25 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Voice Selector -->
                 <div class="md:col-span-1">
-                    <label for="voice" class="block text-xs font-semibold text-slate-700 dark:text-sky-300 mb-1.5">
-                        Voz Narradora
-                    </label>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="voice" class="block text-xs font-semibold text-slate-700 dark:text-sky-300">
+                            Voz Narradora
+                        </label>
+                        <button 
+                            type="button" 
+                            id="btnVoicePreview"
+                            onclick="toggleVoicePreview()"
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold text-emerald-600 dark:text-[#00ff87] bg-emerald-50 dark:bg-[#00ff87]/10 hover:bg-emerald-100 dark:hover:bg-[#00ff87]/20 border border-emerald-300 dark:border-[#00ff87]/30 transition"
+                            title="Escuchar una muestra de esta voz"
+                        >
+                            <span id="previewVoiceIcon">🔊</span>
+                            <span id="previewVoiceText">Escuchar muestra</span>
+                        </button>
+                    </div>
                     <select 
                         name="voice" 
                         id="voice" 
+                        onchange="onVoiceChanged()"
                         class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/50 rounded-xl text-slate-900 dark:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-[#00ff87] transition"
                     >
                         @foreach ($voices as $v)
@@ -288,6 +333,11 @@
                             </option>
                         @endforeach
                     </select>
+                    <!-- Floating Voice Preview Status Badge -->
+                    <div id="voicePreviewPlayerContainer" class="hidden mt-1.5 flex items-center gap-2 p-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-700 dark:text-[#00ff87]">
+                        <span class="inline-block w-2 h-2 rounded-full bg-[#00ff87] animate-ping shrink-0"></span>
+                        <span id="voicePreviewStatus" class="font-medium truncate">Reproduciendo muestra de voz...</span>
+                    </div>
                 </div>
 
                 <!-- Speed / Rate -->
@@ -326,6 +376,20 @@
                         <option value="+20Hz">Agudo (+20Hz)</option>
                     </select>
                 </div>
+            </div>
+
+            <!-- Intelligent Masonic & Normalization Badge -->
+            <div class="p-3 rounded-xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm shrink-0">🏛️</span>
+                    <div class="text-slate-700 dark:text-sky-300">
+                        <strong>Modo Simbólico & Masónico Inteligente:</strong> Detecta y expande automáticamente fórmulas y abreviaturas ritualísticas (Q∴H∴ ➔ Querido Hermano, V∴M∴, GADU, etc.) para que se escuchen solemnes y respetuosas.
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-[#00ff87] border border-emerald-500/30 shrink-0 self-start sm:self-auto">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#00ff87]"></span>
+                    Auto-Activado
+                </span>
             </div>
         </div>
 
@@ -774,5 +838,68 @@
             submitOverlay.classList.add('flex');
         }
     });
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Interactive Voice Preview Engine
+    // ──────────────────────────────────────────────────────────────────────────
+    let previewAudio = null;
+
+    window.toggleVoicePreview = function() {
+        const voiceSelect = document.getElementById('voice');
+        if (!voiceSelect) return;
+        const voiceId = voiceSelect.value;
+        const btnText = document.getElementById('previewVoiceText');
+        const btnIcon = document.getElementById('previewVoiceIcon');
+        const playerContainer = document.getElementById('voicePreviewPlayerContainer');
+        const statusText = document.getElementById('voicePreviewStatus');
+
+        if (previewAudio && !previewAudio.paused) {
+            previewAudio.pause();
+            previewAudio.currentTime = 0;
+            if (btnText) btnText.textContent = 'Escuchar muestra';
+            if (btnIcon) btnIcon.textContent = '🔊';
+            if (playerContainer) playerContainer.classList.add('hidden');
+            return;
+        }
+
+        if (!previewAudio) {
+            previewAudio = new Audio();
+            previewAudio.addEventListener('ended', () => {
+                if (btnText) btnText.textContent = 'Escuchar muestra';
+                if (btnIcon) btnIcon.textContent = '🔊';
+                if (playerContainer) playerContainer.classList.add('hidden');
+            });
+            previewAudio.addEventListener('error', (e) => {
+                console.warn('Audio playback error:', e);
+                if (btnText) btnText.textContent = 'Error al cargar';
+                if (btnIcon) btnIcon.textContent = '⚠️';
+                setTimeout(() => {
+                    if (btnText) btnText.textContent = 'Escuchar muestra';
+                    if (btnIcon) btnIcon.textContent = '🔊';
+                    if (playerContainer) playerContainer.classList.add('hidden');
+                }, 2500);
+            });
+        }
+
+        const previewBaseUrl = "{{ route('voices.preview') }}";
+        previewAudio.src = `${previewBaseUrl}?voice=${encodeURIComponent(voiceId)}`;
+        if (btnText) btnText.textContent = 'Detener muestra';
+        if (btnIcon) btnIcon.textContent = '⏹️';
+        if (statusText) statusText.textContent = `Reproduciendo: ${voiceSelect.options[voiceSelect.selectedIndex].text}`;
+        if (playerContainer) playerContainer.classList.remove('hidden');
+
+        previewAudio.play().catch(e => {
+            console.warn('Playback play() was rejected or interrupted:', e);
+            if (btnText) btnText.textContent = 'Escuchar muestra';
+            if (btnIcon) btnIcon.textContent = '🔊';
+            if (playerContainer) playerContainer.classList.add('hidden');
+        });
+    };
+
+    window.onVoiceChanged = function() {
+        if (previewAudio && !previewAudio.paused) {
+            window.toggleVoicePreview();
+        }
+    };
 </script>
 @endpush

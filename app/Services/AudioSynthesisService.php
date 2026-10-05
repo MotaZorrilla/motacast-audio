@@ -155,30 +155,10 @@ class AudioSynthesisService
     }
 
     /**
-     * Bridges soft line-breaks inside sentences into continuous text with spaces,
-     * maintaining natural audio pauses only where punctuation actually exists.
+     * Bridges soft line-breaks and normalizes symbols, abbreviations and Masonic ritual formulas for natural audio playback.
      */
-    public static function normalizeText(string $text): string
+    public static function normalizeText(string $text, ?bool $forceMasonic = null): string
     {
-        if (empty(trim($text))) {
-            return '';
-        }
-
-        // Standardize line endings
-        $text = str_replace(["\r\n", "\r"], "\n", $text);
-
-        // Fix hyphenated word breaks at end of line (e.g. transfor-\nmación -> transformación)
-        $text = preg_replace('/([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)-\n([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)/u', '$1$2', $text);
-
-        // Standardize multiple line breaks to max 2 (\n\n) for real paragraphs
-        $text = preg_replace('/\n{3,}/', "\n\n", $text);
-
-        // Bridge any single line-break (not preceded or followed by \n) into a single space
-        $text = preg_replace('/(?<!\n)\n(?!\n)/u', ' ', $text);
-
-        // Collapse duplicate horizontal spaces
-        $text = preg_replace('/[ \t]+/', ' ', $text);
-
-        return trim($text);
+        return app(TtsTextNormalizerService::class)->normalize($text, $forceMasonic);
     }
 }

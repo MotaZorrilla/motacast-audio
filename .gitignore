@@ -50,3 +50,5 @@ reprocess_*.php
 seed_*.php
 setup_tailscale.sh
 toArray()
+__pycache__/
+*.pyc

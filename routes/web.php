@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\VoicePreviewController;
 use Illuminate\Support\Facades\Route;
 
 // Guest Auth Routes
@@ -24,6 +25,7 @@ Route::match(['get', 'post'], '/guest/reset', [BookController::class, 'resetGues
 Route::post('/books/ocr-preview', [BookController::class, 'ocrPreview'])->name('books.ocr.preview');
 Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
 Route::post('/books', [BookController::class, 'store'])->name('books.store');
+Route::get('/voices/preview', [VoicePreviewController::class, 'preview'])->name('voices.preview');
 
 // Player, Status & PDF Streaming Routes (Permission checked in Controller for User and Guest Trial)
 Route::prefix('books')->name('books.')->group(function () {
