@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\GuestSessionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,7 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    public function login(Request $request, GuestSessionService $guestSession)
     {
         $credentials = $request->validate([
             'email' => 'required|email',
@@ -27,9 +28,21 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            $user = Auth::user();
+            $claimedBook = null;
+            if ($user->canUploadBook()) {
+                $claimedBook = $guestSession->claimTrialBook($user);
+            }
+
             $request->session()->regenerate();
+
+            if ($claimedBook) {
+                return redirect()->route('books.show', $claimedBook->id)
+                    ->with('success', "¡Bienvenido de nuevo, {$user->name}! Tu audiolibro de prueba «{$claimedBook->title}» ha sido guardado en tu cuenta.");
+            }
+
             return redirect()->route('books.index')
-                ->with('success', '¡Bienvenido de nuevo, ' . Auth::user()->name . '!');
+                ->with('success', '¡Bienvenido de nuevo, ' . $user->name . '!');
         }
 
         return back()->withErrors([
@@ -45,7 +58,7 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(Request $request, GuestSessionService $guestSession)
     {
         $disclaimerRule = (app()->environment('testing') && !$request->has('beta_disclaimer')) 
             ? 'nullable' 
@@ -68,8 +81,16 @@ class AuthController extends Controller
             'beta_disclaimer_accepted_at' => now(),
         ]);
 
+        // Claim any trial book created during the guest session
+        $claimedBook = $guestSession->claimTrialBook($user);
+
         Auth::login($user);
         $request->session()->regenerate();
+
+        if ($claimedBook) {
+            return redirect()->route('books.show', $claimedBook->id)
+                ->with('success', "¡Cuenta creada con éxito! Tu audiolibro «{$claimedBook->title}» ha sido guardado y vinculado a tu biblioteca.");
+        }
 
         return redirect()->route('books.index')
             ->with('success', '¡Cuenta creada con éxito! Bienvenido a la fase Early Access de MotaCastAudio.');

@@ -39,6 +39,10 @@
                         </svg>
                         <span>Volver a mi Audiolibro de Prueba</span>
                     </a>
+                    <div class="p-2 rounded-xl bg-[#00ff87]/10 border border-[#00ff87]/20 flex items-center justify-center gap-1.5 text-[11px] text-[#00c965] dark:text-[#00ff87] font-semibold">
+                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        <span>Tu audiolibro se vinculará automáticamente a tu biblioteca al completar el registro.</span>
+                    </div>
                     <div class="pt-1.5 flex items-center justify-center gap-3">
                         <a href="{{ route('guest.reset') }}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1 transition">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

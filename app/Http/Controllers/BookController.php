@@ -46,8 +46,13 @@ class BookController extends Controller
             $usersList = User::orderBy('name')->get(['id', 'name', 'email']);
 
             if ($request->filled('user_id') && $request->get('user_id') !== 'all') {
-                $query->where('user_id', $request->get('user_id'));
-                $selectedUserId = (int) $request->get('user_id');
+                if ($request->get('user_id') === 'guests' || $request->get('user_id') === 'guest') {
+                    $query->whereNull('user_id');
+                    $selectedUserId = 'guests';
+                } else {
+                    $query->where('user_id', $request->get('user_id'));
+                    $selectedUserId = (int) $request->get('user_id');
+                }
             } elseif ($request->get('scope') === 'mine') {
                 $query->where('user_id', $user->id);
             }

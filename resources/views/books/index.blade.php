@@ -79,6 +79,7 @@
                             >
                                 <option value="all" {{ empty($selectedUserId) && request('scope') !== 'mine' ? 'selected' : '' }}>Todos los usuarios (Global)</option>
                                 <option value="mine" {{ request('scope') === 'mine' ? 'selected' : '' }}>Solo mis documentos (Admin)</option>
+                                <option value="guests" {{ $selectedUserId === 'guests' ? 'selected' : '' }}>👤 Solo libros de Invitados Anónimos</option>
                                 <optgroup label="Filtrar por cuenta específica:">
                                     @foreach ($usersList as $u)
                                         <option value="{{ $u->id }}" {{ $selectedUserId === $u->id ? 'selected' : '' }}>
@@ -93,7 +94,11 @@
                     @if ($selectedUserId)
                         <div class="flex items-center gap-2">
                             <span class="px-2 py-0.5 rounded bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 font-mono text-[11px] border border-cyan-300 dark:border-cyan-800">
-                                Mostrando libros del usuario #{{ $selectedUserId }}
+                                @if ($selectedUserId === 'guests')
+                                    Mostrando libros de Invitados Anónimos
+                                @else
+                                    Mostrando libros del usuario #{{ $selectedUserId }}
+                                @endif
                             </span>
                             <a href="{{ route('books.index') }}" class="text-rose-500 hover:underline font-semibold text-[11px]">Quitar filtro</a>
                         </div>
@@ -209,10 +214,16 @@
                                     </span>
                                 @endif
 
-                                @if (Auth::user() && Auth::user()->isAdmin() && $book->user)
-                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-cyan-950/40 text-slate-600 dark:text-cyan-300 border border-transparent dark:border-cyan-900/40 truncate max-w-[110px]" title="Cargado por {{ $book->user->name }}">
-                                        {{ $book->user->name }}
-                                    </span>
+                                @if (Auth::user() && Auth::user()->isAdmin())
+                                    @if ($book->user)
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-cyan-950/40 text-slate-600 dark:text-cyan-300 border border-transparent dark:border-cyan-900/40 truncate max-w-[120px]" title="Cargado por {{ $book->user->name }}">
+                                            👤 {{ $book->user->name }}
+                                        </span>
+                                    @else
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate max-w-[160px]" title="{{ $book->guest_fingerprint ?? 'Invitado Anónimo' }}">
+                                            {{ $book->guest_fingerprint ? Str::limit($book->guest_fingerprint, 22) : '👤 Invitado' }}
+                                        </span>
+                                    @endif
                                 @endif
                             </div>
 

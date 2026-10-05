@@ -332,5 +332,73 @@ class ExampleTest extends TestCase
             ]
         ]);
     }
+
+    public function test_register_claims_guest_trial_book_and_redirects_to_it(): void
+    {
+        $book = Book::create([
+            'user_id' => null,
+            'title' => 'Libro Creado en Modo Invitado',
+            'original_filename' => 'invitado.pdf',
+            'pdf_path' => 'pdfs/invitado.pdf',
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+            'status' => 'ready',
+        ]);
+
+        $response = $this->withSession([
+            'guest_book_id' => $book->id,
+            'guest_upload_count' => 1,
+        ])->post('/register', [
+            'name' => 'Usuario Recién Registrado',
+            'email' => 'recien_registrado@motazorrilla.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertRedirect(route('books.show', $book->id));
+
+        $user = \App\Models\User::where('email', 'recien_registrado@motazorrilla.com')->first();
+        $this->assertNotNull($user);
+
+        // Verify the book was claimed and transferred
+        $this->assertEquals($user->id, $book->fresh()->user_id);
+
+        // Verify visiting /books displays the claimed book in the user library
+        $libraryResponse = $this->actingAs($user)->get('/books');
+        $libraryResponse->assertStatus(200);
+        $libraryResponse->assertSee('Libro Creado en Modo Invitado');
+    }
+
+    public function test_admin_can_filter_guest_books_in_catalog(): void
+    {
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        $regularUser = \App\Models\User::factory()->create(['role' => 'user']);
+
+        $userBook = Book::create([
+            'user_id' => $regularUser->id,
+            'title' => 'Libro Exclusivo de Usuario Registrado',
+            'original_filename' => 'user.pdf',
+            'pdf_path' => 'pdfs/user.pdf',
+            'status' => 'ready',
+        ]);
+
+        $guestBook = Book::create([
+            'user_id' => null,
+            'title' => 'Libro Huérfano de Invitado Anónimo',
+            'original_filename' => 'guest.pdf',
+            'pdf_path' => 'pdfs/guest.pdf',
+            'guest_fingerprint' => '🇻🇪 Invitado-VE · Android #999',
+            'country_code' => 'VE',
+            'status' => 'ready',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/books?user_id=guests');
+        $response->assertStatus(200);
+        $response->assertSee('Libro Huérfano de Invitado Anónimo');
+        $response->assertSee('Invitado-VE · Android #999');
+        $response->assertSee('Mostrando libros de Invitados Anónimos');
+        $response->assertDontSee('Libro Exclusivo de Usuario Registrado');
+    }
 }
 

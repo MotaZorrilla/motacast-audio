@@ -75,4 +75,24 @@ class GuestSessionService
 
         return $book;
     }
+
+    /**
+     * Claim and transfer the active trial book to a newly registered or authenticated user.
+     */
+    public function claimTrialBook(\App\Models\User $user): ?Book
+    {
+        $book = $this->getActiveTrialBook();
+        if (!$book) {
+            return null;
+        }
+
+        // Only adopt if the book was unassigned (user_id IS NULL)
+        if ($book->user_id === null) {
+            $book->user_id = $user->id;
+            $book->save();
+        }
+
+        $this->resetSession();
+        return $book;
+    }
 }
