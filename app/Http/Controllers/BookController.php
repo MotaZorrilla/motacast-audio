@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Book\DeleteBookAction;
 use App\Http\Requests\OcrPreviewRequest;
 use App\Http\Requests\StoreBookRequest;
 use App\Jobs\ProcessBookJob;
@@ -13,12 +14,16 @@ use App\Services\AudioSynthesisService;
 use App\Services\DocumentIngestService;
 use App\Services\GuestFingerprintService;
 use App\Services\GuestSessionService;
+use App\Services\MimeTypeResolver;
 use App\Services\PdfExtractorService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -97,14 +102,14 @@ class BookController extends Controller
             $this->guestSession->resetSession();
         }
 
-        if (!Auth::check() && $this->guestSession->isTrialExhausted()) {
+        if (! Auth::check() && $this->guestSession->isTrialExhausted()) {
             return redirect()->route('register')
                 ->with('info', 'Has utilizado tu conversión de prueba gratuita. Regístrate en 10 segundos para seguir subiendo documentos.');
         }
 
         if (Auth::check()) {
             $user = Auth::user();
-            if (!$user->canUploadBook()) {
+            if (! $user->canUploadBook()) {
                 return redirect()->route('books.index')
                     ->with('error', "Has alcanzado tu cuota de {$user->book_limit} libros. Contacta al Administrador para ampliar tu cuenta.");
             }
@@ -139,18 +144,18 @@ class BookController extends Controller
         if (! in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'bmp'])) {
             $ext = 'png';
         }
-        $tempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ocr_preview_' . uniqid() . '.' . $ext;
+        $tempPath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'ocr_preview_'.uniqid().'.'.$ext;
         copy($file->getRealPath(), $tempPath);
 
         try {
             $extraction = $extractor->extract($tempPath);
             $fullText = '';
-            if (!empty($extraction['chapters'])) {
+            if (! empty($extraction['chapters'])) {
                 foreach ($extraction['chapters'] as $ch) {
-                    $fullText .= ($fullText ? "\n\n" : '') . $ch['text'];
+                    $fullText .= ($fullText ? "\n\n" : '').$ch['text'];
                 }
             }
-            if (empty($fullText) && !empty($extraction['summary'])) {
+            if (empty($fullText) && ! empty($extraction['summary'])) {
                 $fullText = $extraction['summary'];
             }
 
@@ -184,14 +189,14 @@ class BookController extends Controller
      */
     public function store(StoreBookRequest $request): RedirectResponse
     {
-        if (!Auth::check() && $this->guestSession->isTrialExhausted()) {
+        if (! Auth::check() && $this->guestSession->isTrialExhausted()) {
             return redirect()->route('register')
                 ->with('info', 'Has utilizado tu conversión de prueba gratuita. Regístrate para continuar.');
         }
 
-        if (Auth::check() && !Auth::user()->canUploadBook()) {
+        if (Auth::check() && ! Auth::user()->canUploadBook()) {
             return redirect()->route('books.index')
-                ->with('error', "Has alcanzado el límite de tu cuenta (" . Auth::user()->book_limit . " libros).");
+                ->with('error', 'Has alcanzado el límite de tu cuenta ('.Auth::user()->book_limit.' libros).');
         }
 
         $ingested = $this->ingestService->ingest($request);
@@ -246,33 +251,16 @@ class BookController extends Controller
         $this->authorizeBookAccess($book);
 
         $path = Storage::disk('public')->path($book->pdf_path);
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $fallback = Storage::disk('public')->path('pdfs/manifiesto_homelab.pdf');
             $path = file_exists($fallback) ? $fallback : abort(404, 'Archivo no encontrado en el almacenamiento.');
         }
 
-        $ext = strtolower(pathinfo($book->original_filename ?? $book->pdf_path, PATHINFO_EXTENSION));
-        $mimeTypes = [
-            'pdf' => 'application/pdf',
-            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'doc' => 'application/msword',
-            'txt' => 'text/plain; charset=utf-8',
-            'md' => 'text/markdown; charset=utf-8',
-            'markdown' => 'text/markdown; charset=utf-8',
-            'png' => 'image/png',
-            'jpg' => 'image/jpeg',
-            'jpeg' => 'image/jpeg',
-            'webp' => 'image/webp',
-            'bmp' => 'image/bmp',
-            'mp3' => 'audio/mpeg',
-            'wav' => 'audio/wav',
-            'm4a' => 'audio/mp4',
-            'ogg' => 'audio/ogg',
-        ];
+        $mimeType = MimeTypeResolver::resolve($book->original_filename ?? $book->pdf_path);
 
         return response()->file($path, [
-            'Content-Type' => $mimeTypes[$ext] ?? 'application/octet-stream',
-            'Content-Disposition' => 'inline; filename="' . basename($book->original_filename) . '"',
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="'.basename($book->original_filename).'"',
         ]);
     }
 
@@ -295,7 +283,7 @@ class BookController extends Controller
             'summary' => $book->summary,
             'total_chapters' => $book->chapters->count(),
             'total_duration' => $book->formatted_duration,
-            'chapters' => $book->chapters->map(fn($ch) => [
+            'chapters' => $book->chapters->map(fn ($ch) => [
                 'id' => $ch->id,
                 'chapter_number' => $ch->chapter_number,
                 'title' => $ch->title,
@@ -322,7 +310,7 @@ class BookController extends Controller
             'processed_chapters' => $book->processed_chapters,
             'total_duration' => $book->formatted_duration,
             'error_message' => $book->error_message,
-            'chapters' => $book->chapters->map(fn($ch) => [
+            'chapters' => $book->chapters->map(fn ($ch) => [
                 'id' => $ch->id,
                 'chapter_number' => $ch->chapter_number,
                 'title' => $ch->title,
@@ -362,7 +350,7 @@ class BookController extends Controller
         $this->authorizeBookAccess($chapter->book);
 
         // Self-healing: verify audio_path existence on disk; if missing check standard book chapter path
-        if (!$chapter->audio_path || !Storage::disk('public')->exists($chapter->audio_path)) {
+        if (! $chapter->audio_path || ! Storage::disk('public')->exists($chapter->audio_path)) {
             $candidate = "audiobooks/{$chapter->book_id}/chapter_{$chapter->chapter_number}.mp3";
             if (Storage::disk('public')->exists($candidate)) {
                 $chapter->update(['audio_path' => $candidate]);
@@ -383,7 +371,7 @@ class BookController extends Controller
     {
         $this->authorizeBookAccess($book);
 
-        if (!$book->summary_audio_path || !Storage::disk('public')->exists($book->summary_audio_path)) {
+        if (! $book->summary_audio_path || ! Storage::disk('public')->exists($book->summary_audio_path)) {
             abort(404, 'Audio del resumen no disponible.');
         }
 
@@ -401,7 +389,7 @@ class BookController extends Controller
     {
         $this->authorizeBookAccess($chapter->book);
 
-        if (!$chapter->audio_path || !Storage::disk('public')->exists($chapter->audio_path)) {
+        if (! $chapter->audio_path || ! Storage::disk('public')->exists($chapter->audio_path)) {
             $candidate = "audiobooks/{$chapter->book_id}/chapter_{$chapter->chapter_number}.mp3";
             if (Storage::disk('public')->exists($candidate)) {
                 $chapter->update(['audio_path' => $candidate]);
@@ -412,7 +400,7 @@ class BookController extends Controller
 
         $safeName = sprintf(
             '%s_Capitulo_%02d.mp3',
-            \Illuminate\Support\Str::slug($chapter->book->title),
+            Str::slug($chapter->book->title),
             $chapter->chapter_number
         );
 
@@ -422,20 +410,11 @@ class BookController extends Controller
     /**
      * Delete book, its chapters, and stored files.
      */
-    public function destroy(Book $book): RedirectResponse
+    public function destroy(Book $book, DeleteBookAction $deleteBookAction): RedirectResponse
     {
         $this->authorizeBookAccess($book);
 
-        if ($book->pdf_path && Storage::disk('public')->exists($book->pdf_path)) {
-            Storage::disk('public')->delete($book->pdf_path);
-        }
-
-        $audioDir = "audiobooks/{$book->id}";
-        if (Storage::disk('public')->exists($audioDir)) {
-            Storage::disk('public')->deleteDirectory($audioDir);
-        }
-
-        $book->delete();
+        $deleteBookAction->execute($book);
 
         return redirect()->route('books.index')
             ->with('success', 'Documento y pistas de audio eliminados correctamente.');
@@ -446,31 +425,15 @@ class BookController extends Controller
      */
     protected function authorizeBookAccess(Book $book): void
     {
-        // 1. Social media crawlers (WhatsApp, Facebook, Twitter, Telegram, etc.)
-        // always allowed so they can parse Open Graph metadata for rich link previews.
-        $userAgent = request()->header('User-Agent', '');
-        if (preg_match('/(facebookexternalhit|WhatsApp|Twitterbot|TelegramBot|LinkedInBot|Slackbot|Discordbot|meta-externalagent)/i', $userAgent)) {
-            return;
-        }
-
-        // 2. Allow shared demo / guest books (user_id === null) so WhatsApp recipients can listen
-        if (is_null($book->user_id) || $this->guestSession->guestOwnsBook($book)) {
-            return;
-        }
-
-        // 3. For registered private books, require login and owner/admin check
-        if (!Auth::check()) {
-            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+        // 1. If unauthenticated guest attempts to access a protected private book, redirect to login
+        if (! Auth::check() && ! Gate::allows('view', $book)) {
+            throw new HttpResponseException(
                 redirect()->route('login')
                     ->with('info', 'Debes iniciar sesión para acceder a este audiolibro.')
             );
         }
 
-        $user = Auth::user();
-        if ($user->isAdmin() || $book->user_id === $user->id) {
-            return;
-        }
-
-        abort(403, 'No tienes autorización para acceder a este audiolibro.');
+        // 2. Delegate authorization evaluation directly to BookPolicy
+        Gate::authorize('view', $book);
     }
 }

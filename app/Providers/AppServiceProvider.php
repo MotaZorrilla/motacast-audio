@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Book;
+use App\Policies\BookPolicy;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,13 +23,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Book::class, BookPolicy::class);
+
         if (request()->header('X-Forwarded-Proto') === 'https' || request()->secure() || str_contains(request()->getHttpHost(), 'motazorrilla.com')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+            URL::forceScheme('https');
         }
 
         if ($prefix = request()->header('X-Forwarded-Prefix')) {
             $scheme = (request()->secure() || request()->header('X-Forwarded-Proto') === 'https') ? 'https://' : 'http://';
-            \Illuminate\Support\Facades\URL::forceRootUrl($scheme . request()->getHttpHost() . '/' . trim($prefix, '/'));
+            URL::forceRootUrl($scheme.request()->getHttpHost().'/'.trim($prefix, '/'));
         }
     }
 }

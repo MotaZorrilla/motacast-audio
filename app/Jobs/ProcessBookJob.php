@@ -2,10 +2,13 @@
 
 namespace App\Jobs;
 
+use App\Enums\BookStatus;
+use App\Enums\ChapterStatus;
 use App\Models\Book;
 use App\Models\Chapter;
 use App\Services\AudioSynthesisService;
 use App\Services\PdfExtractorService;
+use App\Services\TtsTextNormalizerService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -28,8 +31,11 @@ class ProcessBookJob implements ShouldQueue
         $this->bookId = $bookId;
     }
 
-    public function handle(PdfExtractorService $extractor, AudioSynthesisService $synthesizer): void
-    {
+    public function handle(
+        PdfExtractorService $extractor,
+        AudioSynthesisService $synthesizer,
+        TtsTextNormalizerService $normalizer
+    ): void {
         $book = Book::find($this->bookId);
         if (! $book) {
             Log::error("ProcessBookJob: Libro con ID {$this->bookId} no encontrado.");
@@ -40,7 +46,7 @@ class ProcessBookJob implements ShouldQueue
         try {
             // Step 1: Update status to extracting
             $book->update([
-                'status' => 'extracting',
+                'status' => BookStatus::Extracting->value,
                 'error_message' => null,
             ]);
 
@@ -59,7 +65,7 @@ class ProcessBookJob implements ShouldQueue
                 $book->author = $extraction['author'];
             }
 
-            $book->summary = !empty($extraction['summary']) ? $extraction['summary'] : null;
+            $book->summary = ! empty($extraction['summary']) ? $extraction['summary'] : null;
             $book->total_words = $extraction['total_words'] ?? 0;
             $book->total_chapters = count($extraction['chapters']);
             $book->processed_chapters = 0;
@@ -68,8 +74,7 @@ class ProcessBookJob implements ShouldQueue
             // Clear previous chapters if re-processing
             $book->chapters()->delete();
 
-            // Create chapters
-            $normalizer = app(\App\Services\TtsTextNormalizerService::class);
+            // Create chapters using injected normalizer (Dependency Injection)
             foreach ($extraction['chapters'] as $chData) {
                 $rawText = $chData['text'] ?? '';
                 $cleanContent = $normalizer->reconstructTripunctuatedText($rawText);
@@ -80,15 +85,15 @@ class ProcessBookJob implements ShouldQueue
                     'title' => $chData['title'],
                     'content_text' => $cleanContent,
                     'word_count' => $chData['word_count'],
-                    'status' => 'pending',
+                    'status' => ChapterStatus::Pending->value,
                 ]);
             }
 
             // Step 3: Synthesis
-            $book->update(['status' => 'synthesizing']);
+            $book->update(['status' => BookStatus::Synthesizing->value]);
 
             // Synthesize Executive Summary Audio if summary is available
-            if (!empty($book->summary) && mb_strlen($book->summary) >= 30) {
+            if (! empty($book->summary) && mb_strlen($book->summary) >= 30) {
                 $relativeSummaryPath = "audiobooks/{$book->id}/summary.mp3";
                 $absoluteSummaryPath = Storage::disk('public')->path($relativeSummaryPath);
                 try {
@@ -102,15 +107,16 @@ class ProcessBookJob implements ShouldQueue
                     $book->summary_audio_path = $relativeSummaryPath;
                     $book->save();
                 } catch (Throwable $summaryErr) {
-                    Log::warning("Error sintetizando resumen del libro {$book->id}: " . $summaryErr->getMessage());
+                    Log::warning("Error sintetizando resumen del libro {$book->id}: ".$summaryErr->getMessage());
                 }
             }
 
             $chapters = $book->chapters()->orderBy('chapter_number')->get();
             $totalDuration = 0;
+            $processedCount = 0;
 
             foreach ($chapters as $chapter) {
-                $chapter->update(['status' => 'synthesizing']);
+                $chapter->update(['status' => ChapterStatus::Synthesizing->value]);
 
                 $relativeAudioPath = "audiobooks/{$book->id}/chapter_{$chapter->chapter_number}.mp3";
                 $absoluteAudioPath = Storage::disk('public')->path($relativeAudioPath);
@@ -126,21 +132,25 @@ class ProcessBookJob implements ShouldQueue
 
                     $duration = $ttsResult['duration_seconds'] ?? 0;
                     $totalDuration += $duration;
+                    $processedCount++;
 
                     $chapter->update([
                         'audio_path' => $relativeAudioPath,
                         'duration_seconds' => $duration,
-                        'status' => 'ready',
+                        'status' => ChapterStatus::Ready->value,
                         'error_message' => null,
                     ]);
 
-                    $book->increment('processed_chapters');
-                    $book->update(['total_duration' => $totalDuration]);
+                    // Optimización Clean: Actualización consolidada en base de datos en una sola llamada
+                    $book->update([
+                        'processed_chapters' => $processedCount,
+                        'total_duration' => $totalDuration,
+                    ]);
 
                 } catch (Throwable $chError) {
                     Log::error("Error sintetizando capítulo {$chapter->id}: ".$chError->getMessage());
                     $chapter->update([
-                        'status' => 'failed',
+                        'status' => ChapterStatus::Failed->value,
                         'error_message' => $chError->getMessage(),
                     ]);
                 }
@@ -148,7 +158,7 @@ class ProcessBookJob implements ShouldQueue
 
             // Step 4: Mark book as ready
             $book->update([
-                'status' => 'ready',
+                'status' => BookStatus::Ready->value,
                 'total_duration' => $totalDuration,
             ]);
 
@@ -157,7 +167,7 @@ class ProcessBookJob implements ShouldQueue
         } catch (Throwable $e) {
             Log::error("Error procesando audiolibro ID {$this->bookId}: ".$e->getMessage());
             $book->update([
-                'status' => 'failed',
+                'status' => BookStatus::Failed->value,
                 'error_message' => $e->getMessage(),
             ]);
         }
