@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\BookStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Book extends Model
 {
@@ -35,24 +38,34 @@ class Book extends Model
         'total_words' => 'integer',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function trafficLogs()
+    public function trafficLogs(): HasMany
     {
         return $this->hasMany(TrafficLog::class);
     }
 
-    public function chapters()
+    public function chapters(): HasMany
     {
         return $this->hasMany(Chapter::class)->orderBy('chapter_number');
     }
 
+    public function statusEnum(): BookStatus
+    {
+        return BookStatus::tryFrom($this->status) ?? BookStatus::Pending;
+    }
+
+    public function setStatusAttribute($value): void
+    {
+        $this->attributes['status'] = $value instanceof BookStatus ? $value->value : $value;
+    }
+
     public function getProgressPercentageAttribute(): int
     {
-        if ($this->status === 'ready') {
+        if ($this->status === BookStatus::Ready->value) {
             return 100;
         }
 
@@ -61,7 +74,7 @@ class Book extends Model
         }
 
         if ($this->total_chapters === 0) {
-            return $this->status === 'extracting' ? 15 : 5;
+            return $this->status === BookStatus::Extracting->value ? 15 : 5;
         }
 
         return min(100, (int) round(($this->processed_chapters / $this->total_chapters) * 100));
@@ -82,16 +95,20 @@ class Book extends Model
 
     public function isReady(): bool
     {
-        return $this->status === 'ready';
+        return $this->status === BookStatus::Ready->value;
     }
 
     public function isProcessing(): bool
     {
-        return in_array($this->status, ['pending', 'extracting', 'synthesizing']);
+        return in_array($this->status, [
+            BookStatus::Pending->value,
+            BookStatus::Extracting->value,
+            BookStatus::Synthesizing->value,
+        ]);
     }
 
     public function hasFailed(): bool
     {
-        return $this->status === 'failed';
+        return $this->status === BookStatus::Failed->value;
     }
 }

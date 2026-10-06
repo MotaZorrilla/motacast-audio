@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\ChapterStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Chapter extends Model
 {
@@ -24,9 +26,24 @@ class Chapter extends Model
         'word_count' => 'integer',
     ];
 
-    public function book()
+    public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
+    }
+
+    public function statusEnum(): ChapterStatus
+    {
+        return ChapterStatus::tryFrom($this->status) ?? ChapterStatus::Pending;
+    }
+
+    public function setStatusAttribute($value): void
+    {
+        $this->attributes['status'] = $value instanceof ChapterStatus ? $value->value : $value;
+    }
+
+    public function isReady(): bool
+    {
+        return $this->status === ChapterStatus::Ready->value;
     }
 
     public function getFormattedDurationAttribute(): string
