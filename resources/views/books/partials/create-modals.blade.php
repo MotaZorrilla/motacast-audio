@@ -1,0 +1,137 @@
+<!-- Processing Loading Overlay (Instant feedback on submission) -->
+<div id="submitOverlay" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-4">
+    <div class="card-tactile rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center space-y-4 border border-[#00ff87]/30 shadow-neon-lg">
+        <div class="relative w-16 h-16 mx-auto">
+            <span class="absolute inset-0 rounded-full border-4 border-[#00ff87]/20 animate-pulse"></span>
+            <svg class="w-16 h-16 animate-spin text-[#00ff87]" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+        <div>
+            <h3 class="text-base font-black text-slate-900 dark:text-cyan-200">Subiendo Documento</h3>
+            <p class="text-xs text-slate-500 dark:text-sky-300 mt-1" id="overlayStatusMsg">Iniciando pipeline neuronal de extracción y voz...</p>
+        </div>
+        <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div class="bg-[#00ff87] h-2 w-full animate-pulse"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Text Limit Warning & Guidance Modal (Direct Paste Limiter) -->
+<div id="textLimitModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="card-tactile rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 border border-amber-500/40 shadow-2xl relative">
+        <!-- Modal Header -->
+        <div class="flex items-start gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center flex-shrink-0 text-amber-500 shadow-sm">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div class="space-y-1 min-w-0 flex-1">
+                <h3 class="text-base font-black text-slate-900 dark:text-cyan-200">Límite de Pegado Directo Excedido</h3>
+                <p class="text-xs text-slate-500 dark:text-sky-300">
+                    El texto detectado sobrepasa la capacidad recomendada para pegado directo.
+                </p>
+            </div>
+            <button type="button" onclick="closeTextLimitModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition" title="Cerrar ventana">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Stats Badge Comparison -->
+        <div class="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-950/60 font-mono text-center">
+            <div class="space-y-0.5">
+                <span class="text-xs uppercase text-rose-500 font-bold block">Texto Detectado</span>
+                <span id="modalDetectedChars" class="text-sm font-black text-rose-600 dark:text-rose-400">0 car.</span>
+                <span id="modalDetectedWords" class="text-xs text-slate-500 dark:text-sky-400 block">(0 palabras)</span>
+            </div>
+            <div class="space-y-0.5 border-l border-slate-200 dark:border-cyan-900/40">
+                <span class="text-xs uppercase text-emerald-600 dark:text-[#00ff87] font-bold block">Límite Permitido</span>
+                <span class="text-sm font-black text-emerald-600 dark:text-[#00ff87]">50,000 car.</span>
+                <span class="text-xs text-slate-500 dark:text-sky-400 block">(~10,000 pal. / ~1h audio)</span>
+            </div>
+        </div>
+
+        <!-- Explanatory recommendation -->
+        <div class="space-y-2 text-xs text-slate-600 dark:text-sky-200 leading-relaxed bg-emerald-500/5 border border-emerald-500/20 p-3.5 rounded-2xl">
+            <p class="font-bold text-slate-900 dark:text-cyan-100 flex items-center gap-1.5">
+                <span>💡 Recomendación para documentos extensos:</span>
+            </p>
+            <p>
+                El pegado directo está diseñado para artículos breves, notas o capítulos individuales. Si deseas convertir un libro completo o tesis, te recomendamos <strong>subirlo como archivo</strong> (<span class="font-mono text-emerald-600 dark:text-[#00ff87]">.pdf, .docx, .txt</span>).
+            </p>
+            <p class="text-xs text-slate-500 dark:text-sky-400">
+                Al subirlo como archivo, el sistema dividirá automáticamente todo el documento en pistas organizadas por capítulos sin riesgo de saturación ni truncado.
+            </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-1">
+            <button 
+                type="button" 
+                onclick="switchToUploadFromModal()"
+                class="btn-neon-tactile px-4 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-sm"
+            >
+                <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                <span>Cambiar a Subir Archivo</span>
+            </button>
+            <button 
+                type="button" 
+                onclick="truncateAndApplyText()"
+                class="px-3.5 py-2.5 text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition flex items-center justify-center gap-1.5"
+            >
+                <span>✂️ Recortar a 50,000 car.</span>
+            </button>
+            <button 
+                type="button" 
+                onclick="closeTextLimitModal()"
+                class="px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition text-center"
+            >
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Universal Stylish Notification & Error Modal (Replaces browser alert()) -->
+<div id="motaNoticeModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity">
+    <div id="motaNoticeBox" class="card-tactile rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 border border-rose-500/40 shadow-2xl relative transform transition-all duration-200 scale-95 opacity-0">
+        <!-- Modal Header -->
+        <div class="flex items-start gap-3.5">
+            <div id="motaNoticeIconBox" class="w-11 h-11 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center flex-shrink-0 text-rose-500 shadow-sm">
+                <span id="motaNoticeIcon" class="text-xl">⚠️</span>
+            </div>
+            <div class="space-y-1 min-w-0 flex-1">
+                <h3 id="motaNoticeTitle" class="text-base font-black text-slate-900 dark:text-cyan-200">Aviso</h3>
+                <p id="motaNoticeMessage" class="text-xs text-slate-600 dark:text-sky-300 leading-relaxed"></p>
+            </div>
+            <button type="button" onclick="closeMotaNoticeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition" title="Cerrar ventana">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Optional Technical Details -->
+        <div id="motaNoticeDetailContainer" class="hidden p-3 rounded-xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-950/60 font-mono text-xs text-slate-700 dark:text-cyan-300/90 max-h-36 overflow-y-auto leading-relaxed break-words whitespace-pre-wrap">
+            <span id="motaNoticeDetail"></span>
+        </div>
+
+        <!-- Modal Action Buttons -->
+        <div class="flex items-center justify-end gap-2 pt-1">
+            <button 
+                type="button" 
+                id="motaNoticeActionBtn"
+                onclick="closeMotaNoticeModal()"
+                class="w-full sm:w-auto px-5 py-2.5 btn-neon-tactile rounded-xl text-xs font-black transition flex items-center justify-center gap-2 shadow-sm"
+            >
+                <span>Entendido</span>
+            </button>
+        </div>
+    </div>
+</div>
