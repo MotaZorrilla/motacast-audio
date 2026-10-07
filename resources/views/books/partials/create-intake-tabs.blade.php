@@ -42,10 +42,12 @@
         <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp,.bmp,.mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden">
         
         <div class="flex flex-col items-center justify-center space-y-3">
-            <div class="w-14 h-14 rounded-2xl bg-white dark:bg-[#0d1c22] border border-slate-300 dark:border-cyan-700/50 shadow-sm flex items-center justify-center text-emerald-600 dark:text-cyan-400 group-hover:scale-105 group-hover:shadow-neon-sm transition">
-                <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+            <div id="dropZoneIconBox" class="w-14 h-14 rounded-2xl bg-white dark:bg-[#0d1c22] border border-slate-300 dark:border-cyan-700/50 shadow-sm flex items-center justify-center text-emerald-600 dark:text-cyan-400 group-hover:scale-105 group-hover:shadow-neon-sm transition">
+                <span id="dropZoneIcon">
+                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                </span>
             </div>
             <div class="text-center">
                 <p class="text-xs text-slate-500 dark:text-sky-400/80 mt-1">Word (.docx, .doc), PDF, TXT, MD, Fotos (PNG, JPG), Audio (MP3, WAV) o Video (MP4, MKV) — hasta 100 MB</p>
@@ -55,18 +57,17 @@
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/40">TXT/MD</span>
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">📸 IMG (OCR)</span>
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">🎙️ AUDIO (STT)</span>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40">🎬 VIDEO (MP4, MKV)</span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/10 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-500/30 dark:border-purple-500/50 shadow-[0_0_12px_rgba(168,85,247,0.2)]">🎬 VIDEO (MP4, MKV)</span>
                 </div>
             </div>
         </div>
 
         <!-- Selected File Indicator (hidden by default) -->
-        <div id="fileSelectedBox" style="display: none;" class="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-[#00ff87]/15 dark:bg-cyan-950/60 text-[#00c965] dark:text-cyan-300 border border-[#00ff87]/30 dark:border-cyan-500/40 rounded-xl text-xs font-semibold shadow-sm">
-            <svg class="w-4 h-4 text-[#00ff87] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
-            </svg>
-            <span id="selectedFileName">archivo.pdf</span>
-            <span id="selectedFileSize" class="text-slate-500 dark:text-sky-400 font-mono"></span>
+        <div id="fileSelectedBox" style="display: none;" class="mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-[#00ff87]/15 dark:bg-cyan-950/60 text-[#00c965] dark:text-cyan-300 border border-[#00ff87]/30 dark:border-cyan-500/40 rounded-xl text-xs font-semibold shadow-sm transition-all">
+            <span id="selectedFileIcon" class="text-base flex-shrink-0">📄</span>
+            <span id="selectedFileName" class="font-bold truncate max-w-xs">archivo.pdf</span>
+            <span id="selectedFileTypeBadge" class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/40">PDF</span>
+            <span id="selectedFileSize" class="text-slate-500 dark:text-sky-400 font-mono text-[11px]"></span>
         </div>
     </div>
 </div>

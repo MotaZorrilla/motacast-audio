@@ -156,18 +156,18 @@
             @endif
         @endauth
 
-        <!-- Step 2A: Voice & Reading Preferences (for Documents / Text / OCR) -->
-        <div id="stepVoiceSection" class="transition-all duration-300">
+        <!-- Step 2A: Voice & Reading Preferences (dynamically revealed when document or text is detected) -->
+        <div id="stepVoiceSection" class="hidden transition-all duration-500 ease-out">
             @include('books.partials.create-voice-preferences')
         </div>
 
         <!-- Step 2B: Audio & STT Preferences (dynamically shown when audio is selected) -->
-        <div id="stepAudioSection" class="hidden transition-all duration-300">
+        <div id="stepAudioSection" class="hidden transition-all duration-500 ease-out">
             @include('books.partials.create-audio-preferences')
         </div>
 
-        <!-- Submit Button -->
-        <div class="pt-2">
+        <!-- Step 3: Submit Action Bar (dynamically revealed when content is ready) -->
+        <div id="stepSubmitSection" class="hidden pt-2 transition-all duration-500 ease-out">
             <button 
                 type="submit" 
                 id="submitBtn"

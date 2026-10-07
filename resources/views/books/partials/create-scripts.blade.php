@@ -161,6 +161,9 @@
     function switchInputMode(mode) {
         currentInputMode = mode;
         if (inputModeHidden) inputModeHidden.value = mode;
+        const stepVoiceSection = document.getElementById('stepVoiceSection');
+        const stepAudioSection = document.getElementById('stepAudioSection');
+        const stepSubmitSection = document.getElementById('stepSubmitSection');
 
         if (mode === 'file') {
             sectionFileDrop.classList.remove('hidden');
@@ -172,7 +175,9 @@
             if (fileInput && fileInput.files && fileInput.files.length > 0) {
                 updateFileInfo(fileInput.files[0]);
             } else {
-                setDetectedContentType('text');
+                if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
+                if (stepAudioSection) stepAudioSection.classList.add('hidden');
+                if (stepSubmitSection) stepSubmitSection.classList.add('hidden');
             }
         } else {
             sectionFileDrop.classList.add('hidden');
@@ -181,7 +186,17 @@
             tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-[#0d1c22] text-slate-900 dark:text-[#00ff87] shadow-sm border border-slate-200 dark:border-cyan-800/60";
             tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-sky-400 hover:text-slate-900 dark:hover:text-cyan-200";
 
-            setDetectedContentType('text');
+            if (stepAudioSection) stepAudioSection.classList.add('hidden');
+
+            const hasText = rawTextInput && rawTextInput.value.trim().length >= 10;
+            if (hasText) {
+                if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
+                if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
+                if (submitBtnText) submitBtnText.textContent = '🚀 Comenzar a Crear Audiolibro';
+            } else {
+                if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
+                if (stepSubmitSection) stepSubmitSection.classList.add('hidden');
+            }
 
             if (rawTextInput) {
                 rawTextInput.focus();
@@ -196,6 +211,19 @@
         const chars = text.length;
         const words = (text.match(/\S+/g) || []).length;
         const minutes = Math.max(1, Math.ceil(words / 150)); // ~150 words per minute speaking rate
+
+        if (currentInputMode === 'text') {
+            const stepVoiceSection = document.getElementById('stepVoiceSection');
+            const stepSubmitSection = document.getElementById('stepSubmitSection');
+            if (chars >= 10) {
+                if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
+                if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
+                if (submitBtnText) submitBtnText.textContent = '🚀 Comenzar a Crear Audiolibro';
+            } else {
+                if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
+                if (stepSubmitSection) stepSubmitSection.classList.add('hidden');
+            }
+        }
 
         if (counterWords) counterWords.textContent = words.toLocaleString();
         if (counterChars) {
@@ -237,7 +265,7 @@
             if (!navigator.clipboard) {
                 showNoticeModal({
                     title: 'Acceso a Portapapeles',
-                    message: 'Tu navegador no permite lectura directa del portapapeles. Por favor presiona Ctrl+V en el Ã¡rea de texto.',
+                    message: 'Tu navegador no permite lectura directa del portapapeles. Por favor presiona Ctrl+V en el área de texto.',
                     type: 'info'
                 });
                 return;
@@ -255,8 +283,8 @@
                 updateTextCounters();
             } else {
                 showNoticeModal({
-                    title: 'Portapapeles de Texto VacÃ­o',
-                    message: 'No se detectÃ³ texto en el portapapeles. Si copiaste una imagen o captura de pantalla, puedes usar el botÃ³n Â«ðŸ“¸ OCR ImagenÂ» o pulsar Ctrl+V.',
+                    title: 'Portapapeles de Texto Vacío',
+                    message: 'No se detectó texto en el portapapeles. Si copiaste una imagen o captura de pantalla, puedes usar el botón «📸 OCR Imagen» o pulsar Ctrl+V.',
                     type: 'warning'
                 });
             }
@@ -264,7 +292,7 @@
             console.warn('Clipboard read error:', err);
             showNoticeModal({
                 title: 'Permiso del Portapapeles',
-                message: 'No se pudo leer el portapapeles directamente. Por favor presiona Ctrl+V manualmente en el Ã¡rea de texto.',
+                message: 'No se pudo leer el portapapeles directamente. Por favor presiona Ctrl+V manualmente en el área de texto.',
                 type: 'info'
             });
         }
@@ -274,6 +302,10 @@
         if (rawTextInput) {
             rawTextInput.value = '';
             updateTextCounters();
+            const stepVoiceSection = document.getElementById('stepVoiceSection');
+            const stepSubmitSection = document.getElementById('stepSubmitSection');
+            if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
+            if (stepSubmitSection) stepSubmitSection.classList.add('hidden');
             rawTextInput.focus();
         }
     }
@@ -361,7 +393,9 @@
         currentMediaKind = mediaKind;
         const modal = document.getElementById('motaMediaStrategyModal');
         const box = document.getElementById('motaMediaStrategyBox');
+        const iconBox = document.getElementById('mediaModalIconBox');
         const iconEl = document.getElementById('mediaModalIcon');
+        const miniIconEl = document.getElementById('mediaModalMiniIcon');
         const badgeEl = document.getElementById('mediaModalTypeBadge');
         const titleEl = document.getElementById('mediaModalTitle');
         const subtitleEl = document.getElementById('mediaModalSubtitle');
@@ -372,20 +406,34 @@
 
         if (mediaKind === 'video') {
             if (iconEl) iconEl.textContent = '🎬';
+            if (miniIconEl) miniIconEl.textContent = '🎬';
             if (badgeEl) {
                 badgeEl.textContent = 'Video';
-                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-purple-500/20 border border-purple-500/40 text-purple-700 dark:text-purple-300';
+                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-purple-500/20 border border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.2)]';
             }
             if (titleEl) titleEl.textContent = 'Archivo de Video Detectado';
             if (subtitleEl) subtitleEl.textContent = 'Se detectó un video multimedia. Extraeremos su pista de audio con IA para convertirlo en audiolibro neuronal o texto.';
+            if (box) {
+                box.className = "card-tactile rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 border border-purple-500/40 shadow-[0_0_35px_rgba(168,85,247,0.2)] relative transform transition-all duration-300";
+            }
+            if (iconBox) {
+                iconBox.className = "w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center flex-shrink-0 text-2xl shadow-sm text-purple-400";
+            }
         } else {
             if (iconEl) iconEl.textContent = '🎙️';
+            if (miniIconEl) miniIconEl.textContent = '🎙️';
             if (badgeEl) {
                 badgeEl.textContent = 'Audio';
-                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-[#00ff87]/20 border border-[#00ff87]/40 text-[#00c965] dark:text-[#00ff87]';
+                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-[#00ff87]/20 border border-[#00ff87]/40 text-[#00c965] dark:text-[#00ff87] shadow-[0_0_10px_rgba(0,255,135,0.2)]';
             }
             if (titleEl) titleEl.textContent = 'Archivo de Audio Detectado';
             if (subtitleEl) subtitleEl.textContent = 'Se detectó una grabación de voz. Selecciona la estrategia de procesamiento y retención deseada.';
+            if (box) {
+                box.className = "card-tactile rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 border border-[#00ff87]/40 shadow-[0_0_35px_rgba(0,255,135,0.2)] relative transform transition-all duration-300";
+            }
+            if (iconBox) {
+                iconBox.className = "w-12 h-12 rounded-2xl bg-[#00ff87]/15 border border-[#00ff87]/30 flex items-center justify-center flex-shrink-0 text-2xl shadow-sm text-[#00ff87]";
+            }
         }
 
         if (nameEl && file) nameEl.textContent = file.name;
@@ -416,6 +464,7 @@
 
         const stepVoiceSection = document.getElementById('stepVoiceSection');
         const stepAudioSection = document.getElementById('stepAudioSection');
+        const stepSubmitSection = document.getElementById('stepSubmitSection');
         const submitBtnText = document.getElementById('submitBtnText');
 
         if (strategy === 'stt_review_then_tts') {
@@ -425,6 +474,7 @@
                 uploadAndTranscribeAudio(fileInput.files[0], 'sttStatusBox', 'sttStatusText', (data) => {
                     if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
                     if (stepAudioSection) stepAudioSection.classList.add('hidden');
+                    if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
                     if (submitBtnText) submitBtnText.textContent = '🚀 Generar Audiolibro Neuronal con este Texto';
                     showNoticeModal({
                         title: '¡Transcripción y Auto-Corrección Listas!',
@@ -440,11 +490,13 @@
             currentAudioActionMode = 'stt_and_tts';
             if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
             if (stepAudioSection) stepAudioSection.classList.add('hidden');
+            if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
             if (submitBtnText) submitBtnText.textContent = '✨ Transcribir y Crear Audiolibro Neuronal';
         } else {
             currentAudioActionMode = 'stt_only';
             if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
             if (stepAudioSection) stepAudioSection.classList.remove('hidden');
+            if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
             if (submitBtnText) {
                 submitBtnText.textContent = (currentMediaKind === 'video')
                     ? '🎬 Transcribir Video a Texto (STT)'
@@ -460,6 +512,7 @@
         currentMediaKind = mediaKind;
         const stepVoiceSection = document.getElementById('stepVoiceSection');
         const stepAudioSection = document.getElementById('stepAudioSection');
+        const stepSubmitSection = document.getElementById('stepSubmitSection');
         const submitBtnText = document.getElementById('submitBtnText');
 
         if (type === 'audio' && file) {
@@ -476,23 +529,31 @@
             if (currentAudioActionMode === 'stt_and_tts') {
                 if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
                 if (stepAudioSection) stepAudioSection.classList.add('hidden');
+                if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
                 if (submitBtnText) submitBtnText.textContent = '✨ Transcribir y Crear Audiolibro Neuronal';
             } else {
                 if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
                 if (stepAudioSection) stepAudioSection.classList.remove('hidden');
+                if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
                 if (submitBtnText) {
                     submitBtnText.textContent = (mediaKind === 'video')
                         ? '🎬 Transcribir Video a Texto (STT)'
                         : '🎙️ Transcribir Audio a Texto (STT)';
                 }
             }
-        } else {
+        } else if (file) {
             if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
             if (stepAudioSection) stepAudioSection.classList.add('hidden');
+            if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
 
             if (submitBtnText) {
                 submitBtnText.textContent = '🚀 Comenzar a Crear Audiolibro';
             }
+        } else {
+            // Initial state: no file and not enough text
+            if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
+            if (stepAudioSection) stepAudioSection.classList.add('hidden');
+            if (stepSubmitSection) stepSubmitSection.classList.add('hidden');
         }
     }
 
@@ -693,16 +754,84 @@
         if (fileSelectedBox) fileSelectedBox.style.display = 'inline-flex';
         if (fileLabel) fileLabel.textContent = 'Archivo seleccionado correctamente';
 
+        const nameLower = file.name.toLowerCase();
         const audioExts = ['.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac'];
         const videoExts = ['.mp4', '.mkv', '.mov', '.avi', '.webm'];
-        const isAudio = audioExts.some(ext => file.name.toLowerCase().endsWith(ext));
-        const isVideo = videoExts.some(ext => file.name.toLowerCase().endsWith(ext));
+        const imgExts = ['.png', '.jpg', '.jpeg', '.webp', '.bmp'];
+        const isAudio = audioExts.some(ext => nameLower.endsWith(ext));
+        const isVideo = videoExts.some(ext => nameLower.endsWith(ext));
+        const isImg = imgExts.some(ext => nameLower.endsWith(ext));
+        const isDocx = nameLower.endsWith('.docx') || nameLower.endsWith('.doc');
+
+        const iconEl = document.getElementById('selectedFileIcon');
+        const badgeEl = document.getElementById('selectedFileTypeBadge');
+        const dropIconBox = document.getElementById('dropZoneIconBox');
+
+        if (isVideo) {
+            if (iconEl) iconEl.textContent = '🎬';
+            if (badgeEl) {
+                badgeEl.textContent = 'VIDEO';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40 shadow-[0_0_10px_rgba(168,85,247,0.2)]';
+            }
+            if (fileSelectedBox) {
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-purple-500/10 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-500/40 rounded-xl text-xs font-semibold shadow-[0_0_20px_rgba(168,85,247,0.15)] transition-all';
+            }
+            if (dropIconBox) {
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-purple-500/10 dark:bg-purple-950/60 border border-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.2)] flex items-center justify-center text-purple-400 group-hover:scale-105 transition';
+            }
+        } else if (isAudio) {
+            if (iconEl) iconEl.textContent = '🎙️';
+            if (badgeEl) {
+                badgeEl.textContent = 'AUDIO';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#00ff87]/20 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 shadow-[0_0_10px_rgba(0,255,135,0.2)]';
+            }
+            if (fileSelectedBox) {
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-[#00ff87]/10 dark:bg-cyan-950/60 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 rounded-xl text-xs font-semibold shadow-[0_0_20px_rgba(0,255,135,0.15)] transition-all';
+            }
+            if (dropIconBox) {
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-emerald-500/10 dark:bg-[#00ff87]/10 border border-[#00ff87]/40 shadow-[0_0_20px_rgba(0,255,135,0.2)] flex items-center justify-center text-[#00ff87] group-hover:scale-105 transition';
+            }
+        } else if (isImg) {
+            if (iconEl) iconEl.textContent = '📸';
+            if (badgeEl) {
+                badgeEl.textContent = 'OCR IMG';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40';
+            }
+            if (fileSelectedBox) {
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-amber-500/10 dark:bg-amber-950/50 text-amber-600 dark:text-amber-300 border border-amber-500/30 rounded-xl text-xs font-semibold shadow-sm transition-all';
+            }
+            if (dropIconBox) {
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-amber-500/10 dark:bg-amber-950/50 border border-amber-500/40 shadow-sm flex items-center justify-center text-amber-400 group-hover:scale-105 transition';
+            }
+        } else {
+            if (iconEl) iconEl.textContent = '📄';
+            if (badgeEl) {
+                badgeEl.textContent = isDocx ? 'WORD' : (nameLower.endsWith('.pdf') ? 'PDF' : 'DOC');
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/40';
+            }
+            if (fileSelectedBox) {
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-cyan-500/10 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-300 border border-cyan-500/40 rounded-xl text-xs font-semibold shadow-sm transition-all';
+            }
+            if (dropIconBox) {
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-white dark:bg-[#0d1c22] border border-slate-300 dark:border-cyan-700/50 shadow-sm flex items-center justify-center text-emerald-600 dark:text-cyan-400 group-hover:scale-105 group-hover:shadow-neon-sm transition';
+            }
+        }
 
         if (isAudio || isVideo) {
             setDetectedContentType('audio', file, isVideo ? 'video' : 'audio');
             openMediaStrategyModal(file, isVideo ? 'video' : 'audio');
         } else {
             setDetectedContentType('text', file);
+            const stepVoice = document.getElementById('stepVoiceSection');
+            const stepAudio = document.getElementById('stepAudioSection');
+            const stepSubmit = document.getElementById('stepSubmitSection');
+            if (stepVoice) stepVoice.classList.remove('hidden');
+            if (stepAudio) stepAudio.classList.add('hidden');
+            if (stepSubmit) stepSubmit.classList.remove('hidden');
+            if (submitBtnText) submitBtnText.textContent = '🚀 Comenzar a Crear Audiolibro';
+            if (stepVoice) {
+                setTimeout(() => stepVoice.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+            }
         }
     }
 

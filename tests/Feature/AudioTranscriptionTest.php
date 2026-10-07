@@ -242,6 +242,10 @@ class AudioTranscriptionTest extends TestCase
         $response->assertSee('stepVoiceSection', false);
         $response->assertSee('stepAudioSection', false);
         $response->assertSee('Opciones de Archivo de Audio y Transcripción', false);
+        $response->assertSee('id="stepVoiceSection" class="hidden', false);
+        $response->assertSee('id="stepSubmitSection" class="hidden', false);
+        $response->assertSee('id="selectedFileTypeBadge"', false);
+        $response->assertSee('id="selectedFileIcon"', false);
     }
 
     public function test_create_view_contains_updated_onboarding_guide_and_steps(): void
