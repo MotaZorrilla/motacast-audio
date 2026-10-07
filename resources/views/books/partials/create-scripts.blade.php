@@ -409,30 +409,30 @@
             if (miniIconEl) miniIconEl.textContent = '🎬';
             if (badgeEl) {
                 badgeEl.textContent = 'Video';
-                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-purple-500/20 border border-purple-500/40 text-purple-700 dark:text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.2)]';
+                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-cyan-500/20 border border-cyan-500/40 text-cyan-700 dark:text-cyan-300';
             }
             if (titleEl) titleEl.textContent = 'Archivo de Video Detectado';
             if (subtitleEl) subtitleEl.textContent = 'Se detectó un video multimedia. Extraeremos su pista de audio con IA para convertirlo en audiolibro neuronal o texto.';
             if (box) {
-                box.className = "card-tactile rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 border border-purple-500/40 shadow-[0_0_35px_rgba(168,85,247,0.2)] relative transform transition-all duration-300";
+                box.className = "card-tactile rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col relative transform transition-all duration-300 border border-cyan-500/40 shadow-2xl overflow-hidden my-auto";
             }
             if (iconBox) {
-                iconBox.className = "w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center flex-shrink-0 text-2xl shadow-sm text-purple-400";
+                iconBox.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0 text-xl shadow-sm text-cyan-400";
             }
         } else {
             if (iconEl) iconEl.textContent = '🎙️';
             if (miniIconEl) miniIconEl.textContent = '🎙️';
             if (badgeEl) {
                 badgeEl.textContent = 'Audio';
-                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-[#00ff87]/20 border border-[#00ff87]/40 text-[#00c965] dark:text-[#00ff87] shadow-[0_0_10px_rgba(0,255,135,0.2)]';
+                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-[#00ff87]/20 border border-[#00ff87]/40 text-[#00c965] dark:text-[#00ff87]';
             }
             if (titleEl) titleEl.textContent = 'Archivo de Audio Detectado';
             if (subtitleEl) subtitleEl.textContent = 'Se detectó una grabación de voz. Selecciona la estrategia de procesamiento y retención deseada.';
             if (box) {
-                box.className = "card-tactile rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 border border-[#00ff87]/40 shadow-[0_0_35px_rgba(0,255,135,0.2)] relative transform transition-all duration-300";
+                box.className = "card-tactile rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col relative transform transition-all duration-300 border border-[#00ff87]/40 shadow-2xl overflow-hidden my-auto";
             }
             if (iconBox) {
-                iconBox.className = "w-12 h-12 rounded-2xl bg-[#00ff87]/15 border border-[#00ff87]/30 flex items-center justify-center flex-shrink-0 text-2xl shadow-sm text-[#00ff87]";
+                iconBox.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#00ff87]/10 border border-[#00ff87]/30 flex items-center justify-center flex-shrink-0 text-xl shadow-sm text-[#00ff87]";
             }
         }
 
@@ -771,25 +771,25 @@
             if (iconEl) iconEl.textContent = '🎬';
             if (badgeEl) {
                 badgeEl.textContent = 'VIDEO';
-                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40 shadow-[0_0_10px_rgba(168,85,247,0.2)]';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/40';
             }
             if (fileSelectedBox) {
-                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-purple-500/10 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-500/40 rounded-xl text-xs font-semibold shadow-[0_0_20px_rgba(168,85,247,0.15)] transition-all';
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-cyan-500/10 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-300 border border-cyan-500/40 rounded-xl text-xs font-semibold shadow-sm transition-all';
             }
             if (dropIconBox) {
-                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-purple-500/10 dark:bg-purple-950/60 border border-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.2)] flex items-center justify-center text-purple-400 group-hover:scale-105 transition';
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-cyan-500/10 dark:bg-cyan-950/50 border border-cyan-500/40 shadow-sm flex items-center justify-center text-cyan-400 group-hover:scale-105 transition';
             }
         } else if (isAudio) {
             if (iconEl) iconEl.textContent = '🎙️';
             if (badgeEl) {
                 badgeEl.textContent = 'AUDIO';
-                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#00ff87]/20 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 shadow-[0_0_10px_rgba(0,255,135,0.2)]';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#00ff87]/20 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40';
             }
             if (fileSelectedBox) {
-                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-[#00ff87]/10 dark:bg-cyan-950/60 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 rounded-xl text-xs font-semibold shadow-[0_0_20px_rgba(0,255,135,0.15)] transition-all';
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-[#00ff87]/10 dark:bg-cyan-950/60 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 rounded-xl text-xs font-semibold shadow-sm transition-all';
             }
             if (dropIconBox) {
-                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-emerald-500/10 dark:bg-[#00ff87]/10 border border-[#00ff87]/40 shadow-[0_0_20px_rgba(0,255,135,0.2)] flex items-center justify-center text-[#00ff87] group-hover:scale-105 transition';
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-emerald-500/10 dark:bg-[#00ff87]/10 border border-[#00ff87]/40 shadow-sm flex items-center justify-center text-[#00ff87] group-hover:scale-105 transition';
             }
         } else if (isImg) {
             if (iconEl) iconEl.textContent = '📸';
