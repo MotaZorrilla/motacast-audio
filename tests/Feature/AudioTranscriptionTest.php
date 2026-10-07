@@ -237,6 +237,30 @@ class AudioTranscriptionTest extends TestCase
         $response->assertSee('sttAudioInput', false);
         $response->assertSee('sttStatusBox', false);
         $response->assertSee('Audio a Texto (STT)', false);
+        $response->assertSee('stepVoiceSection', false);
+        $response->assertSee('stepAudioSection', false);
+        $response->assertSee('Opciones de Archivo de Audio y Transcripción', false);
+    }
+
+    public function test_create_view_contains_updated_onboarding_guide_and_steps(): void
+    {
+        $user = User::factory()->create();
+        $response = $this->actingAs($user)->get(route('books.create'));
+
+        $response->assertStatus(200);
+        $response->assertSee('¿Cómo usar MotaCastAudio? — Fácil en 3 Pasos', false);
+        $response->assertSee('Elige tu archivo o audio', false);
+        $response->assertSee('Configura según el formato', false);
+        $response->assertSee('Escucha y exporta al instante', false);
+    }
+
+    public function test_app_version_displays_v0_9_0_beta(): void
+    {
+        $user = User::factory()->create();
+        $response = $this->actingAs($user)->get(route('books.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('v0.9.0-beta', false);
     }
 
     public function test_show_view_contains_transcription_action_buttons(): void

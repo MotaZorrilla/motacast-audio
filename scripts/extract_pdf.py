@@ -714,6 +714,16 @@ class UniversalExtractionEngine:
                 return DocExtractor
             if header.startswith(b'PK\x03\x04'):
                 return DocxExtractor
+            # Audio signatures (MP3, WAV, OGG, FLAC, M4A/AAC)
+            if (
+                header.startswith(b'ID3') or
+                header.startswith((b'\xff\xfb', b'\xff\xf3', b'\xff\xf2')) or
+                (header.startswith(b'RIFF') and b'WAVE' in header) or
+                header.startswith(b'OggS') or
+                header.startswith(b'fLaC') or
+                (len(header) >= 8 and header[4:8] == b'ftyp')
+            ):
+                return AudioTranscriptionExtractor
             try:
                 from PIL import Image
                 with Image.open(file_path) as img:

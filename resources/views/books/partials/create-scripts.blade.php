@@ -164,12 +164,20 @@
 
             tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-[#0d1c22] text-slate-900 dark:text-[#00ff87] shadow-sm border border-slate-200 dark:border-cyan-800/60";
             tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-sky-400 hover:text-slate-900 dark:hover:text-cyan-200";
+
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                updateFileInfo(fileInput.files[0]);
+            } else {
+                setDetectedContentType('text');
+            }
         } else {
             sectionFileDrop.classList.add('hidden');
             sectionRawText.classList.remove('hidden');
 
             tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-[#0d1c22] text-slate-900 dark:text-[#00ff87] shadow-sm border border-slate-200 dark:border-cyan-800/60";
             tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-sky-400 hover:text-slate-900 dark:hover:text-cyan-200";
+
+            setDetectedContentType('text');
 
             if (rawTextInput) {
                 rawTextInput.focus();
@@ -338,23 +346,98 @@
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Audio-to-Text (STT) Speech Transcription Client Engine
+    // Audio-to-Text (STT) Speech Transcription Client Engine & Dynamic Step UX
     // ──────────────────────────────────────────────────────────────────────────
+    let currentDetectedType = 'text'; // 'text' | 'audio'
+    let currentAudioActionMode = 'stt_only'; // 'stt_only' | 'stt_and_tts'
+
+    function setDetectedContentType(type, file = null) {
+        currentDetectedType = type;
+        const stepVoiceSection = document.getElementById('stepVoiceSection');
+        const stepAudioSection = document.getElementById('stepAudioSection');
+        const submitBtnText = document.getElementById('submitBtnText');
+
+        if (type === 'audio' && file) {
+            if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
+            if (stepAudioSection) stepAudioSection.classList.remove('hidden');
+
+            const nameEl = document.getElementById('audioFileNameDisplay');
+            const sizeEl = document.getElementById('audioFileSizeDisplay');
+            if (nameEl) nameEl.textContent = file.name;
+            if (sizeEl) {
+                const mb = (file.size / (1024 * 1024)).toFixed(2);
+                sizeEl.textContent = `Archivo de audio detectado (${mb} MB)`;
+            }
+
+            if (submitBtnText) {
+                submitBtnText.textContent = (currentAudioActionMode === 'stt_only')
+                    ? '🎙️ Transcribir Audio a Texto (STT)'
+                    : '⚡ Transcribir y Sintetizar Audiolibro';
+            }
+        } else {
+            if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
+            if (stepAudioSection) stepAudioSection.classList.add('hidden');
+
+            if (submitBtnText) {
+                submitBtnText.textContent = '🚀 Comenzar a Crear Audiolibro';
+            }
+        }
+    }
+
+    function onAudioActionModeChanged(mode) {
+        currentAudioActionMode = mode;
+        const voiceContainer = document.getElementById('audioTtsVoiceContainer');
+        const submitBtnText = document.getElementById('submitBtnText');
+
+        if (mode === 'stt_and_tts') {
+            if (voiceContainer) voiceContainer.classList.remove('hidden');
+            if (submitBtnText) submitBtnText.textContent = '⚡ Transcribir y Sintetizar Audiolibro';
+        } else {
+            if (voiceContainer) voiceContainer.classList.add('hidden');
+            if (submitBtnText) submitBtnText.textContent = '🎙️ Transcribir Audio a Texto (STT)';
+        }
+    }
+
+    function syncAudioVoice(val) {
+        const mainVoice = document.getElementById('voice');
+        if (mainVoice) mainVoice.value = val;
+    }
+
+    function triggerDirectSttFromSelectedAudio() {
+        if (!fileInput.files || fileInput.files.length === 0) {
+            showNoticeModal({
+                title: 'Audio Requerido',
+                message: 'Por favor selecciona o arrastra un archivo de audio para transcribir.',
+                type: 'warning'
+            });
+            return;
+        }
+        uploadAndTranscribeAudio(fileInput.files[0], 'directSttStatusBox', 'directSttStatusText');
+    }
+
     function handleSttAudioUpload(input) {
         if (input.files && input.files.length > 0) {
-            uploadAndTranscribeAudio(input.files[0]);
+            uploadAndTranscribeAudio(input.files[0], 'sttStatusBox', 'sttStatusText');
             input.value = '';
         }
     }
 
-    function uploadAndTranscribeAudio(file) {
-        const box = document.getElementById('sttStatusBox');
-        const textLabel = document.getElementById('sttStatusText');
+    function uploadAndTranscribeAudio(file, customBoxId = null, customLabelId = null) {
+        const boxId = customBoxId || 'sttStatusBox';
+        const labelId = customLabelId || 'sttStatusText';
+        const box = document.getElementById(boxId);
+        const textLabel = document.getElementById(labelId);
+        const btnTranscribe = document.getElementById('btnTranscribeAudioNow');
+
+        if (btnTranscribe) {
+            btnTranscribe.disabled = true;
+            btnTranscribe.classList.add('opacity-60', 'cursor-not-allowed');
+        }
         if (box) {
             box.classList.remove('hidden');
             box.classList.add('flex');
         }
-        if (textLabel) textLabel.textContent = `Transcribiendo audio "${file.name || 'grabación'}" con IA...`;
+        if (textLabel) textLabel.textContent = `Transcribiendo voz del audio "${file.name || 'grabación'}" con IA...`;
 
         const formData = new FormData();
         formData.append('audio', file);
@@ -373,6 +456,10 @@
                 box.classList.add('hidden');
                 box.classList.remove('flex');
             }
+            if (btnTranscribe) {
+                btnTranscribe.disabled = false;
+                btnTranscribe.classList.remove('opacity-60', 'cursor-not-allowed');
+            }
             if (data.success && data.text) {
                 switchInputMode('text');
                 const prev = rawTextInput.value.trim();
@@ -388,6 +475,12 @@
                 if (titleInput && !titleInput.value && data.title) {
                     titleInput.value = data.title;
                 }
+
+                showNoticeModal({
+                    title: '¡Transcripción Exitosa!',
+                    message: `Se transcribieron ${data.words || 0} palabras del audio. Ya tienes el texto disponible en el área de texto para leerlo, exportarlo o convertirlo en audiolibro.`,
+                    type: 'success'
+                });
             } else {
                 showNoticeModal({
                     title: 'Incidencia en Transcripción de Audio',
@@ -402,6 +495,10 @@
             if (box) {
                 box.classList.add('hidden');
                 box.classList.remove('flex');
+            }
+            if (btnTranscribe) {
+                btnTranscribe.disabled = false;
+                btnTranscribe.classList.remove('opacity-60', 'cursor-not-allowed');
             }
             showNoticeModal({
                 title: 'Error de Comunicación',
@@ -478,6 +575,14 @@
         selectedFileSize.textContent = `(${sizeMb} MB)`;
         fileSelectedBox.style.display = 'inline-flex';
         fileLabel.textContent = 'Archivo seleccionado correctamente';
+
+        const audioExts = ['.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac'];
+        const isAudio = audioExts.some(ext => file.name.toLowerCase().endsWith(ext));
+        if (isAudio) {
+            setDetectedContentType('audio', file);
+        } else {
+            setDetectedContentType('text', file);
+        }
     }
 
     // Submit state feedback & overlay activation
@@ -487,9 +592,16 @@
                 e.preventDefault();
                 showNoticeModal({
                     title: 'Documento Requerido',
-                    message: 'Por favor selecciona o arrastra un archivo antes de comenzar la sÃ­ntesis.',
+                    message: 'Por favor selecciona o arrastra un archivo antes de comenzar.',
                     type: 'warning'
                 });
+                return false;
+            }
+
+            // If audio file and mode is STT only, trigger direct STT without full page reload
+            if (currentDetectedType === 'audio' && currentAudioActionMode === 'stt_only') {
+                e.preventDefault();
+                triggerDirectSttFromSelectedAudio();
                 return false;
             }
         } else {

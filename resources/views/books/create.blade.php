@@ -40,22 +40,22 @@
             <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/70 dark:bg-[#071014]/70 border border-slate-200/80 dark:border-cyan-900/50 shadow-xs">
                 <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-xs shrink-0">1</span>
                 <div>
-                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Elige tu lectura</strong>
-                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Sube Word (.doc/.docx), PDF o pega cualquier texto directo.</span>
+                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Elige tu archivo o audio</strong>
+                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Sube Word (.doc/.docx), PDF, fotos (OCR), audios (MP3, WAV) o pega texto directo.</span>
                 </div>
             </div>
             <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/70 dark:bg-[#071014]/70 border border-slate-200/80 dark:border-cyan-900/50 shadow-xs">
                 <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-xs shrink-0">2</span>
                 <div>
-                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Prueba la voz</strong>
-                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Pulsa <strong>«Escuchar muestra»</strong> para elegir la voz que prefieras.</span>
+                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Configura según el formato</strong>
+                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Si es texto, prueba y elige la voz deseada. Si es audio, activa la transcripción a texto (STT).</span>
                 </div>
             </div>
             <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/70 dark:bg-[#071014]/70 border border-slate-200/80 dark:border-cyan-900/50 shadow-xs">
                 <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-xs shrink-0">3</span>
                 <div>
-                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Escucha de inmediato</strong>
-                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Tu audiolibro comenzará al instante. Podrás escucharlo o descargarlo en MP3.</span>
+                    <strong class="text-slate-900 dark:text-cyan-200 block text-xs">Escucha y exporta al instante</strong>
+                    <span class="text-[11px] text-slate-600 dark:text-sky-300/80 leading-snug block mt-0.5">Tu audiolibro comenzará al instante. Podrás escucharlo o descargarlo en MP3, TXT o Markdown.</span>
                 </div>
             </div>
         </div>
@@ -156,8 +156,15 @@
             @endif
         @endauth
 
-        <!-- Voice & Reading Preferences -->
-        @include('books.partials.create-voice-preferences')
+        <!-- Step 2A: Voice & Reading Preferences (for Documents / Text / OCR) -->
+        <div id="stepVoiceSection" class="transition-all duration-300">
+            @include('books.partials.create-voice-preferences')
+        </div>
+
+        <!-- Step 2B: Audio & STT Preferences (dynamically shown when audio is selected) -->
+        <div id="stepAudioSection" class="hidden transition-all duration-300">
+            @include('books.partials.create-audio-preferences')
+        </div>
 
         <!-- Submit Button -->
         <div class="pt-2">
