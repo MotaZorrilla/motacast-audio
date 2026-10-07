@@ -135,3 +135,114 @@
         </div>
     </div>
 </div>
+
+<!-- Interactive Media Strategy & Storage Decision Modal -->
+<div id="motaMediaStrategyModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity">
+    <div id="motaMediaStrategyBox" class="card-tactile rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 border border-[#00ff87]/40 shadow-2xl relative transform transition-all duration-200">
+        <!-- Modal Header -->
+        <div class="flex items-start gap-3.5">
+            <div id="mediaModalIconBox" class="w-12 h-12 rounded-2xl bg-[#00ff87]/15 border border-[#00ff87]/30 flex items-center justify-center flex-shrink-0 text-2xl shadow-sm text-[#00ff87]">
+                <span id="mediaModalIcon">🎙️</span>
+            </div>
+            <div class="space-y-1 min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                    <h3 id="mediaModalTitle" class="text-base font-black text-slate-900 dark:text-cyan-200">Archivo Multimedia Detectado</h3>
+                    <span id="mediaModalTypeBadge" class="px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-[#00ff87]/20 border border-[#00ff87]/40 text-[#00c965] dark:text-[#00ff87]">Audio</span>
+                </div>
+                <p id="mediaModalSubtitle" class="text-xs text-slate-600 dark:text-sky-300">
+                    Se detectó un archivo de audio o video. Selecciona la estrategia de procesamiento deseada.
+                </p>
+            </div>
+            <button type="button" onclick="closeMediaStrategyModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition" title="Cerrar ventana">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Detected File Info Strip -->
+        <div class="p-3 rounded-2xl bg-slate-100 dark:bg-[#071014] border border-slate-200 dark:border-cyan-950/60 flex items-center justify-between text-xs font-mono">
+            <span id="mediaModalFileName" class="font-bold text-slate-800 dark:text-cyan-200 truncate max-w-xs">archivo.mp4</span>
+            <span id="mediaModalFileSize" class="text-slate-500 dark:text-sky-400 font-bold shrink-0">0 MB</span>
+        </div>
+
+        <!-- Strategy Selection Options -->
+        <div class="space-y-2.5">
+            <label class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
+                1. ¿Cómo deseas procesar este contenido?
+            </label>
+            <div class="space-y-2">
+                <!-- Option 1: Transcribe STT + Synthesize TTS (Recommended) -->
+                <label class="flex items-start gap-3 p-3 rounded-2xl border-2 border-emerald-500/50 bg-emerald-500/5 dark:bg-[#00ff87]/5 cursor-pointer hover:border-[#00ff87] transition">
+                    <input type="radio" name="modal_strategy_option" value="stt_tts" checked class="mt-1 text-emerald-500 focus:ring-[#00ff87]">
+                    <div class="text-xs">
+                        <strong class="text-slate-900 dark:text-cyan-100 block font-bold">
+                            ✨ Transcribir a Texto y Convertir a Audiolibro Neuronal <span class="text-[10px] text-[#00c965] dark:text-[#00ff87] font-mono">(Recomendado)</span>
+                        </strong>
+                        <span class="text-[11px] text-slate-600 dark:text-sky-300/80 block mt-0.5 leading-snug">
+                            Extrae la voz a texto estructurado con IA y narra el libro con una voz neuronal de alta calidad con capítulos indexados.
+                        </span>
+                    </div>
+                </label>
+
+                <!-- Option 2: STT Only -->
+                <label class="flex items-start gap-3 p-3 rounded-2xl border border-slate-200 dark:border-cyan-900/50 bg-white/70 dark:bg-[#071014]/70 cursor-pointer hover:border-[#00ff87] transition">
+                    <input type="radio" name="modal_strategy_option" value="stt_only" class="mt-1 text-emerald-500 focus:ring-[#00ff87]">
+                    <div class="text-xs">
+                        <strong class="text-slate-900 dark:text-cyan-100 block font-bold">
+                            🎙️ Solo Transcribir a Texto (STT Rápido)
+                        </strong>
+                        <span class="text-[11px] text-slate-600 dark:text-sky-300/80 block mt-0.5 leading-snug">
+                            Extrae todo el texto del archivo de inmediato para lectura, edición o descarga en TXT/Markdown sin generar audio nuevo.
+                        </span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Storage & Retention Policy Question -->
+        <div class="space-y-2 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs">
+            <label class="block font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                <span>💾</span>
+                <span>2. ¿Conservar el archivo multimedia original?</span>
+            </label>
+            <div class="space-y-2 pt-1">
+                <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="radio" name="modal_keep_media" value="0" checked class="mt-0.5 text-amber-500 focus:ring-amber-500">
+                    <div class="text-[11px]">
+                        <strong class="text-slate-900 dark:text-cyan-100 block">Desechar el archivo original tras transcribir (Ahorro de almacenamiento)</strong>
+                        <span class="text-slate-500 dark:text-sky-300/80 block">Elimina el archivo fuente pesado una vez extraído el texto. El audiolibro y texto quedan 100% disponibles.</span>
+                    </div>
+                </label>
+                <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="radio" name="modal_keep_media" value="1" class="mt-0.5 text-amber-500 focus:ring-amber-500">
+                    <div class="text-[11px]">
+                        <strong class="text-amber-800 dark:text-amber-200 block">Conservar archivo multimedia original en el servidor</strong>
+                        <span class="text-amber-600 dark:text-amber-300/90 font-medium block">⚠️ Advertencia: Consumirá mayor espacio de almacenamiento en el disco del servidor.</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Modal Action Buttons -->
+        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200 dark:border-cyan-900/50">
+            <button 
+                type="button" 
+                onclick="closeMediaStrategyModal()"
+                class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 dark:text-sky-400 hover:text-slate-800 dark:hover:text-white transition"
+            >
+                Cancelar
+            </button>
+            <button 
+                type="button" 
+                onclick="applyMediaStrategyDecision()"
+                class="btn-neon-tactile px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 shadow-sm text-slate-950"
+            >
+                <span>Aplicar y Continuar</span>
+                <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>

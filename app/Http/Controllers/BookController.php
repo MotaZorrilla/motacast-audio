@@ -192,7 +192,7 @@ class BookController extends Controller
     {
         $file = $request->file('audio');
         $ext = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'wav');
-        if (! in_array($ext, ['mp3', 'wav', 'm4a', 'ogg', 'aac', 'flac'])) {
+        if (! in_array($ext, ['mp3', 'wav', 'm4a', 'ogg', 'aac', 'flac', 'mp4', 'mkv', 'mov', 'avi', 'webm'])) {
             $ext = 'wav';
         }
         $tempPath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'stt_preview_'.uniqid().'.'.$ext;
@@ -219,9 +219,9 @@ class BookController extends Controller
             ]);
         } catch (\Throwable $e) {
             $msg = $e->getMessage();
-            $userMsg = 'No se pudo transcribir el archivo de audio proporcionado.';
+            $userMsg = 'No se pudo transcribir el archivo multimedia proporcionado.';
             if (str_contains($msg, 'No se detectó voz')) {
-                $userMsg = 'No se detectó voz o habla comprensible en el archivo de audio.';
+                $userMsg = 'No se detectó voz o habla comprensible en el archivo.';
             } elseif (str_contains($msg, 'ffmpeg no está disponible')) {
                 $userMsg = 'El decodificador FFmpeg no está disponible en el servidor.';
             } elseif (str_contains($msg, 'SpeechRecognition no está instalado')) {
@@ -278,6 +278,7 @@ class BookController extends Controller
             'voice' => $request->input('voice'),
             'speed_rate' => $request->input('speed_rate'),
             'pitch' => $request->input('pitch'),
+            'keep_original_media' => $request->boolean('keep_original_media', false),
             'status' => 'pending',
         ]);
 

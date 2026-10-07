@@ -162,6 +162,17 @@ class ProcessBookJob implements ShouldQueue
                 'total_duration' => $totalDuration,
             ]);
 
+            // If the source was an audio or video file and user chose not to keep it,
+            // delete the heavy source file to optimize server storage.
+            $ext = strtolower(pathinfo($book->pdf_path, PATHINFO_EXTENSION));
+            $mediaExts = ['mp3', 'wav', 'm4a', 'ogg', 'aac', 'flac', 'mp4', 'mkv', 'mov', 'avi', 'webm'];
+            if (! $book->keep_original_media && in_array($ext, $mediaExts)) {
+                if (Storage::disk('public')->exists($book->pdf_path)) {
+                    Storage::disk('public')->delete($book->pdf_path);
+                    Log::info("ProcessBookJob: Archivo fuente multimedia {$book->pdf_path} (Libro ID: {$book->id}) descartado tras extracción para ahorrar almacenamiento.");
+                }
+            }
+
             Log::info("Audiolibro '{$book->title}' (ID: {$book->id}) procesado exitosamente.");
 
         } catch (Throwable $e) {

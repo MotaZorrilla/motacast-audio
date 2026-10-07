@@ -9,6 +9,7 @@ use App\Services\PdfExtractorService;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Mockery;
 use Tests\TestCase;
 
@@ -97,7 +98,7 @@ class AudioTranscriptionTest extends TestCase
         $response->assertStatus(422);
         $response->assertJson([
             'success' => false,
-            'message' => 'No se detectó voz o habla comprensible en el archivo de audio.',
+            'message' => 'No se detectó voz o habla comprensible en el archivo.',
         ]);
     }
 
@@ -254,13 +255,86 @@ class AudioTranscriptionTest extends TestCase
         $response->assertSee('Escucha y exporta al instante', false);
     }
 
-    public function test_app_version_displays_v0_9_0_beta(): void
+    public function test_app_version_displays_v0_9_5_beta(): void
     {
         $user = User::factory()->create();
         $response = $this->actingAs($user)->get(route('books.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('v0.9.0-beta', false);
+        $response->assertSee('v0.9.5-beta', false);
+    }
+
+    public function test_stt_preview_accepts_video_files_and_returns_transcription(): void
+    {
+        $file = UploadedFile::fake()->create('lecture.mp4', 500, 'video/mp4');
+
+        $mockExtractor = Mockery::mock(PdfExtractorService::class);
+        $mockExtractor->shouldReceive('extract')
+            ->once()
+            ->andReturn([
+                'success' => true,
+                'title' => 'Video Clase Magistral',
+                'author' => 'Transcripción de Video (STT)',
+                'summary' => 'Resumen de la clase extraída de video.',
+                'total_words' => 30,
+                'chapters' => [
+                    [
+                        'chapter_number' => 1,
+                        'title' => 'Introducción del Video',
+                        'text' => 'En este tutorial aprenderemos a automatizar despliegues con Docker.',
+                        'word_count' => 10,
+                    ],
+                ],
+            ]);
+        $this->app->instance(PdfExtractorService::class, $mockExtractor);
+
+        $response = $this->postJson(route('books.stt.preview'), [
+            'audio' => $file,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'title' => 'Video Clase Magistral',
+            'words' => 30,
+        ]);
+        $this->assertStringContainsString('En este tutorial aprenderemos', $response->json('text'));
+    }
+
+    public function test_create_view_contains_media_strategy_modal_and_retention_options(): void
+    {
+        $user = User::factory()->create();
+        $response = $this->actingAs($user)->get(route('books.create'));
+
+        $response->assertStatus(200);
+        $response->assertSee('motaMediaStrategyModal', false);
+        $response->assertSee('keep_original_media', false);
+        $response->assertSee('keepOriginalMediaHidden', false);
+        $response->assertSee('Desechar el archivo original tras transcribir', false);
+        $response->assertSee('Conservar archivo multimedia original en el servidor', false);
+        $response->assertSee('VIDEO (MP4, MKV)', false);
+    }
+
+    public function test_store_book_persists_keep_original_media_flag(): void
+    {
+        $user = User::factory()->create();
+        $file = UploadedFile::fake()->create('podcast.mp3', 200, 'audio/mpeg');
+
+        Queue::fake();
+
+        $response = $this->actingAs($user)->post(route('books.store'), [
+            'pdf_file' => $file,
+            'title' => 'Podcast Episodio 1',
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+            'keep_original_media' => '1',
+        ]);
+
+        $response->assertRedirect();
+        $book = Book::where('title', 'Podcast Episodio 1')->first();
+        $this->assertNotNull($book);
+        $this->assertTrue($book->keep_original_media);
     }
 
     public function test_show_view_contains_transcription_action_buttons(): void

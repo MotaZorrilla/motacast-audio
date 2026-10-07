@@ -19,7 +19,7 @@ class StoreBookRequest extends FormRequest
      */
     public function rules(): array
     {
-        $allowedMimes = 'pdf,docx,doc,txt,md,markdown,png,jpg,jpeg,webp,bmp,mp3,wav,m4a,ogg,aac,flac';
+        $allowedMimes = 'pdf,docx,doc,txt,md,markdown,png,jpg,jpeg,webp,bmp,mp3,wav,m4a,ogg,aac,flac,mp4,mkv,mov,avi,webm';
 
         return [
             'pdf_file' => "required_without:raw_text|nullable|file|mimes:{$allowedMimes}|max:102400", // 100MB
@@ -29,6 +29,7 @@ class StoreBookRequest extends FormRequest
             'voice' => 'required|string',
             'speed_rate' => 'required|string',
             'pitch' => 'required|string',
+            'keep_original_media' => 'nullable|boolean',
             'assigned_user_id' => 'nullable|exists:users,id',
         ];
     }

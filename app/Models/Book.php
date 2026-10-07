@@ -23,6 +23,7 @@ class Book extends Model
         'voice',
         'speed_rate',
         'pitch',
+        'keep_original_media',
         'status',
         'total_chapters',
         'processed_chapters',
@@ -32,6 +33,7 @@ class Book extends Model
     ];
 
     protected $casts = [
+        'keep_original_media' => 'boolean',
         'total_chapters' => 'integer',
         'processed_chapters' => 'integer',
         'total_duration' => 'integer',

@@ -25,6 +25,13 @@ class MimeTypeResolver
         'wav' => 'audio/wav',
         'm4a' => 'audio/mp4',
         'ogg' => 'audio/ogg',
+        'flac' => 'audio/flac',
+        'aac' => 'audio/aac',
+        'mp4' => 'video/mp4',
+        'mkv' => 'video/x-matroska',
+        'mov' => 'video/quicktime',
+        'avi' => 'video/x-msvideo',
+        'webm' => 'video/webm',
     ];
 
     /**

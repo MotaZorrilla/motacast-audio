@@ -136,6 +136,10 @@
             if (limitModal && !limitModal.classList.contains('hidden')) {
                 closeTextLimitModal();
             }
+            const mediaModal = document.getElementById('motaMediaStrategyModal');
+            if (mediaModal && !mediaModal.classList.contains('hidden')) {
+                closeMediaStrategyModal();
+            }
         }
     });
 
@@ -346,33 +350,123 @@
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // Audio-to-Text (STT) Speech Transcription Client Engine & Dynamic Step UX
+    // Audio/Video-to-Text (STT) Speech Transcription Client Engine & Dynamic Step UX
     // ──────────────────────────────────────────────────────────────────────────
     let currentDetectedType = 'text'; // 'text' | 'audio'
-    let currentAudioActionMode = 'stt_only'; // 'stt_only' | 'stt_and_tts'
+    let currentAudioActionMode = 'stt_and_tts'; // 'stt_only' | 'stt_and_tts'
+    let currentMediaKind = 'audio'; // 'audio' | 'video'
 
-    function setDetectedContentType(type, file = null) {
+    // Interactive Media Strategy Modal Handlers
+    function openMediaStrategyModal(file, mediaKind = 'audio') {
+        currentMediaKind = mediaKind;
+        const modal = document.getElementById('motaMediaStrategyModal');
+        const box = document.getElementById('motaMediaStrategyBox');
+        const iconEl = document.getElementById('mediaModalIcon');
+        const badgeEl = document.getElementById('mediaModalTypeBadge');
+        const titleEl = document.getElementById('mediaModalTitle');
+        const subtitleEl = document.getElementById('mediaModalSubtitle');
+        const nameEl = document.getElementById('mediaModalFileName');
+        const sizeEl = document.getElementById('mediaModalFileSize');
+
+        if (!modal) return;
+
+        if (mediaKind === 'video') {
+            if (iconEl) iconEl.textContent = '🎬';
+            if (badgeEl) {
+                badgeEl.textContent = 'Video';
+                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-purple-500/20 border border-purple-500/40 text-purple-700 dark:text-purple-300';
+            }
+            if (titleEl) titleEl.textContent = 'Archivo de Video Detectado';
+            if (subtitleEl) subtitleEl.textContent = 'Se detectó un video multimedia. Extraeremos su pista de audio con IA para convertirlo en audiolibro neuronal o texto.';
+        } else {
+            if (iconEl) iconEl.textContent = '🎙️';
+            if (badgeEl) {
+                badgeEl.textContent = 'Audio';
+                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-[#00ff87]/20 border border-[#00ff87]/40 text-[#00c965] dark:text-[#00ff87]';
+            }
+            if (titleEl) titleEl.textContent = 'Archivo de Audio Detectado';
+            if (subtitleEl) subtitleEl.textContent = 'Se detectó una grabación de voz. Selecciona la estrategia de procesamiento y retención deseada.';
+        }
+
+        if (nameEl && file) nameEl.textContent = file.name;
+        if (sizeEl && file) {
+            const mb = (file.size / (1024 * 1024)).toFixed(2);
+            sizeEl.textContent = `${mb} MB`;
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeMediaStrategyModal() {
+        const modal = document.getElementById('motaMediaStrategyModal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function applyMediaStrategyDecision() {
+        const strategyRadio = document.querySelector('input[name="modal_strategy_option"]:checked');
+        const keepRadio = document.querySelector('input[name="modal_keep_media"]:checked');
+        const strategy = strategyRadio ? strategyRadio.value : 'stt_tts';
+        const keep = keepRadio ? keepRadio.value : '0';
+
+        const keepInput = document.getElementById('keepOriginalMediaHidden');
+        if (keepInput) keepInput.value = keep;
+
+        const stepVoiceSection = document.getElementById('stepVoiceSection');
+        const stepAudioSection = document.getElementById('stepAudioSection');
+        const submitBtnText = document.getElementById('submitBtnText');
+
+        if (strategy === 'stt_tts') {
+            currentAudioActionMode = 'stt_and_tts';
+            if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
+            if (stepAudioSection) stepAudioSection.classList.add('hidden');
+            if (submitBtnText) submitBtnText.textContent = '✨ Transcribir y Crear Audiolibro Neuronal';
+        } else {
+            currentAudioActionMode = 'stt_only';
+            if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
+            if (stepAudioSection) stepAudioSection.classList.remove('hidden');
+            if (submitBtnText) {
+                submitBtnText.textContent = (currentMediaKind === 'video')
+                    ? '🎬 Transcribir Video a Texto (STT)'
+                    : '🎙️ Transcribir Audio a Texto (STT)';
+            }
+        }
+
+        closeMediaStrategyModal();
+    }
+
+    function setDetectedContentType(type, file = null, mediaKind = 'audio') {
         currentDetectedType = type;
+        currentMediaKind = mediaKind;
         const stepVoiceSection = document.getElementById('stepVoiceSection');
         const stepAudioSection = document.getElementById('stepAudioSection');
         const submitBtnText = document.getElementById('submitBtnText');
 
         if (type === 'audio' && file) {
-            if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
-            if (stepAudioSection) stepAudioSection.classList.remove('hidden');
-
             const nameEl = document.getElementById('audioFileNameDisplay');
             const sizeEl = document.getElementById('audioFileSizeDisplay');
             if (nameEl) nameEl.textContent = file.name;
             if (sizeEl) {
                 const mb = (file.size / (1024 * 1024)).toFixed(2);
-                sizeEl.textContent = `Archivo de audio detectado (${mb} MB)`;
+                sizeEl.textContent = (mediaKind === 'video')
+                    ? `Archivo de video detectado (${mb} MB)`
+                    : `Archivo de audio detectado (${mb} MB)`;
             }
 
-            if (submitBtnText) {
-                submitBtnText.textContent = (currentAudioActionMode === 'stt_only')
-                    ? '🎙️ Transcribir Audio a Texto (STT)'
-                    : '⚡ Transcribir y Sintetizar Audiolibro';
+            if (currentAudioActionMode === 'stt_and_tts') {
+                if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
+                if (stepAudioSection) stepAudioSection.classList.add('hidden');
+                if (submitBtnText) submitBtnText.textContent = '✨ Transcribir y Crear Audiolibro Neuronal';
+            } else {
+                if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
+                if (stepAudioSection) stepAudioSection.classList.remove('hidden');
+                if (submitBtnText) {
+                    submitBtnText.textContent = (mediaKind === 'video')
+                        ? '🎬 Transcribir Video a Texto (STT)'
+                        : '🎙️ Transcribir Audio a Texto (STT)';
+                }
             }
         } else {
             if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
@@ -548,7 +642,7 @@
         const files = dt.files;
         if (files.length > 0) {
             const fileName = files[0].name.toLowerCase();
-            const validExts = ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown', '.png', '.jpg', '.jpeg', '.webp', '.bmp', '.mp3', '.wav', '.m4a', '.ogg'];
+            const validExts = ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown', '.png', '.jpg', '.jpeg', '.webp', '.bmp', '.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac', '.mp4', '.mkv', '.mov', '.avi', '.webm'];
             const isValid = validExts.some(ext => fileName.endsWith(ext));
             if (isValid) {
                 fileInput.files = files;
@@ -556,7 +650,7 @@
             } else {
                 showNoticeModal({
                     title: 'Formato no compatible',
-                    message: 'El archivo arrastrado no es compatible. Puedes subir documentos Word (.docx, .doc), PDF, TXT, Markdown, ImÃ¡genes (PNG, JPG, WEBP) o Audio (MP3, WAV).',
+                    message: 'El archivo arrastrado no es compatible. Puedes subir documentos Word (.docx, .doc), PDF, TXT, Markdown, Imágenes (PNG, JPG, WEBP), Audio (MP3, WAV) o Video (MP4, MKV).',
                     type: 'warning'
                 });
             }
@@ -577,9 +671,13 @@
         fileLabel.textContent = 'Archivo seleccionado correctamente';
 
         const audioExts = ['.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac'];
+        const videoExts = ['.mp4', '.mkv', '.mov', '.avi', '.webm'];
         const isAudio = audioExts.some(ext => file.name.toLowerCase().endsWith(ext));
-        if (isAudio) {
-            setDetectedContentType('audio', file);
+        const isVideo = videoExts.some(ext => file.name.toLowerCase().endsWith(ext));
+
+        if (isAudio || isVideo) {
+            setDetectedContentType('audio', file, isVideo ? 'video' : 'audio');
+            openMediaStrategyModal(file, isVideo ? 'video' : 'audio');
         } else {
             setDetectedContentType('text', file);
         }

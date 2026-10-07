@@ -20,7 +20,7 @@ class SttPreviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'audio' => 'required|file|mimes:mp3,wav,m4a,ogg,aac,flac|max:102400', // 100MB
+            'audio' => 'required|file|mimes:mp3,wav,m4a,ogg,aac,flac,mp4,mkv,mov,avi,webm|max:102400', // 100MB
         ];
     }
 
@@ -30,10 +30,10 @@ class SttPreviewRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'audio.required' => 'Debes adjuntar un archivo de audio para transcribir.',
+            'audio.required' => 'Debes adjuntar un archivo de audio o video para transcribir.',
             'audio.file' => 'El archivo adjunto no es válido.',
-            'audio.mimes' => 'El formato debe ser un archivo de audio válido (MP3, WAV, M4A, OGG, AAC, FLAC).',
-            'audio.max' => 'El archivo de audio no debe exceder los 100 MB.',
+            'audio.mimes' => 'El formato debe ser un archivo de audio o video válido (MP3, WAV, M4A, OGG, AAC, FLAC, MP4, MKV, MOV, AVI, WEBM).',
+            'audio.max' => 'El archivo multimedia no debe exceder los 100 MB.',
         ];
     }
 }

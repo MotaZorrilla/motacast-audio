@@ -27,18 +27,19 @@
         </button>
     </div>
     <input type="hidden" name="input_mode" id="inputModeHidden" value="file">
+    <input type="hidden" name="keep_original_media" id="keepOriginalMediaHidden" value="0">
 </div>
 
 <!-- Section 1: File Drag & Drop Zone -->
 <div id="sectionFileDrop">
     <label class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider mb-2">
-        Documento, Imagen o Audio a convertir <span class="text-rose-500">*</span>
+        Documento, Imagen, Audio o Video a convertir <span class="text-rose-500">*</span>
     </label>
     <div 
         id="dropZone"
         class="border-2 border-dashed border-slate-300 dark:border-cyan-800/60 hover:border-[#00ff87] rounded-2xl p-8 text-center transition cursor-pointer bg-slate-50/70 dark:bg-[#071014]/60 hover:bg-[#00ff87]/5 group"
     >
-        <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp,.bmp,.mp3,.wav,.m4a,.ogg" class="hidden">
+        <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp,.bmp,.mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden">
         
         <div class="flex flex-col items-center justify-center space-y-3">
             <div class="w-14 h-14 rounded-2xl bg-white dark:bg-[#0d1c22] border border-slate-300 dark:border-cyan-700/50 shadow-sm flex items-center justify-center text-emerald-600 dark:text-cyan-400 group-hover:scale-105 group-hover:shadow-neon-sm transition">
@@ -47,13 +48,14 @@
                 </svg>
             </div>
             <div class="text-center">
-                <p class="text-xs text-slate-500 dark:text-sky-400/80 mt-1">Word (.docx, .doc), PDF, TXT, MD, Fotos (PNG, JPG) o Audio (MP3, WAV) — hasta 100 MB</p>
+                <p class="text-xs text-slate-500 dark:text-sky-400/80 mt-1">Word (.docx, .doc), PDF, TXT, MD, Fotos (PNG, JPG), Audio (MP3, WAV) o Video (MP4, MKV) — hasta 100 MB</p>
                 <div class="flex items-center justify-center gap-2 mt-2 flex-wrap">
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">WORD (.DOCX, .DOC)</span>
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40">PDF</span>
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/40">TXT/MD</span>
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">📸 IMG (OCR)</span>
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">🎙️ AUDIO (STT)</span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40">🎬 VIDEO (MP4, MKV)</span>
                 </div>
             </div>
         </div>
@@ -90,11 +92,11 @@
                 type="button" 
                 onclick="document.getElementById('sttAudioInput').click()"
                 class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-[#00ff87] border border-emerald-300 dark:border-emerald-800/60 hover:bg-[#00ff87]/20 transition flex items-center gap-1 shadow-sm"
-                title="Transcribir archivo de audio (MP3, WAV, M4A, OGG) directamente a texto"
+                title="Transcribir archivo de audio o video directamente a texto"
             >
-                <span>🎙️ Audio a Texto (STT)</span>
+                <span>🎙️ Audio / Video a Texto (STT)</span>
             </button>
-            <input type="file" id="sttAudioInput" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac" class="hidden" onchange="handleSttAudioUpload(this)">
+            <input type="file" id="sttAudioInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden" onchange="handleSttAudioUpload(this)">
 
             <button 
                 type="button" 

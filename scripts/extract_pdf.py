@@ -452,6 +452,7 @@ class AudioTranscriptionExtractor(BaseExtractor):
             cmd = [
                 ffmpeg_bin, "-y",
                 "-i", file_path,
+                "-vn",
                 "-f", "segment",
                 "-segment_time", self.CHUNK_DURATION_SECONDS,
                 "-c:a", "pcm_s16le",
@@ -692,6 +693,11 @@ class UniversalExtractionEngine:
         '.ogg': AudioTranscriptionExtractor,
         '.aac': AudioTranscriptionExtractor,
         '.flac': AudioTranscriptionExtractor,
+        '.mp4': AudioTranscriptionExtractor,
+        '.mkv': AudioTranscriptionExtractor,
+        '.mov': AudioTranscriptionExtractor,
+        '.avi': AudioTranscriptionExtractor,
+        '.webm': AudioTranscriptionExtractor,
     }
 
     @staticmethod
@@ -714,14 +720,15 @@ class UniversalExtractionEngine:
                 return DocExtractor
             if header.startswith(b'PK\x03\x04'):
                 return DocxExtractor
-            # Audio signatures (MP3, WAV, OGG, FLAC, M4A/AAC)
+            # Audio and Video signatures (MP3, WAV, OGG, FLAC, M4A/AAC, MP4, MKV/WEBM, AVI)
             if (
                 header.startswith(b'ID3') or
                 header.startswith((b'\xff\xfb', b'\xff\xf3', b'\xff\xf2')) or
-                (header.startswith(b'RIFF') and b'WAVE' in header) or
+                (header.startswith(b'RIFF') and (b'WAVE' in header or b'AVI ' in header)) or
                 header.startswith(b'OggS') or
                 header.startswith(b'fLaC') or
-                (len(header) >= 8 and header[4:8] == b'ftyp')
+                header.startswith(b'\x1a\x45\xdf\xa3') or
+                (len(header) >= 8 and header[4:8] in (b'ftyp', b'moov', b'wide'))
             ):
                 return AudioTranscriptionExtractor
             try:

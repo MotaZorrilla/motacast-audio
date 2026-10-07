@@ -82,7 +82,7 @@
                                 <span class="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-cyan-300 group-hover:text-cyan-400 transition">
                                     MotaCast<span class="text-[#00c965] dark:text-[#00ff87] drop-shadow-[0_0_8px_rgba(0,255,135,0.4)]">Audio</span>
                                 </span>
-                                <span class="hidden xs:inline-block px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold bg-slate-100 dark:bg-cyan-950/70 text-slate-600 dark:text-cyan-300 border border-slate-300/80 dark:border-cyan-800/40">v0.9.0-beta</span>
+                                <span class="hidden xs:inline-block px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold bg-slate-100 dark:bg-cyan-950/70 text-slate-600 dark:text-cyan-300 border border-slate-300/80 dark:border-cyan-800/40">v0.9.5-beta</span>
                             </div>
                             <p class="text-[10px] font-mono text-slate-500 dark:text-sky-400 hidden sm:block">Streaming & Audiolibros Personales</p>
                         </div>
@@ -304,7 +304,7 @@
             <div class="flex items-center gap-2">
                 <img src="{{ asset('images/motacast-icon.svg') }}" alt="MotaCastAudio" class="w-5 h-5 object-contain" onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
                 <span class="font-black text-slate-900 dark:text-cyan-300 tracking-tight">MotaCast<span class="text-[#00c965] dark:text-[#00ff87]">Audio</span></span>
-                <span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 dark:bg-cyan-950/70 text-emerald-700 dark:text-[#00ff87] border border-emerald-200 dark:border-cyan-800/50 shadow-sm">v0.9.0-beta</span>
+                <span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 dark:bg-cyan-950/70 text-emerald-700 dark:text-[#00ff87] border border-emerald-200 dark:border-cyan-800/50 shadow-sm">v0.9.5-beta</span>
             </div>
             
             <div class="text-slate-500 dark:text-sky-300 text-center sm:text-right text-[11px] leading-relaxed max-w-full">
