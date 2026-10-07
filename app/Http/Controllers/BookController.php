@@ -79,7 +79,7 @@ class BookController extends Controller
             $query->where('status', $request->get('status'));
         }
 
-        $books = $query->paginate(12)->withQueryString();
+        $books = $query->paginate(12)->withPath(route('books.index'))->withQueryString();
 
         $allIds = (clone $query)->pluck('id');
         $stats = [

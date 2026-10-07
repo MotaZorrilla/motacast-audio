@@ -3,6 +3,42 @@
     $isPdf = ($fileExt === 'pdf');
 @endphp
 
+<style>
+    /* Real-Time Read-Along Karaoke Highlighting & Typography */
+    .read-along-paragraph {
+        position: relative;
+        transition: background-color 0.25s ease, border-left-color 0.25s ease, box-shadow 0.25s ease, padding 0.25s ease;
+        border-radius: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        margin-left: -0.75rem;
+        margin-right: -0.75rem;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+    }
+    .read-along-paragraph:hover {
+        background-color: rgba(0, 255, 135, 0.07);
+    }
+    .read-along-active {
+        background-color: rgba(0, 255, 135, 0.14) !important;
+        border-left: 4px solid #00ff87 !important;
+        padding-left: calc(0.75rem - 1px) !important;
+        box-shadow: 0 0 20px rgba(0, 255, 135, 0.22), inset 0 0 10px rgba(0, 255, 135, 0.05);
+        border-top-left-radius: 0.25rem;
+        border-bottom-left-radius: 0.25rem;
+    }
+    .dark .read-along-active {
+        background-color: rgba(0, 255, 135, 0.18) !important;
+        border-left: 4px solid #00ff87 !important;
+        color: #f0fdf4 !important;
+        box-shadow: 0 0 25px rgba(0, 255, 135, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.1);
+    }
+    .active-reading-chapter {
+        border-color: rgba(0, 255, 135, 0.6) !important;
+        box-shadow: 0 0 25px rgba(0, 255, 135, 0.12);
+    }
+</style>
+
 <!-- Integrated Universal In-App Document Reader Modal (PDF Canvas + Markdown / DOCX / TXT Typography Reader) -->
 <div id="pdfViewerModal" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-md p-1 sm:p-3 md:p-5 flex flex-col items-center justify-center">
     <div class="card-tactile rounded-2xl w-full max-w-6xl h-[98vh] sm:h-[95vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 dark:border-cyan-500/30 bg-white dark:bg-[#060a0c]">
@@ -87,6 +123,18 @@
                         <span>📝 Original</span>
                     </button>
                 </div>
+
+                <!-- Auto-Scroll Read-Along Follow Toggle -->
+                <button 
+                    type="button" 
+                    id="btnToggleAutoScroll" 
+                    onclick="toggleAutoScroll()" 
+                    class="px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-[#00ff87]/15 hover:bg-[#00ff87]/25 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 flex items-center gap-1 transition flex-shrink-0 shadow-sm"
+                    title="Alternar seguimiento y auto-scroll de lectura en tiempo real"
+                >
+                    <span id="iconAutoScroll">🎯</span>
+                    <span id="lblAutoScrollText" class="hidden sm:inline">Auto-scroll</span>
+                </button>
 
                 <!-- Download Transcription (TXT / Markdown / Copy) -->
                 <div class="relative inline-block text-left">
@@ -184,6 +232,23 @@
 
                 <!-- Native HTML5 Canvas Element -->
                 <canvas id="pdfCanvas" class="shadow-2xl rounded-xl bg-white max-w-full my-auto transition-transform duration-150"></canvas>
+
+                <!-- Floating PDF Live Read-Along Sync HUD -->
+                <div id="pdfSyncHud" class="sticky bottom-2 z-30 max-w-xl w-11/12 mx-auto card-tactile rounded-2xl p-2 sm:p-2.5 bg-white/95 dark:bg-[#071014]/95 border border-[#00ff87]/50 shadow-2xl backdrop-blur-md flex items-center justify-between gap-2.5 transition-all duration-300">
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#00ff87] animate-pulse flex-shrink-0 shadow-neon-sm"></span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[9px] font-mono font-black uppercase text-[#00c965] dark:text-[#00ff87]">Sincronía en Vivo</span>
+                                <span id="pdfSyncPageBadge" class="text-[9px] font-mono px-1 rounded bg-slate-100 dark:bg-[#0d1c22] text-slate-600 dark:text-cyan-300">Pág. 1</span>
+                            </div>
+                            <p id="pdfSyncSnippetText" class="text-xs text-slate-800 dark:text-cyan-100 font-medium truncate mt-0.5">Sincronizando audio con documento...</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="setReaderViewMode('text')" class="px-2.5 py-1 text-[10px] sm:text-[11px] font-black rounded-lg btn-neon-tactile flex items-center gap-1 flex-shrink-0 shadow-sm" title="Ver texto guiado con resaltado de párrafos">
+                        <span>📖 Ver Texto Guiado</span>
+                    </button>
+                </div>
             </div>
 
             <!-- VIEW 2: Universal Editorial Text Reader (DOCX, Markdown, TXT & PDF Extracted Text) -->
@@ -212,7 +277,7 @@
                     <!-- Chapters Text Rendered Dynamically or from Blade -->
                     <div id="readerChaptersList" class="space-y-6">
                         @forelse ($book->chapters as $ch)
-                        <article id="readerChapSection-{{ $ch->chapter_number }}" class="card-tactile rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#070e12] border border-slate-200 dark:border-cyan-950/60 shadow-sm transition hover:border-[#00ff87]/40">
+                        <article id="readerChapSection-{{ $ch->chapter_number }}" data-chapter-number="{{ $ch->chapter_number }}" data-chapter-id="{{ $ch->id }}" class="card-tactile rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#070e12] border border-slate-200 dark:border-cyan-950/60 shadow-sm transition hover:border-[#00ff87]/40">
                             <!-- Chapter Header Bar -->
                             <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100 dark:border-cyan-950/60">
                                 <div>

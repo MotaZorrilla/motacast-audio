@@ -72,6 +72,14 @@
     let pdfZoomLevel = 1.0;
     const pdfUrl = "{{ route('books.pdf', $book->id) }}";
 
+    // Real-Time Read-Along Karaoke & Document Sync Engine
+    let autoScrollEnabled = true;
+    let userScrolledRecently = false;
+    let userScrollTimer = null;
+    let readAlongData = {}; // chapterId -> { totalWords, paragraphs: [{ mdEl, rawEl, startWord, endWord, text }] }
+    let lastActiveParagraph = null;
+    let readAlongInitialized = false;
+
     function setReaderViewMode(mode) {
         readerViewMode = mode;
         const canvasWrapper = document.getElementById('pdfCanvasWrapper');
@@ -440,6 +448,10 @@
         const modal = document.getElementById('pdfViewerModal');
         modal.classList.remove('hidden');
 
+        if (!readAlongInitialized) {
+            initializeReadAlongData();
+        }
+
         if (!isDocPdf) {
             setReaderViewMode('text');
             return;
@@ -460,7 +472,7 @@
                 }).catch(function(err) {
                     console.error('Error cargando documento PDF:', err);
                     if (loading) {
-                        loading.innerHTML = '<div class="text-center p-4"><p class="text-rose-500 font-bold text-xs mb-2">No se pudo cargar en visor PDF. Mostrando texto extraÃ­do...</p></div>';
+                        loading.innerHTML = '<div class="text-center p-4"><p class="text-rose-500 font-bold text-xs mb-2">No se pudo cargar en visor PDF. Mostrando texto extraído...</p></div>';
                         setTimeout(() => setReaderViewMode('text'), 1000);
                     }
                 });
@@ -470,6 +482,13 @@
         } else {
             setReaderViewMode('text');
         }
+
+        // Center active paragraph if available
+        setTimeout(() => {
+            if (lastActiveParagraph && autoScrollEnabled && readerViewMode === 'text') {
+                lastActiveParagraph.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 150);
     }
 
     function closePdfModal() {
@@ -488,6 +507,8 @@
 
     // Auto-select first ready chapter
     document.addEventListener('DOMContentLoaded', () => {
+        initializeReadAlongData();
+
         const firstReady = chaptersData.find(c => c.status === 'ready' && c.audio_path);
         if (firstReady) {
             selectChapter(firstReady.id, false);
@@ -513,6 +534,7 @@
         if (!chapter || chapter.status !== 'ready') return;
 
         currentChapterId = chapter.id;
+        activeReaderChapter = chapter.chapter_number;
         const trackTitleFormatted = `Pista #${chapter.chapter_number} - ${chapter.title}`;
         
         if (playerChapterTitle) playerChapterTitle.textContent = trackTitleFormatted;
@@ -526,13 +548,39 @@
         audioEngine.src = streamBaseTemplate.replace('__ID__', chapter.id);
         audioEngine.playbackRate = parseFloat(playerPlaybackRate.value);
 
-        // Highlight active chapter row
+        // Highlight active chapter row in main playlist
         document.querySelectorAll('.chapter-row').forEach(row => {
             row.classList.remove('bg-[#00ff87]/15', 'dark:bg-[#00ff87]/20', 'border-l-4', 'border-[#00ff87]');
         });
         const activeRow = document.getElementById(`chapterRow-${chapter.id}`);
         if (activeRow) {
             activeRow.classList.add('bg-[#00ff87]/15', 'dark:bg-[#00ff87]/20', 'border-l-4', 'border-[#00ff87]');
+        }
+
+        // Highlight active chapter section in reader
+        document.querySelectorAll('#readerChaptersList article').forEach(art => {
+            art.classList.remove('active-reading-chapter');
+        });
+        const activeArticle = document.getElementById(`readerChapSection-${chapter.chapter_number}`);
+        if (activeArticle) {
+            activeArticle.classList.add('active-reading-chapter');
+            if (autoScrollEnabled && !userScrolledRecently) {
+                const modal = document.getElementById('pdfViewerModal');
+                if (modal && !modal.classList.contains('hidden') && readerViewMode === 'text') {
+                    activeArticle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+        const lblChapNum = document.getElementById('lblActiveReaderChapNum');
+        if (lblChapNum) lblChapNum.textContent = chapter.chapter_number;
+        highlightActiveChapterDrawer(chapter.chapter_number);
+
+        // If in PDF Canvas mode, turn to chapter starting page
+        if (isDocPdf && pdfDoc && readerViewMode === 'canvas') {
+            const startPage = calculateChapterStartPdfPage(chapter.id);
+            if (startPage && startPage !== pageNum) {
+                goToPdfPage(startPage);
+            }
         }
 
         if (autoPlay) {
@@ -656,6 +704,9 @@
             if (modalCurrentTime) modalCurrentTime.textContent = currentFormatted;
             if (playerDuration) playerDuration.textContent = durationFormatted;
             if (modalDuration) modalDuration.textContent = durationFormatted;
+
+            // Real-time Read-Along karaoke highlighting & document auto-turn
+            syncReadAlongProgress(audioEngine.currentTime, audioEngine.duration);
         }
     });
 
@@ -895,4 +946,268 @@
             console.warn('Error al copiar:', err);
         });
     };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Real-Time Read-Along Karaoke Synchronization Engine
+    // Supports: PDF (Text + Canvas Auto-Turn), Word (.docx), OCR Scans, TXT, Markdown
+    // ──────────────────────────────────────────────────────────────────────────
+    function initializeReadAlongData() {
+        if (!chaptersData || chaptersData.length === 0) return;
+
+        chaptersData.forEach((ch) => {
+            const chapSection = document.getElementById(`readerChapSection-${ch.chapter_number}`);
+            if (!chapSection) return;
+
+            const mdView = chapSection.querySelector('.reader-markdown-view');
+            const rawView = chapSection.querySelector('.reader-raw-view');
+
+            // 1. Process Markdown View Elements
+            let mdBlocks = [];
+            if (mdView) {
+                mdBlocks = Array.from(mdView.querySelectorAll('p, li, blockquote, h1, h2, h3, h4, h5, h6'));
+                if (mdBlocks.length === 0 && mdView.innerText.trim()) {
+                    const rawParas = mdView.innerText.split(/\n\s*\n/).filter(t => t.trim().length > 0);
+                    mdView.innerHTML = rawParas.map((p, pIdx) => `<p class="read-along-paragraph" data-para-idx="${pIdx}">${escapeHtml(p)}</p>`).join('');
+                    mdBlocks = Array.from(mdView.querySelectorAll('p'));
+                }
+            }
+
+            // 2. Process Raw View Elements
+            let rawBlocks = [];
+            if (rawView) {
+                if (!rawView.dataset.parsed) {
+                    rawView.dataset.parsed = 'true';
+                    const rawParas = (ch.content_text || '').split(/\n\s*\n/).filter(t => t.trim().length > 0);
+                    rawView.innerHTML = rawParas.map((p, pIdx) => `<p class="read-along-paragraph font-mono whitespace-pre-wrap mb-3" data-para-idx="${pIdx}">${escapeHtml(p)}</p>`).join('');
+                }
+                rawBlocks = Array.from(rawView.querySelectorAll('p'));
+            }
+
+            // 3. Map cumulative word boundaries and attach click-to-seek listeners
+            let cumWords = 0;
+            const paragraphsList = [];
+
+            mdBlocks.forEach((block, idx) => {
+                const text = block.innerText.trim();
+                const wordsCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+                const startW = cumWords;
+                const endW = cumWords + Math.max(1, wordsCount);
+                cumWords = endW;
+
+                block.classList.add('read-along-paragraph');
+                block.setAttribute('data-chapter-id', ch.id);
+                block.setAttribute('data-start-word', startW);
+                block.setAttribute('data-end-word', endW);
+                block.setAttribute('data-para-idx', idx);
+                block.setAttribute('title', 'Toca para escuchar desde este párrafo');
+
+                const correspondingRaw = rawBlocks[idx] || null;
+                if (correspondingRaw) {
+                    correspondingRaw.classList.add('read-along-paragraph');
+                    correspondingRaw.setAttribute('data-chapter-id', ch.id);
+                    correspondingRaw.setAttribute('data-start-word', startW);
+                    correspondingRaw.setAttribute('data-end-word', endW);
+                    correspondingRaw.setAttribute('data-para-idx', idx);
+                    correspondingRaw.setAttribute('title', 'Toca para escuchar desde este párrafo');
+                }
+
+                paragraphsList.push({
+                    mdEl: block,
+                    rawEl: correspondingRaw,
+                    startWord: startW,
+                    endWord: endW,
+                    text: text,
+                    chapterId: ch.id
+                });
+
+                block.onclick = (e) => {
+                    e.stopPropagation();
+                    seekToParagraph(ch.id, startW, ch.duration_seconds);
+                };
+                if (correspondingRaw) {
+                    correspondingRaw.onclick = (e) => {
+                        e.stopPropagation();
+                        seekToParagraph(ch.id, startW, ch.duration_seconds);
+                    };
+                }
+            });
+
+            readAlongData[ch.id] = {
+                totalWords: Math.max(1, cumWords, ch.word_count || 1),
+                paragraphs: paragraphsList,
+                duration: ch.duration_seconds || 0,
+                chapterNumber: ch.chapter_number
+            };
+        });
+
+        readAlongInitialized = true;
+
+        // Auto-pause auto-scroll when user manually scrolls
+        const textWrapper = document.getElementById('documentTextWrapper');
+        if (textWrapper && !textWrapper.dataset.scrollBound) {
+            textWrapper.dataset.scrollBound = 'true';
+            textWrapper.addEventListener('scroll', () => {
+                userScrolledRecently = true;
+                if (userScrollTimer) clearTimeout(userScrollTimer);
+                userScrollTimer = setTimeout(() => {
+                    userScrolledRecently = false;
+                }, 5000);
+            }, { passive: true });
+        }
+    }
+
+    function seekToParagraph(chapterId, startWord, chapterDuration) {
+        const chData = readAlongData[chapterId];
+        if (!chData || chData.totalWords <= 0) return;
+
+        const ratio = Math.max(0, Math.min(1.0, startWord / chData.totalWords));
+
+        if (currentChapterId !== chapterId) {
+            selectChapter(chapterId, true);
+            const onCanPlay = () => {
+                const duration = audioEngine.duration || chapterDuration || 1;
+                audioEngine.currentTime = ratio * duration;
+                audioEngine.removeEventListener('canplay', onCanPlay);
+                userScrolledRecently = false;
+            };
+            audioEngine.addEventListener('canplay', onCanPlay);
+        } else {
+            const duration = audioEngine.duration || chapterDuration || 1;
+            audioEngine.currentTime = ratio * duration;
+            userScrolledRecently = false;
+            if (audioEngine.paused) {
+                audioEngine.play().then(() => updatePlayIcons(true)).catch(e => console.log(e));
+            }
+        }
+    }
+
+    function toggleAutoScroll() {
+        autoScrollEnabled = !autoScrollEnabled;
+        const btn = document.getElementById('btnToggleAutoScroll');
+        const lbl = document.getElementById('lblAutoScrollText');
+        const icon = document.getElementById('iconAutoScroll');
+        if (autoScrollEnabled) {
+            if (btn) btn.className = "px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-[#00ff87]/15 hover:bg-[#00ff87]/25 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 flex items-center gap-1 transition flex-shrink-0 shadow-sm";
+            if (lbl) lbl.textContent = "Auto-scroll";
+            if (icon) icon.textContent = "🎯";
+            userScrolledRecently = false;
+            if (lastActiveParagraph) {
+                lastActiveParagraph.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            if (btn) btn.className = "px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-[#0d1c22] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-cyan-900/40 flex items-center gap-1 transition flex-shrink-0";
+            if (lbl) lbl.textContent = "Pausado";
+            if (icon) icon.textContent = "⏸";
+        }
+    }
+
+    function syncReadAlongProgress(currentTime, duration) {
+        if (!currentChapterId || currentChapterId === 'summary' || !duration || duration <= 0) return;
+
+        if (!readAlongInitialized) {
+            initializeReadAlongData();
+        }
+
+        const chData = readAlongData[currentChapterId];
+        if (!chData || !chData.paragraphs || chData.paragraphs.length === 0) return;
+
+        const progress = Math.min(1.0, Math.max(0.0, currentTime / duration));
+        const currentWord = Math.floor(progress * chData.totalWords);
+
+        // Find active paragraph
+        let activeItem = chData.paragraphs.find(p => currentWord >= p.startWord && currentWord < p.endWord);
+        if (!activeItem && chData.paragraphs.length > 0) {
+            if (currentWord >= chData.totalWords) {
+                activeItem = chData.paragraphs[chData.paragraphs.length - 1];
+            } else {
+                activeItem = chData.paragraphs[0];
+            }
+        }
+
+        if (activeItem) {
+            const activeDomEl = (readerFormatMode === 'raw' && activeItem.rawEl) ? activeItem.rawEl : activeItem.mdEl;
+
+            if (lastActiveParagraph !== activeDomEl) {
+                document.querySelectorAll('.read-along-active').forEach(el => el.classList.remove('read-along-active'));
+
+                if (activeItem.mdEl) activeItem.mdEl.classList.add('read-along-active');
+                if (activeItem.rawEl) activeItem.rawEl.classList.add('read-along-active');
+                lastActiveParagraph = activeDomEl;
+
+                // Center in text view if enabled and reader is visible
+                if (autoScrollEnabled && !userScrolledRecently && activeDomEl) {
+                    const textWrapper = document.getElementById('documentTextWrapper');
+                    if (textWrapper && !textWrapper.classList.contains('hidden')) {
+                        activeDomEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+
+                // Update HUD snippet
+                const snippet = document.getElementById('pdfSyncSnippetText');
+                if (snippet && activeItem.text) {
+                    const cleanExcerpt = activeItem.text.replace(/\s+/g, ' ').trim();
+                    snippet.textContent = cleanExcerpt.length > 85 ? cleanExcerpt.substring(0, 85) + '…' : cleanExcerpt;
+                }
+            }
+        }
+
+        // PDF Auto-Turn
+        if (isDocPdf && pdfDoc && readerViewMode === 'canvas') {
+            syncPdfPageAutoTurn(progress);
+        }
+    }
+
+    function calculateChapterStartPdfPage(chapterId) {
+        if (!pdfDoc || !pdfDoc.numPages || pdfDoc.numPages <= 1) return 1;
+
+        let totalWordsAll = 0;
+        let wordsBefore = 0;
+        let found = false;
+
+        chaptersData.forEach(ch => {
+            const w = readAlongData[ch.id]?.totalWords || ch.word_count || 1;
+            if (ch.id === chapterId) {
+                found = true;
+            } else if (!found) {
+                wordsBefore += w;
+            }
+            totalWordsAll += w;
+        });
+
+        if (totalWordsAll <= 0) return 1;
+        const ratio = wordsBefore / totalWordsAll;
+        return Math.min(pdfDoc.numPages, Math.max(1, 1 + Math.floor(ratio * pdfDoc.numPages)));
+    }
+
+    function syncPdfPageAutoTurn(chapterProgress) {
+        if (!pdfDoc || !pdfDoc.numPages || pdfDoc.numPages <= 1) return;
+
+        let totalWordsAll = 0;
+        let wordsBefore = 0;
+        let currentWords = readAlongData[currentChapterId]?.totalWords || 1;
+
+        for (const ch of chaptersData) {
+            const w = readAlongData[ch.id]?.totalWords || ch.word_count || 1;
+            if (ch.id === currentChapterId) {
+                currentWords = w;
+                break;
+            }
+            wordsBefore += w;
+        }
+
+        chaptersData.forEach(ch => {
+            totalWordsAll += (readAlongData[ch.id]?.totalWords || ch.word_count || 1);
+        });
+
+        const currentGlobalWord = wordsBefore + (chapterProgress * currentWords);
+        const globalRatio = Math.min(1.0, Math.max(0.0, currentGlobalWord / Math.max(1, totalWordsAll)));
+        const targetPage = Math.min(pdfDoc.numPages, Math.max(1, 1 + Math.floor(globalRatio * pdfDoc.numPages)));
+
+        const badge = document.getElementById('pdfSyncPageBadge');
+        if (badge) badge.textContent = `Pág. ${targetPage} / ${pdfDoc.numPages}`;
+
+        if (targetPage !== pageNum && !pageRendering) {
+            goToPdfPage(targetPage);
+        }
+    }
 </script>
