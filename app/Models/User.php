@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -106,12 +107,13 @@ class User extends Authenticatable
         }
 
         $current = $this->books()->count();
+
         return max(0, $limit - $current);
     }
 
     public function canRequestAutoExtension(): bool
     {
-        return !$this->auto_extension_used && !$this->isAdmin();
+        return ! $this->auto_extension_used && ! $this->isAdmin();
     }
 
     public function grantCourtesyExtension(int $additionalBooks = 1): void
@@ -122,5 +124,15 @@ class User extends Authenticatable
         }
         $this->auto_extension_used = true;
         $this->save();
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

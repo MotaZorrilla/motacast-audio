@@ -45,6 +45,27 @@
             <form action="{{ route('login') }}" method="POST" class="space-y-4">
                 @csrf
 
+                @if ($errors->any())
+                    <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs space-y-2">
+                        <div class="flex items-start gap-2.5">
+                            <svg class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div class="space-y-1">
+                                <p class="font-semibold">{{ $errors->first() }}</p>
+                                <div class="pt-1">
+                                    <a href="{{ route('password.request') }}" class="inline-flex items-center gap-1.5 font-bold text-cyan-600 dark:text-[#00f0ff] hover:text-[#00ff87] dark:hover:text-[#00ff87] transition hover:underline">
+                                        <span>🔑 Restablecer mi contraseña de inmediato</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Email Input -->
                 <div class="space-y-1.5">
                     <label for="email" class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
@@ -70,11 +91,16 @@
                     </div>
                 </div>
 
-                <!-- Password Input -->
+                <!-- Password Input with Forgot Password link -->
                 <div class="space-y-1.5">
-                    <label for="password" class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
-                        Contraseña
-                    </label>
+                    <div class="flex items-center justify-between">
+                        <label for="password" class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
+                            Contraseña
+                        </label>
+                        <a href="{{ route('password.request') }}" class="text-xs font-bold text-cyan-600 dark:text-[#00f0ff] hover:text-[#00ff87] dark:hover:text-[#00ff87] underline-offset-2 hover:underline transition">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-cyan-500/70">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

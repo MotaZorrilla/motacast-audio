@@ -194,6 +194,17 @@
             </div>
         @endif
 
+        @if (session('status'))
+            <div class="p-3.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-500/30 text-cyan-800 dark:text-cyan-300 flex items-center justify-between shadow-sm text-xs font-semibold">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-[#00f0ff] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ session('status') }}</span>
+                </div>
+            </div>
+        @endif
+
         @if (session('error'))
             <div class="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-500/30 text-rose-800 dark:text-rose-300 flex items-center justify-between shadow-sm text-xs font-semibold">
                 <div class="flex items-center gap-2.5">

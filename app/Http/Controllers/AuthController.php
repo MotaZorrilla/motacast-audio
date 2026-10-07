@@ -7,6 +7,8 @@ use App\Services\GuestSessionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -15,6 +17,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('books.index');
         }
+
         return view('auth.login');
     }
 
@@ -25,9 +28,21 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
+        $throttleKey = 'login:'.Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            return back()->withErrors([
+                'email' => "Demasiados intentos fallidos. Por favor espera {$seconds} segundos antes de volver a intentar, o utiliza la opción «¿Olvidaste tu contraseña?» para restablecer tu acceso.",
+            ])->onlyInput('email');
+        }
+
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            RateLimiter::clear($throttleKey);
+
             $user = Auth::user();
             $claimedBook = null;
             if ($user->canUploadBook()) {
@@ -42,8 +57,10 @@ class AuthController extends Controller
             }
 
             return redirect()->route('books.index')
-                ->with('success', '¡Bienvenido de nuevo, ' . $user->name . '!');
+                ->with('success', '¡Bienvenido de nuevo, '.$user->name.'!');
         }
+
+        RateLimiter::hit($throttleKey, 300);
 
         return back()->withErrors([
             'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
@@ -55,13 +72,14 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('books.index');
         }
+
         return view('auth.register');
     }
 
     public function register(Request $request, GuestSessionService $guestSession)
     {
-        $disclaimerRule = (app()->environment('testing') && !$request->has('beta_disclaimer')) 
-            ? 'nullable' 
+        $disclaimerRule = (app()->environment('testing') && ! $request->has('beta_disclaimer'))
+            ? 'nullable'
             : 'accepted';
 
         $request->validate([
