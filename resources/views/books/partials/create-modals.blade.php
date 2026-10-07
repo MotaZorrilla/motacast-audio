@@ -172,20 +172,35 @@
                 1. ¿Cómo deseas procesar este contenido?
             </label>
             <div class="space-y-2">
-                <!-- Option 1: Transcribe STT + Synthesize TTS (Recommended) -->
+                <!-- Option 1: Transcribe STT + Auto-Correct + Synthesize TTS (Direct) -->
                 <label class="flex items-start gap-3 p-3 rounded-2xl border-2 border-emerald-500/50 bg-emerald-500/5 dark:bg-[#00ff87]/5 cursor-pointer hover:border-[#00ff87] transition">
                     <input type="radio" name="modal_strategy_option" value="stt_tts" checked class="mt-1 text-emerald-500 focus:ring-[#00ff87]">
                     <div class="text-xs">
-                        <strong class="text-slate-900 dark:text-cyan-100 block font-bold">
-                            ✨ Transcribir a Texto y Convertir a Audiolibro Neuronal <span class="text-[10px] text-[#00c965] dark:text-[#00ff87] font-mono">(Recomendado)</span>
+                        <strong class="text-slate-900 dark:text-cyan-100 block font-bold flex items-center gap-1.5 flex-wrap">
+                            <span>✨ Transcribir y Crear Audiolibro Directo</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#00ff87]/20 text-[#00c965] dark:text-[#00ff87]">Auto-Corrección Ortográfica IA</span>
                         </strong>
                         <span class="text-[11px] text-slate-600 dark:text-sky-300/80 block mt-0.5 leading-snug">
-                            Extrae la voz a texto estructurado con IA y narra el libro con una voz neuronal de alta calidad con capítulos indexados.
+                            Extrae la voz, corrige tildes, homófonos y ortografía con IA y genera el audiolibro neuronal directamente con capítulos indexados.
                         </span>
                     </div>
                 </label>
 
-                <!-- Option 2: STT Only -->
+                <!-- Option 2: Transcribe STT + Auto-Correct + Open in Editor for Review (Recommended for Precision) -->
+                <label class="flex items-start gap-3 p-3 rounded-2xl border border-cyan-500/50 bg-cyan-500/5 dark:bg-cyan-950/40 cursor-pointer hover:border-cyan-400 transition">
+                    <input type="radio" name="modal_strategy_option" value="stt_review_then_tts" class="mt-1 text-cyan-500 focus:ring-cyan-400">
+                    <div class="text-xs">
+                        <strong class="text-slate-900 dark:text-cyan-100 block font-bold flex items-center gap-1.5 flex-wrap">
+                            <span>✏️ Transcribir, Auto-Corregir y Abrir en Editor</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300">Paso de Revisión Recomendado</span>
+                        </strong>
+                        <span class="text-[11px] text-slate-600 dark:text-sky-300/80 block mt-0.5 leading-snug">
+                            Transcribe y aplica corrección ortográfica, desplegando el texto en el editor para que puedas darle un vistazo o retocarlo antes de narrar.
+                        </span>
+                    </div>
+                </label>
+
+                <!-- Option 3: STT Only -->
                 <label class="flex items-start gap-3 p-3 rounded-2xl border border-slate-200 dark:border-cyan-900/50 bg-white/70 dark:bg-[#071014]/70 cursor-pointer hover:border-[#00ff87] transition">
                     <input type="radio" name="modal_strategy_option" value="stt_only" class="mt-1 text-emerald-500 focus:ring-[#00ff87]">
                     <div class="text-xs">
@@ -193,7 +208,7 @@
                             🎙️ Solo Transcribir a Texto (STT Rápido)
                         </strong>
                         <span class="text-[11px] text-slate-600 dark:text-sky-300/80 block mt-0.5 leading-snug">
-                            Extrae todo el texto del archivo de inmediato para lectura, edición o descarga en TXT/Markdown sin generar audio nuevo.
+                            Extrae y corrige todo el texto de inmediato para lectura, edición o descarga en TXT/Markdown sin generar audio nuevo.
                         </span>
                     </div>
                 </label>

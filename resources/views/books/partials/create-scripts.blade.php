@@ -418,6 +418,24 @@
         const stepAudioSection = document.getElementById('stepAudioSection');
         const submitBtnText = document.getElementById('submitBtnText');
 
+        if (strategy === 'stt_review_then_tts') {
+            closeMediaStrategyModal();
+            switchInputMode('text');
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                uploadAndTranscribeAudio(fileInput.files[0], 'sttStatusBox', 'sttStatusText', (data) => {
+                    if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
+                    if (stepAudioSection) stepAudioSection.classList.add('hidden');
+                    if (submitBtnText) submitBtnText.textContent = '🚀 Generar Audiolibro Neuronal con este Texto';
+                    showNoticeModal({
+                        title: '¡Transcripción y Auto-Corrección Listas!',
+                        message: `Se transcribieron ${data.words || 0} palabras con auto-corrección ortográfica y puntuación. Puedes leer el texto en el editor, afinar cualquier detalle y elegir la voz neuronal abajo para crear tu audiolibro.`,
+                        type: 'success'
+                    });
+                });
+            }
+            return;
+        }
+
         if (strategy === 'stt_tts') {
             currentAudioActionMode = 'stt_and_tts';
             if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
@@ -516,7 +534,7 @@
         }
     }
 
-    function uploadAndTranscribeAudio(file, customBoxId = null, customLabelId = null) {
+    function uploadAndTranscribeAudio(file, customBoxId = null, customLabelId = null, onSuccessCallback = null) {
         const boxId = customBoxId || 'sttStatusBox';
         const labelId = customLabelId || 'sttStatusText';
         const box = document.getElementById(boxId);
@@ -570,11 +588,15 @@
                     titleInput.value = data.title;
                 }
 
-                showNoticeModal({
-                    title: '¡Transcripción Exitosa!',
-                    message: `Se transcribieron ${data.words || 0} palabras del audio. Ya tienes el texto disponible en el área de texto para leerlo, exportarlo o convertirlo en audiolibro.`,
-                    type: 'success'
-                });
+                if (typeof onSuccessCallback === 'function') {
+                    onSuccessCallback(data);
+                } else {
+                    showNoticeModal({
+                        title: '¡Transcripción Exitosa!',
+                        message: `Se transcribieron ${data.words || 0} palabras del audio. Ya tienes el texto disponible en el área de texto para leerlo, exportarlo o convertirlo en audiolibro.`,
+                        type: 'success'
+                    });
+                }
             } else {
                 showNoticeModal({
                     title: 'Incidencia en Transcripción de Audio',

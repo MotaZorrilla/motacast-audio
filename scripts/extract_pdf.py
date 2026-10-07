@@ -413,6 +413,107 @@ class ImageOcrExtractor(BaseExtractor):
             raise Exception(f"Error procesando OCR de la imagen: {e}")
 
 
+class SpeechGrammarCorrector:
+    """Restores accents, corrects common STT homophones, and performs phonetic normalization for natural Edge-TTS speech."""
+
+    ACCENT_MAP = {
+        'tambien': 'también', 'ademas': 'además', 'despues': 'después',
+        'aqui': 'aquí', 'alli': 'allí', 'aca': 'acá', 'alla': 'allá',
+        'facil': 'fácil', 'facilmente': 'fácilmente', 'dificil': 'difícil',
+        'dificilmente': 'difícilmente', 'ultimo': 'último', 'ultima': 'última',
+        'ultimos': 'últimos', 'ultimas': 'últimas', 'unico': 'único',
+        'unica': 'única', 'unicos': 'únicos', 'unicas': 'únicas',
+        'numero': 'número', 'numeros': 'números', 'musica': 'música',
+        'pagina': 'página', 'paginas': 'páginas', 'capitulo': 'capítulo',
+        'capitulos': 'capítulos', 'articulo': 'artículo', 'articulos': 'artículos',
+        'titulo': 'título', 'titulos': 'títulos', 'linea': 'línea',
+        'lineas': 'líneas', 'codigo': 'código', 'codigos': 'códigos',
+        'metodo': 'método', 'metodos': 'métodos', 'area': 'área',
+        'areas': 'áreas', 'pais': 'país', 'paises': 'países',
+        'dia': 'día', 'dias': 'días', 'guia': 'guía', 'guias': 'guías',
+        'teoria': 'teoría', 'energia': 'energía', 'tecnologia': 'tecnología',
+        'tecnologias': 'tecnologías', 'categoria': 'categoría', 'categorias': 'categorías',
+        'economia': 'economía', 'filosofia': 'filosofía', 'practica': 'práctica',
+        'practicas': 'prácticas', 'publico': 'público', 'politica': 'política',
+        'politicas': 'políticas', 'analisis': 'análisis', 'sintesis': 'síntesis',
+        'enfasis': 'énfasis', 'oxigeno': 'oxígeno', 'epoca': 'época',
+        'exito': 'éxito', 'limite': 'límite', 'limites': 'límites',
+        'sera': 'será', 'estara': 'estará', 'tendra': 'tendrá',
+        'podra': 'podrá', 'hara': 'hará', 'habra': 'habrá',
+        'asi': 'así', 'estan': 'están', 'oido': 'oído',
+        'raiz': 'raíz', 'raices': 'raíces',
+        'comenzo': 'comenzó', 'empezo': 'empezó', 'termino': 'terminó',
+        'explico': 'explicó', 'hablo': 'habló', 'paso': 'pasó',
+        'dejo': 'dejó', 'quedo': 'quedó', 'llego': 'llegó', 'tomo': 'tomó'
+    }
+
+    HOMOPHONE_RULES = [
+        (r'\b(vamos a|voy a|vas a)\s+haber\b', r'\1 ver'),
+        (r'\b(haber si)\b', 'a ver si'),
+        (r'\b(debe|puede|va a)\s+a ver\b', r'\1 haber'),
+        (r'\b(ha|he|has|han|hemos|había)\s+echo\b', r'\1 hecho'),
+        (r'\bde echo\b', 'de hecho'),
+        (r'\b(ahí|ay)\s+que\b', 'hay que'),
+        (r'\bpor\s+(ay|hay)\b', 'por ahí'),
+        (r'\btubo\s+(que|un|una)\b', r'tuvo \1'),
+        (r'\b(para que|cuando)\s+valla\b', r'\1 vaya'),
+        (r'\b(no|ya|que|donde|cuando|él|ella|usted|aquí|allí)\s+esta\b', r'\1 está'),
+        (r'\besta\s+(bien|mal|claro|listo|lista|hecho|disponible|ubicado|ubicada|en|de|para|con|por|muy)\b', r'está \1'),
+        (r'\b(mas)\s+(de|que|o|bien|tarde|temprano|adelante|para)\b', r'más \2'),
+    ]
+
+    PHONETIC_EXPANSIONS = [
+        (r'(\d+)\s*%', r'\1 por ciento'),
+        (r'\betc\.', 'etcétera'),
+        (r'\bDr\.', 'Doctor'),
+        (r'\bDra\.', 'Doctora'),
+        (r'\bSr\.', 'Señor'),
+        (r'\bSra\.', 'Señora'),
+        (r'\bpág\.', 'página'),
+        (r'\bpágs\.', 'páginas'),
+        (r'\bej\.', 'ejemplo'),
+        (r'\bvs\.?\b', 'versus'),
+        (r'\bEE\.UU\.?\b', 'Estados Unidos'),
+    ]
+
+    @classmethod
+    def correct(cls, text: str) -> str:
+        if not text:
+            return ""
+
+        # 1. Phonetic expansions
+        for pattern, repl in cls.PHONETIC_EXPANSIONS:
+            text = re.sub(pattern, repl, text, flags=re.IGNORECASE)
+
+        # 2. Homophone contextual corrections
+        for pattern, repl in cls.HOMOPHONE_RULES:
+            text = re.sub(pattern, repl, text, flags=re.IGNORECASE)
+
+        # 3. Suffix accentuation (-cion, -sion)
+        text = re.sub(
+            r'\b([a-zA-ZáéíóúñÁÉÍÓÚÑ]{3,})(cion|sion)\b',
+            lambda m: m.group(1) + ('ción' if m.group(2).lower() == 'cion' else 'sión'),
+            text,
+            flags=re.IGNORECASE
+        )
+
+        # 4. Dictionary replacement (case preserving)
+        def replace_accent(match):
+            word = match.group(0)
+            lower = word.lower()
+            if lower in cls.ACCENT_MAP:
+                accented = cls.ACCENT_MAP[lower]
+                if word.isupper():
+                    return accented.upper()
+                elif word[0].isupper():
+                    return accented.capitalize()
+                return accented
+            return word
+
+        text = re.sub(r'\b[a-zA-ZáéíóúñÁÉÍÓÚÑ]+\b', replace_accent, text)
+        return text
+
+
 class SpeechPunctuationFormatter:
     """Intelligently restores capitalization, commas, clause pauses, periods, and paragraph formatting to raw STT transcripts."""
 
@@ -429,6 +530,10 @@ class SpeechPunctuationFormatter:
         text = text.strip()
         if not text:
             return ""
+
+        # Apply orthographic, phonetic & homophone corrections first
+        text = SpeechGrammarCorrector.correct(text)
+
         words = text.split()
         if not words:
             return ""

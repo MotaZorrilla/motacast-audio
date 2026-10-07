@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Mockery;
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 class AudioTranscriptionTest extends TestCase
@@ -391,5 +392,52 @@ class AudioTranscriptionTest extends TestCase
         $this->assertStringContainsString(',', $text);
         $this->assertStringContainsString('.', $text);
         $this->assertStringContainsString("\n\n", $text);
+    }
+
+    public function test_books_create_view_contains_stt_review_then_tts_strategy_option(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('books.create'));
+
+        $response->assertStatus(200);
+        $response->assertSee('stt_review_then_tts', false);
+        $response->assertSee('Transcribir, Auto-Corregir y Abrir en Editor', false);
+        $response->assertSee('Paso de Revisión Recomendado', false);
+        $response->assertSee('corrección ortográfica', false);
+    }
+
+    public function test_speech_grammar_corrector_heuristics_via_python_extractor(): void
+    {
+        $python = PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3';
+
+        $code = <<<'PY'
+import sys
+sys.path.insert(0, 'scripts')
+import extract_pdf
+
+sample = "hola amigos vamos a haber si esto esta facil o dificil de echo el Dr. Martinez vino con el 20%"
+corrected = extract_pdf.SpeechGrammarCorrector.correct(sample)
+formatted = extract_pdf.SpeechPunctuationFormatter.format_chunk(sample)
+
+assert "vamos a ver" in corrected, f"Error homophone: {corrected}"
+assert "de hecho" in corrected, f"Error homophone: {corrected}"
+assert "fácil" in corrected, f"Error accent: {corrected}"
+assert "difícil" in corrected, f"Error accent: {corrected}"
+assert "Doctor" in corrected, f"Error phonetic: {corrected}"
+assert "20 por ciento" in corrected, f"Error phonetic: {corrected}"
+assert formatted.endswith('.'), f"Error punctuation: {formatted}"
+print("OK_CORRECTOR")
+PY;
+
+        $process = new Process([
+            $python,
+            '-c',
+            $code,
+        ], base_path());
+
+        $process->run();
+        $this->assertTrue($process->isSuccessful(), 'Python corrector failed: '.$process->getErrorOutput());
+        $this->assertStringContainsString('OK_CORRECTOR', $process->getOutput());
     }
 }
