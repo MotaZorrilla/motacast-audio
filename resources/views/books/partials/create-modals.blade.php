@@ -137,7 +137,7 @@
 </div>
 
 <!-- Interactive Media Strategy & Storage Decision Modal -->
-<div id="motaMediaStrategyModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity">
+<div id="motaMediaStrategyModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md items-center justify-center p-4 transition-opacity">
     <div id="motaMediaStrategyBox" class="card-tactile rounded-3xl p-6 sm:p-7 max-w-lg w-full space-y-5 border border-[#00ff87]/40 shadow-2xl relative transform transition-all duration-200">
         <!-- Modal Header -->
         <div class="flex items-start gap-3.5">

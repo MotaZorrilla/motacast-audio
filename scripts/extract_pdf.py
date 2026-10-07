@@ -413,10 +413,86 @@ class ImageOcrExtractor(BaseExtractor):
             raise Exception(f"Error procesando OCR de la imagen: {e}")
 
 
-class AudioTranscriptionExtractor(BaseExtractor):
-    """Converts spoken audio files (.mp3, .wav, .m4a, .ogg) to text using ffmpeg and SpeechRecognition."""
+class SpeechPunctuationFormatter:
+    """Intelligently restores capitalization, commas, clause pauses, periods, and paragraph formatting to raw STT transcripts."""
 
-    CHUNK_DURATION_SECONDS = "45"
+    PAUSE_CONNECTORS = [
+        'sin embargo', 'por lo tanto', 'por consiguiente', 'en consecuencia',
+        'es decir', 'o sea', 'en primer lugar', 'en segundo lugar', 'por un lado',
+        'por otro lado', 'además', 'asimismo', 'finalmente', 'en resumen',
+        'por ejemplo', 'pero', 'porque', 'ya que', 'puesto que', 'dado que',
+        'así que', 'de modo que', 'aunque', 'a pesar de que', 'si bien'
+    ]
+
+    @classmethod
+    def format_chunk(cls, text: str) -> str:
+        text = text.strip()
+        if not text:
+            return ""
+        words = text.split()
+        if not words:
+            return ""
+
+        words[0] = words[0].capitalize()
+        punctuated = " ".join(words)
+
+        for conn in cls.PAUSE_CONNECTORS:
+            pattern = re.compile(rf'(?<!^)(?<!\.\s)(?<!,\s)\s+\b({re.escape(conn)})\b', re.IGNORECASE)
+            punctuated = pattern.sub(rf', \1', punctuated)
+
+        punctuated = re.sub(r',\s*,+', ',', punctuated)
+        punctuated = re.sub(r'^\s*,\s*', '', punctuated)
+        punctuated = re.sub(r'\.\s*,\s*', '. ', punctuated)
+
+        tokens = punctuated.split()
+        words_since_punct = 0
+        final_tokens = []
+        for i, token in enumerate(tokens):
+            final_tokens.append(token)
+            words_since_punct += 1
+            if any(p in token for p in ('.', '!', '?', ';')):
+                words_since_punct = 0
+            elif ',' in token:
+                words_since_punct = max(0, words_since_punct - 6)
+            elif words_since_punct >= 18:
+                if i + 1 < len(tokens) and tokens[i + 1].lower() in ('y', 'o', 'que', 'en', 'con', 'para', 'de', 'a'):
+                    final_tokens[-1] += ','
+                    words_since_punct = 0
+                elif words_since_punct >= 25:
+                    final_tokens[-1] += '.'
+                    words_since_punct = 0
+                    if i + 1 < len(tokens):
+                        tokens[i + 1] = tokens[i + 1].capitalize()
+
+        result = " ".join(final_tokens)
+        if not result.endswith(('.', '!', '?', ';', ':')):
+            result += '.'
+        return result
+
+    @classmethod
+    def structure_transcript(cls, chunk_texts: List[str]) -> List[str]:
+        formatted = [cls.format_chunk(c) for c in chunk_texts if c and c.strip()]
+        if not formatted:
+            return []
+        paragraphs = []
+        current = []
+        words = 0
+        for sent in formatted:
+            current.append(sent)
+            words += len(sent.split())
+            if words >= 50 or len(current) >= 3:
+                paragraphs.append(" ".join(current))
+                current = []
+                words = 0
+        if current:
+            paragraphs.append(" ".join(current))
+        return paragraphs
+
+
+class AudioTranscriptionExtractor(BaseExtractor):
+    """Converts spoken audio and video files (.mp3, .wav, .m4a, .mp4, etc.) to formatted text using ffmpeg and SpeechRecognition."""
+
+    CHUNK_DURATION_SECONDS = "20"
 
     @staticmethod
     def _get_ffmpeg_binary() -> str:
@@ -491,21 +567,8 @@ class AudioTranscriptionExtractor(BaseExtractor):
             if not transcribed_chunks:
                 raise Exception("No se detectó voz o habla comprensible en el archivo de audio.")
 
-            grouped_sections = []
-            current_section = []
-            for chunk in transcribed_chunks:
-                formatted = chunk[0].upper() + chunk[1:]
-                if not formatted.endswith(('.', '!', '?')):
-                    formatted += '.'
-                current_section.append(formatted)
-                if len(current_section) >= 3:
-                    grouped_sections.append(" ".join(current_section))
-                    current_section = []
-
-            if current_section:
-                grouped_sections.append(" ".join(current_section))
-
-            pages_text = [TextNormalizer.clean(s) for s in grouped_sections if TextNormalizer.clean(s)]
+            paragraphs = SpeechPunctuationFormatter.structure_transcript(transcribed_chunks)
+            pages_text = [TextNormalizer.clean(p) for p in paragraphs if TextNormalizer.clean(p)]
             clean_title = os.path.splitext(os.path.basename(file_path))[0]
             clean_title = re.sub(r'[_\-]+', ' ', clean_title).strip()
             clean_title = clean_title.title() if clean_title else "Transcripción de Audio"

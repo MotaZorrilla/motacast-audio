@@ -664,11 +664,12 @@
     });
 
     function updateFileInfo(file) {
-        selectedFileName.textContent = file.name;
+        if (!file) return;
+        if (selectedFileName) selectedFileName.textContent = file.name;
         const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-        selectedFileSize.textContent = `(${sizeMb} MB)`;
-        fileSelectedBox.style.display = 'inline-flex';
-        fileLabel.textContent = 'Archivo seleccionado correctamente';
+        if (selectedFileSize) selectedFileSize.textContent = `(${sizeMb} MB)`;
+        if (fileSelectedBox) fileSelectedBox.style.display = 'inline-flex';
+        if (fileLabel) fileLabel.textContent = 'Archivo seleccionado correctamente';
 
         const audioExts = ['.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac'];
         const videoExts = ['.mp4', '.mkv', '.mov', '.avi', '.webm'];

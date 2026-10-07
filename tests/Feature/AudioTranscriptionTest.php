@@ -357,4 +357,39 @@ class AudioTranscriptionTest extends TestCase
         $response->assertSee('Texto (.TXT)', false);
         $response->assertSee(route('books.transcription.download', ['book' => $book->id, 'format' => 'txt']), false);
     }
+
+    public function test_stt_transcription_returns_punctuated_text_with_paragraphs(): void
+    {
+        $file = UploadedFile::fake()->create('speech.mp3', 200, 'audio/mpeg');
+
+        $mockExtractor = Mockery::mock(PdfExtractorService::class);
+        $mockExtractor->shouldReceive('extract')
+            ->once()
+            ->andReturn([
+                'success' => true,
+                'title' => 'Grabación de Voz',
+                'author' => 'Transcripción de Audio (STT)',
+                'summary' => 'Resumen del audio.',
+                'total_words' => 50,
+                'chapters' => [
+                    [
+                        'chapter_number' => 1,
+                        'title' => 'Parte 1',
+                        'text' => "Hola amigos, bienvenidos a este tutorial. Hoy vamos a hablar de la inteligencia artificial, pero antes de comenzar quiero recordarles que se suscriban al canal, porque estaremos subiendo mucho contenido interesante.\n\nAdemás, configuramos docker en un servidor ubuntu para que el despliegue sea completamente automático, por lo tanto no tendrás que preocuparte por reiniciar los procesos manualmente.",
+                        'word_count' => 50,
+                    ],
+                ],
+            ]);
+        $this->app->instance(PdfExtractorService::class, $mockExtractor);
+
+        $response = $this->postJson(route('books.stt.preview'), [
+            'audio' => $file,
+        ]);
+
+        $response->assertStatus(200);
+        $text = $response->json('text');
+        $this->assertStringContainsString(',', $text);
+        $this->assertStringContainsString('.', $text);
+        $this->assertStringContainsString("\n\n", $text);
+    }
 }
