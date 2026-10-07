@@ -418,19 +418,39 @@ class AudioTranscriptionExtractor(BaseExtractor):
 
     CHUNK_DURATION_SECONDS = "45"
 
+    @staticmethod
+    def _get_ffmpeg_binary() -> str:
+        found = shutil.which("ffmpeg")
+        if found:
+            return found
+        candidates = [
+            r"C:\Program Files\BlueStacks_nxt\ffmpeg.exe",
+            r"C:\Program Files\ZWSOFT\ZW3D 2026\ffmpeg.exe",
+            "/usr/bin/ffmpeg",
+            "/usr/local/bin/ffmpeg",
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                return c
+        return "ffmpeg"
+
     def extract(self, file_path: str) -> ExtractionResult:
         import subprocess
-        import speech_recognition as sr
-
         try:
-            subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            import speech_recognition as sr
+        except ImportError:
+            raise Exception("El módulo SpeechRecognition no está instalado en el entorno de Python.")
+
+        ffmpeg_bin = self._get_ffmpeg_binary()
+        try:
+            subprocess.run([ffmpeg_bin, "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         except Exception:
             raise Exception("ffmpeg no está disponible en el sistema para procesar el archivo de audio.")
 
         with tempfile.TemporaryDirectory() as tmpdir:
             chunk_template = os.path.join(tmpdir, "chunk_%03d.wav")
             cmd = [
-                "ffmpeg", "-y",
+                ffmpeg_bin, "-y",
                 "-i", file_path,
                 "-f", "segment",
                 "-segment_time", self.CHUNK_DURATION_SECONDS,
@@ -485,7 +505,10 @@ class AudioTranscriptionExtractor(BaseExtractor):
                 grouped_sections.append(" ".join(current_section))
 
             pages_text = [TextNormalizer.clean(s) for s in grouped_sections if TextNormalizer.clean(s)]
-            return ExtractionResult(title="", author="Transcripción de Audio", pages_text=pages_text, ocr_used=False)
+            clean_title = os.path.splitext(os.path.basename(file_path))[0]
+            clean_title = re.sub(r'[_\-]+', ' ', clean_title).strip()
+            clean_title = clean_title.title() if clean_title else "Transcripción de Audio"
+            return ExtractionResult(title=clean_title, author="Transcripción de Audio (STT)", pages_text=pages_text, ocr_used=False)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

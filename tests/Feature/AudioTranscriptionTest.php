@@ -1,0 +1,262 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Book;
+use App\Models\Chapter;
+use App\Models\User;
+use App\Services\PdfExtractorService;
+use Exception;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Mockery;
+use Tests\TestCase;
+
+class AudioTranscriptionTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_stt_preview_requires_audio_file(): void
+    {
+        $response = $this->postJson(route('books.stt.preview'), []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['audio']);
+    }
+
+    public function test_stt_preview_rejects_non_audio_file(): void
+    {
+        $file = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
+
+        $response = $this->postJson(route('books.stt.preview'), [
+            'audio' => $file,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['audio']);
+    }
+
+    public function test_stt_preview_accepts_valid_audio_file_and_returns_transcription(): void
+    {
+        $file = UploadedFile::fake()->create('recording.mp3', 200, 'audio/mpeg');
+
+        $mockExtractor = Mockery::mock(PdfExtractorService::class);
+        $mockExtractor->shouldReceive('extract')
+            ->once()
+            ->andReturn([
+                'success' => true,
+                'title' => 'Entrevista Grabada',
+                'author' => 'Transcripción de Audio (STT)',
+                'summary' => 'Resumen de la entrevista grabada.',
+                'total_words' => 45,
+                'chapters' => [
+                    [
+                        'chapter_number' => 1,
+                        'title' => 'Parte 1',
+                        'text' => 'Buenos días, bienvenidos a esta sesión de trabajo sobre ingeniería de software.',
+                        'word_count' => 12,
+                    ],
+                    [
+                        'chapter_number' => 2,
+                        'title' => 'Parte 2',
+                        'text' => 'Hoy abordaremos la importancia del testing unitario y la integración continua.',
+                        'word_count' => 11,
+                    ],
+                ],
+            ]);
+        $this->app->instance(PdfExtractorService::class, $mockExtractor);
+
+        $response = $this->postJson(route('books.stt.preview'), [
+            'audio' => $file,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'title' => 'Entrevista Grabada',
+            'words' => 45,
+            'chapters_count' => 2,
+        ]);
+        $this->assertStringContainsString('Buenos días, bienvenidos a esta sesión de trabajo', $response->json('text'));
+    }
+
+    public function test_stt_preview_handles_unhappy_path_when_no_speech_detected(): void
+    {
+        $file = UploadedFile::fake()->create('silent.wav', 100, 'audio/wav');
+
+        $mockExtractor = Mockery::mock(PdfExtractorService::class);
+        $mockExtractor->shouldReceive('extract')
+            ->once()
+            ->andThrow(new Exception('No se detectó voz o habla comprensible en el archivo de audio.'));
+        $this->app->instance(PdfExtractorService::class, $mockExtractor);
+
+        $response = $this->postJson(route('books.stt.preview'), [
+            'audio' => $file,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'success' => false,
+            'message' => 'No se detectó voz o habla comprensible en el archivo de audio.',
+        ]);
+    }
+
+    public function test_download_transcription_returns_txt_stream(): void
+    {
+        $user = User::factory()->create();
+        $book = Book::create([
+            'user_id' => $user->id,
+            'title' => 'Conferencia Magistral',
+            'author' => 'Héctor Mota',
+            'summary' => 'Resumen ejecutivo de la conferencia.',
+            'original_filename' => 'audio.mp3',
+            'pdf_path' => 'audiobooks/test.mp3',
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+            'status' => 'ready',
+        ]);
+
+        Chapter::create([
+            'book_id' => $book->id,
+            'chapter_number' => 1,
+            'title' => 'Introducción',
+            'content_text' => 'Texto completo de la introducción transcrita.',
+            'word_count' => 10,
+            'status' => 'ready',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('books.transcription.download', [
+            'book' => $book->id,
+            'format' => 'txt',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'text/plain; charset=UTF-8');
+        $this->assertStringContainsString('Conferencia Magistral', $response->streamedContent());
+        $this->assertStringContainsString('Héctor Mota', $response->streamedContent());
+        $this->assertStringContainsString('Texto completo de la introducción transcrita.', $response->streamedContent());
+    }
+
+    public function test_download_transcription_returns_markdown_stream(): void
+    {
+        $user = User::factory()->create();
+        $book = Book::create([
+            'user_id' => $user->id,
+            'title' => 'Notas de Audio',
+            'author' => 'René Mota',
+            'original_filename' => 'audio.mp3',
+            'pdf_path' => 'audiobooks/test.mp3',
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+            'status' => 'ready',
+        ]);
+
+        Chapter::create([
+            'book_id' => $book->id,
+            'chapter_number' => 1,
+            'title' => 'Punto 1',
+            'content_text' => 'Contenido en markdown de las notas.',
+            'word_count' => 10,
+            'status' => 'ready',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('books.transcription.download', [
+            'book' => $book->id,
+            'format' => 'md',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'text/markdown; charset=UTF-8');
+        $this->assertStringContainsString('# Notas de Audio', $response->streamedContent());
+        $this->assertStringContainsString('## Punto 1', $response->streamedContent());
+    }
+
+    public function test_unauthorized_user_cannot_download_other_user_transcription(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $book = Book::create([
+            'user_id' => $owner->id,
+            'title' => 'Audio Privado',
+            'original_filename' => 'audio.mp3',
+            'pdf_path' => 'audiobooks/test.mp3',
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+            'status' => 'ready',
+        ]);
+
+        $response = $this->actingAs($otherUser)->get(route('books.transcription.download', [
+            'book' => $book->id,
+            'format' => 'txt',
+        ]));
+
+        $response->assertStatus(403);
+    }
+
+    public function test_guest_can_download_their_own_trial_transcription(): void
+    {
+        $book = Book::create([
+            'user_id' => null,
+            'title' => 'Dictado de Prueba',
+            'original_filename' => 'audio.mp3',
+            'pdf_path' => 'audiobooks/test.mp3',
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+            'status' => 'ready',
+        ]);
+
+        Chapter::create([
+            'book_id' => $book->id,
+            'chapter_number' => 1,
+            'title' => 'Dictado de Prueba',
+            'content_text' => 'Texto transcrito para invitado.',
+            'word_count' => 10,
+            'status' => 'ready',
+        ]);
+
+        $response = $this->withSession(['guest_book_id' => $book->id])
+            ->get(route('books.transcription.download', [
+                'book' => $book->id,
+                'format' => 'txt',
+            ]));
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Texto transcrito para invitado.', $response->streamedContent());
+    }
+
+    public function test_create_view_contains_audio_to_text_stt_elements(): void
+    {
+        $user = User::factory()->create();
+        $response = $this->actingAs($user)->get(route('books.create'));
+
+        $response->assertStatus(200);
+        $response->assertSee('sttAudioInput', false);
+        $response->assertSee('sttStatusBox', false);
+        $response->assertSee('Audio a Texto (STT)', false);
+    }
+
+    public function test_show_view_contains_transcription_action_buttons(): void
+    {
+        $user = User::factory()->create();
+        $book = Book::create([
+            'user_id' => $user->id,
+            'title' => 'Libro Con Transcripción',
+            'original_filename' => 'audio.mp3',
+            'pdf_path' => 'audiobooks/test.mp3',
+            'voice' => 'es-VE-SebastianNeural',
+            'speed_rate' => '+0%',
+            'pitch' => '+0Hz',
+            'status' => 'ready',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('books.show', $book->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('Texto (.TXT)', false);
+        $response->assertSee(route('books.transcription.download', ['book' => $book->id, 'format' => 'txt']), false);
+    }
+}

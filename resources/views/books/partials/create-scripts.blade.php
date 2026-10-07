@@ -1,4 +1,4 @@
-﻿<script>
+<script>
     let currentInputMode = 'file';
     const tabModeFile = document.getElementById('tabModeFile');
     const tabModeText = document.getElementById('tabModeText');
@@ -329,8 +329,83 @@
                 box.classList.remove('flex');
             }
             showNoticeModal({
-                title: 'Error de ComunicaciÃ³n',
-                message: 'OcurriÃ³ un error al enviar la imagen al servicio de OCR. Por favor verifica tu conexiÃ³n o intenta con otra imagen.',
+                title: 'Error de Comunicación',
+                message: 'Ocurrió un error al enviar la imagen al servicio de OCR. Por favor verifica tu conexión o intenta con otra imagen.',
+                detail: err ? err.message : null,
+                type: 'error'
+            });
+        });
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Audio-to-Text (STT) Speech Transcription Client Engine
+    // ──────────────────────────────────────────────────────────────────────────
+    function handleSttAudioUpload(input) {
+        if (input.files && input.files.length > 0) {
+            uploadAndTranscribeAudio(input.files[0]);
+            input.value = '';
+        }
+    }
+
+    function uploadAndTranscribeAudio(file) {
+        const box = document.getElementById('sttStatusBox');
+        const textLabel = document.getElementById('sttStatusText');
+        if (box) {
+            box.classList.remove('hidden');
+            box.classList.add('flex');
+        }
+        if (textLabel) textLabel.textContent = `Transcribiendo audio "${file.name || 'grabación'}" con IA...`;
+
+        const formData = new FormData();
+        formData.append('audio', file);
+
+        fetch("{{ route('books.stt.preview') }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (box) {
+                box.classList.add('hidden');
+                box.classList.remove('flex');
+            }
+            if (data.success && data.text) {
+                switchInputMode('text');
+                const prev = rawTextInput.value.trim();
+                const combined = prev ? (prev + "\n\n" + data.text) : data.text;
+                if (combined.length > MAX_TEXT_CHARS) {
+                    showTextLimitModal(data.text.length, combined.length, combined);
+                    return;
+                }
+                rawTextInput.value = combined;
+                updateTextCounters();
+
+                const titleInput = document.getElementById('title');
+                if (titleInput && !titleInput.value && data.title) {
+                    titleInput.value = data.title;
+                }
+            } else {
+                showNoticeModal({
+                    title: 'Incidencia en Transcripción de Audio',
+                    message: data.message || 'No se pudo transcribir voz comprensible del audio.',
+                    detail: data.detail || null,
+                    type: 'warning'
+                });
+            }
+        })
+        .catch(err => {
+            console.error('STT Error:', err);
+            if (box) {
+                box.classList.add('hidden');
+                box.classList.remove('flex');
+            }
+            showNoticeModal({
+                title: 'Error de Comunicación',
+                message: 'Ocurrió un error al procesar el archivo de audio. Por favor verifica el formato y duración del audio.',
                 detail: err ? err.message : null,
                 type: 'error'
             });

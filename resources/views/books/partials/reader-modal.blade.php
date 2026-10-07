@@ -88,6 +88,32 @@
                     </button>
                 </div>
 
+                <!-- Download Transcription (TXT / Markdown / Copy) -->
+                <div class="relative inline-block text-left">
+                    <button 
+                        type="button" 
+                        onclick="toggleTranscriptionMenu()" 
+                        class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-[#00ff87] text-xs font-bold rounded-xl border border-emerald-300 dark:border-emerald-700/50 transition shadow-sm"
+                        title="Descargar o copiar transcripción de texto"
+                    >
+                        <span>📄 Texto</span>
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div id="menuTranscription" class="hidden absolute right-0 mt-1 w-48 rounded-xl bg-white dark:bg-[#071014] border border-slate-200 dark:border-cyan-800/80 shadow-2xl py-1 z-50 text-xs font-medium">
+                        <button type="button" onclick="copyReaderFullText()" class="w-full text-left px-3 py-2 text-slate-700 dark:text-cyan-200 hover:bg-slate-100 dark:hover:bg-[#0d1c22] flex items-center gap-2">
+                            <span>📋 Copiar al Portapapeles</span>
+                        </button>
+                        <a href="{{ route('books.transcription.download', ['book' => $book->id, 'format' => 'txt']) }}" download class="block px-3 py-2 text-slate-700 dark:text-cyan-200 hover:bg-slate-100 dark:hover:bg-[#0d1c22] flex items-center gap-2">
+                            <span>📥 Descargar .TXT</span>
+                        </a>
+                        <a href="{{ route('books.transcription.download', ['book' => $book->id, 'format' => 'md']) }}" download class="block px-3 py-2 text-slate-700 dark:text-cyan-200 hover:bg-slate-100 dark:hover:bg-[#0d1c22] flex items-center gap-2">
+                            <span>📥 Descargar .MD (Markdown)</span>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Open in external tab / download -->
                 <a href="{{ route('books.pdf', $book->id) }}" target="_blank" class="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 dark:bg-[#0d1c22] hover:bg-slate-200 dark:hover:bg-[#142831] text-slate-700 dark:text-cyan-300 text-xs font-semibold rounded-xl border border-slate-200 dark:border-cyan-900/50 transition" title="Abrir / descargar documento original">
                     <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

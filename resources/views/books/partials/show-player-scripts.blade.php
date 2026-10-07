@@ -1,4 +1,4 @@
-﻿<script src="{{ asset('vendor/pdfjs/pdf.min.js') }}"></script>
+<script src="{{ asset('vendor/pdfjs/pdf.min.js') }}"></script>
 <script>
     // Configure PDF.js Worker
     if (window.pdfjsLib) {
@@ -857,4 +857,42 @@
             }
         }, 400);
     }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Transcription Export & Clipboard Actions
+    // ──────────────────────────────────────────────────────────────────────────
+    window.toggleTranscriptionMenu = function() {
+        const menu = document.getElementById('menuTranscription');
+        if (menu) {
+            menu.classList.toggle('hidden');
+        }
+    };
+
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('menuTranscription');
+        if (menu && !e.target.closest('#dropdownTranscriptionContainer') && !e.target.closest('.relative.inline-block')) {
+            menu.classList.add('hidden');
+        }
+    });
+
+    window.copyReaderFullText = function() {
+        let fullText = '';
+        if (chaptersData && chaptersData.length > 0) {
+            fullText = chaptersData.map(ch => `=== ${ch.title} ===\n\n${ch.content_text}`).join('\n\n');
+        } else {
+            const rawEl = document.getElementById('readerRawContent');
+            fullText = rawEl ? rawEl.innerText : '';
+        }
+
+        if (!fullText) {
+            return;
+        }
+
+        navigator.clipboard.writeText(fullText).then(() => {
+            const menu = document.getElementById('menuTranscription');
+            if (menu) menu.classList.add('hidden');
+        }).catch(err => {
+            console.warn('Error al copiar:', err);
+        });
+    };
 </script>

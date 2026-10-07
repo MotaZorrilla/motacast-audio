@@ -88,6 +88,16 @@
 
             <button 
                 type="button" 
+                onclick="document.getElementById('sttAudioInput').click()"
+                class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-[#00ff87] border border-emerald-300 dark:border-emerald-800/60 hover:bg-[#00ff87]/20 transition flex items-center gap-1 shadow-sm"
+                title="Transcribir archivo de audio (MP3, WAV, M4A, OGG) directamente a texto"
+            >
+                <span>🎙️ Audio a Texto (STT)</span>
+            </button>
+            <input type="file" id="sttAudioInput" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac" class="hidden" onchange="handleSttAudioUpload(this)">
+
+            <button 
+                type="button" 
                 onclick="pasteFromClipboard()"
                 class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 dark:bg-cyan-950/60 text-[#00c965] dark:text-[#00ff87] border border-emerald-300 dark:border-cyan-800/60 hover:bg-[#00ff87]/20 transition flex items-center gap-1 shadow-sm"
                 title="Pegar automáticamente desde el portapapeles"
@@ -114,6 +124,15 @@
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
         </svg>
         <span id="ocrStatusText">Extrayendo texto de la imagen con OCR...</span>
+    </div>
+
+    <!-- STT Audio Transcription Status Indicator (Hidden by default) -->
+    <div id="sttStatusBox" class="hidden p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-[#00ff87] text-xs font-semibold items-center gap-2">
+        <svg class="w-4 h-4 animate-spin text-[#00ff87]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <span id="sttStatusText">Transcribiendo audio a texto con IA...</span>
     </div>
 
     <textarea 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Book\DeleteBookAction;
 use App\Http\Requests\OcrPreviewRequest;
 use App\Http\Requests\StoreBookRequest;
+use App\Http\Requests\SttPreviewRequest;
 use App\Jobs\ProcessBookJob;
 use App\Models\Book;
 use App\Models\Chapter;
@@ -185,6 +186,61 @@ class BookController extends Controller
     }
 
     /**
+     * Perform instant Speech-to-Text (STT) transcription preview on an uploaded audio file.
+     */
+    public function sttPreview(SttPreviewRequest $request, PdfExtractorService $extractor): JsonResponse
+    {
+        $file = $request->file('audio');
+        $ext = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'wav');
+        if (! in_array($ext, ['mp3', 'wav', 'm4a', 'ogg', 'aac', 'flac'])) {
+            $ext = 'wav';
+        }
+        $tempPath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'stt_preview_'.uniqid().'.'.$ext;
+        copy($file->getRealPath(), $tempPath);
+
+        try {
+            $extraction = $extractor->extract($tempPath);
+            $fullText = '';
+            if (! empty($extraction['chapters'])) {
+                foreach ($extraction['chapters'] as $ch) {
+                    $fullText .= ($fullText ? "\n\n" : '').$ch['text'];
+                }
+            }
+            if (empty($fullText) && ! empty($extraction['summary'])) {
+                $fullText = $extraction['summary'];
+            }
+
+            return response()->json([
+                'success' => true,
+                'title' => $extraction['title'] ?? 'Transcripción de Audio (STT)',
+                'text' => $fullText,
+                'words' => $extraction['total_words'] ?? str_word_count($fullText),
+                'chapters_count' => count($extraction['chapters'] ?? []),
+            ]);
+        } catch (\Throwable $e) {
+            $msg = $e->getMessage();
+            $userMsg = 'No se pudo transcribir el archivo de audio proporcionado.';
+            if (str_contains($msg, 'No se detectó voz')) {
+                $userMsg = 'No se detectó voz o habla comprensible en el archivo de audio.';
+            } elseif (str_contains($msg, 'ffmpeg no está disponible')) {
+                $userMsg = 'El decodificador FFmpeg no está disponible en el servidor.';
+            } elseif (str_contains($msg, 'SpeechRecognition no está instalado')) {
+                $userMsg = 'El motor de reconocimiento de voz no está disponible en este entorno.';
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $userMsg,
+                'detail' => $msg,
+            ], 422);
+        } finally {
+            if (file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
+        }
+    }
+
+    /**
      * Store and start processing a new audiobook.
      */
     public function store(StoreBookRequest $request): RedirectResponse
@@ -291,6 +347,52 @@ class BookController extends Controller
                 'word_count' => $ch->word_count,
                 'content_text' => $ch->content_text,
             ]),
+        ]);
+    }
+
+    /**
+     * Download the full clean transcription of a book as TXT or Markdown.
+     */
+    public function downloadTranscription(Book $book, Request $request): StreamedResponse
+    {
+        $this->authorizeBookAccess($book);
+        $book->load('chapters');
+
+        $format = strtolower($request->query('format', 'txt'));
+        $format = in_array($format, ['md', 'markdown', 'txt']) ? $format : 'txt';
+
+        $filename = Str::slug($book->title ?: 'transcripcion-audio').'.'.$format;
+
+        $content = '';
+        if ($format === 'md' || $format === 'markdown') {
+            $content .= "# {$book->title}\n\n";
+            if ($book->author) {
+                $content .= "**Autor:** {$book->author}\n\n";
+            }
+            if ($book->summary) {
+                $content .= "> **Resumen Ejecutivo:** {$book->summary}\n\n---\n\n";
+            }
+            foreach ($book->chapters as $ch) {
+                $content .= "## {$ch->title}\n\n{$ch->content_text}\n\n";
+            }
+        } else {
+            $content .= "{$book->title}\n";
+            if ($book->author) {
+                $content .= "Autor: {$book->author}\n";
+            }
+            $content .= "--------------------------------------------------------\n\n";
+            if ($book->summary) {
+                $content .= "RESUMEN EJECUTIVO:\n{$book->summary}\n\n--------------------------------------------------------\n\n";
+            }
+            foreach ($book->chapters as $ch) {
+                $content .= "=== {$ch->title} ===\n\n{$ch->content_text}\n\n";
+            }
+        }
+
+        return response()->streamDownload(function () use ($content) {
+            echo $content;
+        }, $filename, [
+            'Content-Type' => $format === 'txt' ? 'text/plain; charset=UTF-8' : 'text/markdown; charset=UTF-8',
         ]);
     }
 
