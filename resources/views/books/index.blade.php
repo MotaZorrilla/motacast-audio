@@ -38,23 +38,54 @@
             </a>
         </div>
 
-        <!-- Metrics Row -->
+        <!-- Orchid Software KPI Metrics Row -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 pt-5 border-t border-slate-200/80 dark:border-cyan-950/60 relative z-10">
-            <div class="bg-slate-50 dark:bg-[#071014] rounded-xl p-3 border border-slate-200/80 dark:border-cyan-900/30 shadow-inner">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-sky-400 uppercase tracking-wider">Documentos</p>
-                <p class="text-2xl font-black text-slate-900 dark:text-cyan-300 mt-0.5">{{ $stats['total'] }}</p>
+            <div class="card-tactile rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-xs">
+                <div>
+                    <p class="text-[10px] font-mono font-bold text-slate-500 dark:text-sky-400 uppercase tracking-wider">Documentos</p>
+                    <p class="text-2xl font-black text-slate-900 dark:text-cyan-300 mt-0.5">{{ $stats['total'] }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-cyan-950/60 flex items-center justify-center text-slate-600 dark:text-cyan-400 border border-slate-200/60 dark:border-cyan-900/40">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
             </div>
-            <div class="bg-slate-50 dark:bg-[#071014] rounded-xl p-3 border border-slate-200/80 dark:border-cyan-900/30 shadow-inner">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-sky-400 uppercase tracking-wider">Listos para Escuchar</p>
-                <p class="text-2xl font-black text-[#00c965] dark:text-[#00ff87] mt-0.5">{{ $stats['ready'] }}</p>
+
+            <div class="card-tactile rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-xs border-emerald-500/30">
+                <div>
+                    <p class="text-[10px] font-mono font-bold text-slate-500 dark:text-sky-400 uppercase tracking-wider">Listos</p>
+                    <p class="text-2xl font-black text-[#00c965] dark:text-[#00ff87] mt-0.5">{{ $stats['ready'] }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-[#00ff87]/15 flex items-center justify-center text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/30">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
             </div>
-            <div class="bg-slate-50 dark:bg-[#071014] rounded-xl p-3 border border-slate-200/80 dark:border-cyan-900/30 shadow-inner">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-sky-400 uppercase tracking-wider">En Síntesis</p>
-                <p class="text-2xl font-black text-amber-500 dark:text-amber-400 mt-0.5">{{ $stats['processing'] }}</p>
+
+            <div class="card-tactile rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-xs border-amber-500/30">
+                <div>
+                    <p class="text-[10px] font-mono font-bold text-slate-500 dark:text-sky-400 uppercase tracking-wider">En Síntesis</p>
+                    <p class="text-2xl font-black text-amber-500 dark:text-amber-400 mt-0.5">{{ $stats['processing'] }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-500 border border-amber-500/30">
+                    <svg class="w-5 h-5 {{ $stats['processing'] > 0 ? 'animate-spin' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </div>
             </div>
-            <div class="bg-slate-50 dark:bg-[#071014] rounded-xl p-3 border border-slate-200/80 dark:border-cyan-900/30 shadow-inner">
-                <p class="text-[10px] font-bold text-slate-500 dark:text-sky-400 uppercase tracking-wider">Horas de Audio</p>
-                <p class="text-2xl font-black text-teal-600 dark:text-cyan-400 mt-0.5">{{ $stats['total_hours'] }}h</p>
+
+            <div class="card-tactile rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-xs border-cyan-500/30">
+                <div>
+                    <p class="text-[10px] font-mono font-bold text-slate-500 dark:text-sky-400 uppercase tracking-wider">Horas de Audio</p>
+                    <p class="text-2xl font-black text-cyan-600 dark:text-cyan-400 mt-0.5">{{ $stats['total_hours'] }}h</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center text-cyan-500 border border-cyan-500/30">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
             </div>
         </div>
 
@@ -300,10 +331,10 @@
                         </a>
 
                         @auth
-                            <form action="{{ route('books.destroy', $book->id) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar este documento?');">
+                            <form id="delete-form-{{ $book->id }}" action="{{ route('books.destroy', $book->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition" title="Eliminar documento">
+                                <button type="button" onclick="confirmDeleteDocument('{{ $book->id }}', '{{ addslashes($book->title) }}')" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition min-w-[36px] min-h-[36px] flex items-center justify-center" title="Eliminar documento">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -343,5 +374,51 @@
         </div>
     @endif
 
+    <!-- Non-Blocking Delete Confirmation Modal (Protocolo 4 Craft Floor) -->
+    <div id="deleteDocModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="card-tactile w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl">
+            <div class="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-500 mx-auto flex items-center justify-center border border-rose-500/20">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-cyan-200">¿Eliminar este documento?</h3>
+                <p id="deleteDocModalTitle" class="text-xs text-slate-600 dark:text-sky-300 font-semibold mt-1 truncate max-w-xs mx-auto"></p>
+                <p class="text-[11px] text-slate-500 dark:text-sky-400 mt-1">Esta acción borrará el audio y el contenido del audiolibro.</p>
+            </div>
+            <div class="flex items-center justify-center gap-2 pt-2">
+                <button type="button" onclick="closeDeleteModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition min-h-[44px]">
+                    Cancelar
+                </button>
+                <button type="button" id="confirmDeleteSubmitBtn" class="px-5 py-2.5 rounded-xl text-xs font-black bg-rose-500 hover:bg-rose-600 text-white shadow-md transition min-h-[44px]">
+                    Sí, Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+@push('scripts')
+<script>
+    let deleteTargetDocId = null;
+    function confirmDeleteDocument(id, title) {
+        deleteTargetDocId = id;
+        const titleEl = document.getElementById('deleteDocModalTitle');
+        if (titleEl) titleEl.textContent = title;
+        document.getElementById('deleteDocModal').classList.remove('hidden');
+    }
+    function closeDeleteModal() {
+        deleteTargetDocId = null;
+        document.getElementById('deleteDocModal').classList.add('hidden');
+    }
+    document.getElementById('confirmDeleteSubmitBtn')?.addEventListener('click', () => {
+        if (deleteTargetDocId) {
+            const form = document.getElementById('delete-form-' + deleteTargetDocId);
+            if (form) form.submit();
+        }
+    });
+</script>
+@endpush
 @endsection

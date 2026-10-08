@@ -9,6 +9,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\VoicePreviewController;
 use App\Models\Book;
+use App\Services\AudioSynthesisService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -54,7 +55,7 @@ Route::prefix('chapters')->name('chapters.')->group(function () {
     Route::get('/{chapter}/download', [BookController::class, 'downloadChapter'])->name('download');
 });
 
-// Root Landing: First-time guests land on conversion trial, guests with loaded book view their book, logged-in users access library
+// Root Landing: First-time guests land on Kairos-style conversion landing page, guests with loaded book view their book, logged-in users access library
 Route::get('/', function (Request $request) {
     if (Auth::check()) {
         return app(BookController::class)->index($request);
@@ -65,7 +66,10 @@ Route::get('/', function (Request $request) {
         session()->forget(['guest_book_id', 'guest_upload_count']);
         session()->save();
 
-        return app(BookController::class)->create($request);
+        $voices = AudioSynthesisService::getAvailableVoices();
+        $registeredUsers = collect();
+
+        return view('landing.index', compact('voices', 'registeredUsers'));
     }
 
     if (session()->has('guest_book_id')) {
@@ -82,8 +86,18 @@ Route::get('/', function (Request $request) {
             ->with('info', 'Has utilizado tu conversión de prueba gratuita. Inicia sesión o regístrate para acceder a tu biblioteca.');
     }
 
-    return app(BookController::class)->create($request);
+    $voices = AudioSynthesisService::getAvailableVoices();
+    $registeredUsers = collect();
+
+    return view('landing.index', compact('voices', 'registeredUsers'));
 })->name('home');
+
+Route::get('/landing', function () {
+    $voices = AudioSynthesisService::getAvailableVoices();
+    $registeredUsers = collect();
+
+    return view('landing.index', compact('voices', 'registeredUsers'));
+})->name('landing');
 
 // Support & Feedback Routes (Tickets & Quota Extensions)
 Route::post('/support/tickets', [SupportTicketController::class, 'store'])->name('tickets.store');
