@@ -1,6 +1,13 @@
 #!/bin/sh
 set -e
 
+# If using SQLite, ensure database file exists
+if [ "$DB_CONNECTION" = "sqlite" ] || [ -z "$DB_CONNECTION" ]; then
+  mkdir -p /app/database
+  touch /app/database/database.sqlite
+  chmod 666 /app/database/database.sqlite
+fi
+
 # If using MariaDB/MySQL, wait for database to be reachable
 if [ "$DB_CONNECTION" = "mariadb" ] || [ "$DB_CONNECTION" = "mysql" ]; then
   echo "Waiting for MariaDB connection ($DB_HOST:$DB_PORT)..."
@@ -8,7 +15,7 @@ if [ "$DB_CONNECTION" = "mariadb" ] || [ "$DB_CONNECTION" = "mysql" ]; then
     try {
       \$host = getenv('DB_HOST') ?: '127.0.0.1';
       \$port = getenv('DB_PORT') ?: '3306';
-      \$db = getenv('DB_DATABASE') ?: 'audiolibros';
+      \$db = getenv('DB_DATABASE') ?: 'motacast';
       \$user = getenv('DB_USERNAME') ?: 'root';
       \$pass = getenv('DB_PASSWORD') ?: '';
       new PDO(\"mysql:host=\$host;port=\$port;dbname=\$db\", \$user, \$pass, [PDO::ATTR_TIMEOUT => 2]);
@@ -22,6 +29,9 @@ if [ "$DB_CONNECTION" = "mariadb" ] || [ "$DB_CONNECTION" = "mysql" ]; then
   done
   echo "MariaDB is ready!"
 fi
+
+# Ensure storage link exists
+php artisan storage:link || true
 
 # Run database migrations
 php artisan migrate --force

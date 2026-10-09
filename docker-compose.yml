@@ -11,7 +11,7 @@ services:
     volumes:
       - motacast_mariadb_data:/var/lib/mysql
     ports:
-      - "127.0.0.1:3307:3306"
+      - "127.0.0.1:3308:3306"
     networks:
       - motacast-net
 
@@ -20,7 +20,7 @@ services:
     container_name: motacast-app
     restart: unless-stopped
     ports:
-      - "8097:8000"
+      - "8098:8000"
     volumes:
       - .:/app
     depends_on:
