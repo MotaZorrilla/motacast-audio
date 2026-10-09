@@ -1,0 +1,38 @@
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: motacast-db
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=RootSecretMotaCast2026!
+      - MARIADB_DATABASE=motacast
+      - MARIADB_USER=motacast
+      - MARIADB_PASSWORD=SecureMotaCast2026!
+    volumes:
+      - motacast_mariadb_data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3307:3306"
+    networks:
+      - motacast-net
+
+  app:
+    image: motacast-img
+    container_name: motacast-app
+    restart: unless-stopped
+    ports:
+      - "8097:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - mariadb
+    networks:
+      - motacast-net
+
+volumes:
+  motacast_mariadb_data:
+    name: motacast_mariadb_data
+
+networks:
+  motacast-net:
+    name: motacast-net
+    driver: bridge
