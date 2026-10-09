@@ -16,7 +16,7 @@ services:
       - motacast-net
 
   app:
-    image: motacast-img
+    image: audiolibros-img
     container_name: motacast-app
     restart: unless-stopped
     ports:
