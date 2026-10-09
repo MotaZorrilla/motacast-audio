@@ -569,9 +569,9 @@
                     </svg>
                     <span>Actualizar</span>
                 </a>
-                <form action="{{ route('admin.telemetry.clear-logs') }}" method="POST" onsubmit="return confirm('¿Seguro que deseas vaciar el archivo de logs?');">
+                <form id="clearLogsAdminForm" action="{{ route('admin.telemetry.clear-logs') }}" method="POST">
                     @csrf
-                    <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-500/30 transition">
+                    <button type="button" onclick="confirmFormSubmit(event, 'clearLogsAdminForm', '¿Vaciar archivo de logs?', 'Se borrará el historial de logs del sistema de forma permanente.', 'Sí, Vaciar Logs')" class="px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-500/30 transition">
                         Vaciar Logs
                     </button>
                 </form>

@@ -244,13 +244,13 @@
                                 <div class="inline-flex items-center gap-1.5 justify-end">
                                     <!-- Toggle Status Button -->
                                     @if ($user->id !== Auth::id())
-                                        <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" class="inline">
+                                        <form id="toggleUserStatusForm-{{ $user->id }}" action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" class="inline">
                                             @csrf
                                             <button 
-                                                type="submit" 
+                                                type="button" 
                                                 class="p-1.5 rounded-lg {{ $user->status === 'active' ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30' : 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30' }} transition"
                                                 title="{{ $user->status === 'active' ? 'Suspender usuario' : 'Activar usuario' }}"
-                                                onclick="return confirm('¿Deseas cambiar el estado de este usuario?');"
+                                                onclick="confirmFormSubmit(event, 'toggleUserStatusForm-{{ $user->id }}', '¿Cambiar estado de usuario?', '{{ $user->status === 'active' ? 'El usuario será suspendido y no podrá ingresar al sistema.' : 'El usuario será activado nuevamente.' }}', '{{ $user->status === 'active' ? 'Sí, Suspender' : 'Sí, Activar' }}', '{{ $user->status === 'active' ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-black' : 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black' }}')"
                                             >
                                                 @if ($user->status === 'active')
                                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -280,10 +280,10 @@
 
                                     <!-- Cascade Delete Button -->
                                     @if ($user->id !== Auth::id())
-                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('ATENCIÓN: ¿Seguro que deseas eliminar al usuario \'{{ $user->name }}\'? Se eliminarán de forma permanente todos sus {{ $user->books_count }} audiolibros y archivos del servidor.');">
+                                        <form id="deleteUserForm-{{ $user->id }}" action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition" title="Eliminar usuario y sus archivos en cascada">
+                                            <button type="button" onclick="confirmFormSubmit(event, 'deleteUserForm-{{ $user->id }}', '¿Eliminar usuario en cascada?', 'ATENCIÓN: Se eliminará al usuario \'{{ addslashes($user->name) }}\' y todos sus {{ $user->books_count }} audiolibros del servidor de forma permanente.', 'Sí, Eliminar Usuario')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition" title="Eliminar usuario y sus archivos en cascada">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
@@ -384,10 +384,10 @@
                             </button>
 
                             @if ($user->id !== Auth::id())
-                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar al usuario \'{{ $user->name }}\' y todos sus audiolibros?');">
+                                <form id="deleteUserMobileForm-{{ $user->id }}" action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1 text-rose-500 hover:bg-rose-50 rounded-lg">
+                                    <button type="button" onclick="confirmFormSubmit(event, 'deleteUserMobileForm-{{ $user->id }}', '¿Eliminar usuario?', 'Se eliminará al usuario \'{{ addslashes($user->name) }}\' y todos sus audiolibros.', 'Sí, Eliminar')" class="p-1 text-rose-500 hover:bg-rose-50 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>

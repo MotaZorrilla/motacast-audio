@@ -171,10 +171,14 @@
             <button 
                 type="submit" 
                 id="submitBtn"
-                class="w-full py-3.5 px-6 btn-neon-tactile rounded-xl text-sm font-black transition flex items-center justify-center gap-2"
+                class="w-full py-3.5 px-6 btn-neon-tactile rounded-xl text-sm font-black transition flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-wait"
             >
-                <svg class="w-5 h-5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg id="submitBtnIcon" class="w-5 h-5 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+                </svg>
+                <svg id="submitBtnSpinner" class="w-5 h-5 text-slate-950 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
                 <span id="submitBtnText">Comenzar Extracción y Síntesis</span>
             </button>

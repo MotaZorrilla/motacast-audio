@@ -973,6 +973,129 @@
         }
     </script>
 
+    <!-- Global Non-Blocking Universal Confirm Modal (Protocolo 4 Craft Floor: Zero Native Browser Dialogs) -->
+    <div id="appGlobalConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-200" role="dialog" aria-modal="true" aria-labelledby="appGlobalConfirmTitle">
+        <div class="card-tactile w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl transform transition-all scale-100">
+            <div id="appGlobalConfirmIconWrapper" class="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-500 mx-auto flex items-center justify-center border border-rose-500/20">
+                <svg id="appGlobalConfirmIcon" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div>
+                <h3 id="appGlobalConfirmTitle" class="text-base font-black text-slate-900 dark:text-cyan-200 tracking-tight">¿Estás seguro?</h3>
+                <p id="appGlobalConfirmMessage" class="text-xs text-slate-600 dark:text-sky-300 font-medium mt-1 leading-relaxed max-w-xs mx-auto">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="flex items-center justify-center gap-2 pt-2">
+                <button type="button" id="appGlobalConfirmCancelBtn" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition min-h-[44px]">
+                    Cancelar
+                </button>
+                <button type="button" id="appGlobalConfirmActionBtn" class="px-5 py-2.5 rounded-xl text-xs font-black bg-rose-500 hover:bg-rose-600 text-white shadow-md transition min-h-[44px]">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let _appConfirmCallback = null;
+        let _appCancelCallback = null;
+
+        window.showAppConfirm = function(options) {
+            const modal = document.getElementById('appGlobalConfirmModal');
+            if (!modal) return;
+
+            const titleEl = document.getElementById('appGlobalConfirmTitle');
+            const msgEl = document.getElementById('appGlobalConfirmMessage');
+            const actionBtn = document.getElementById('appGlobalConfirmActionBtn');
+            const cancelBtn = document.getElementById('appGlobalConfirmCancelBtn');
+            const iconWrapper = document.getElementById('appGlobalConfirmIconWrapper');
+
+            if (titleEl) titleEl.textContent = options.title || '¿Estás seguro?';
+            if (msgEl) msgEl.textContent = options.message || 'Esta acción no se puede deshacer.';
+            if (actionBtn) {
+                actionBtn.textContent = options.confirmText || 'Confirmar';
+                actionBtn.className = 'px-5 py-2.5 rounded-xl text-xs font-black shadow-md transition min-h-[44px] ' + (options.confirmClass || 'bg-rose-500 hover:bg-rose-600 text-white');
+            }
+            if (cancelBtn) {
+                cancelBtn.textContent = options.cancelText || 'Cancelar';
+            }
+
+            if (iconWrapper && options.type === 'warning') {
+                iconWrapper.className = 'w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-500 mx-auto flex items-center justify-center border border-amber-500/20';
+            } else if (iconWrapper && options.type === 'info') {
+                iconWrapper.className = 'w-12 h-12 rounded-2xl bg-cyan-500/15 text-cyan-400 mx-auto flex items-center justify-center border border-cyan-500/20';
+            } else if (iconWrapper) {
+                iconWrapper.className = 'w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-500 mx-auto flex items-center justify-center border border-rose-500/20';
+            }
+
+            _appConfirmCallback = typeof options.onConfirm === 'function' ? options.onConfirm : null;
+            _appCancelCallback = typeof options.onCancel === 'function' ? options.onCancel : null;
+
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        };
+
+        window.closeAppConfirm = function() {
+            const modal = document.getElementById('appGlobalConfirmModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+            if (_appCancelCallback) {
+                const cb = _appCancelCallback;
+                _appCancelCallback = null;
+                cb();
+            }
+            _appConfirmCallback = null;
+        };
+
+        window.confirmFormSubmit = function(e, formId, title, message, confirmText, confirmClass) {
+            if (e) e.preventDefault();
+            window.showAppConfirm({
+                title: title || '¿Confirmar acción?',
+                message: message || '¿Deseas continuar con esta acción?',
+                confirmText: confirmText || 'Sí, Continuar',
+                confirmClass: confirmClass || 'bg-rose-500 hover:bg-rose-600 text-white',
+                onConfirm: () => {
+                    const form = typeof formId === 'string' ? document.getElementById(formId) : formId;
+                    if (form) form.submit();
+                }
+            });
+            return false;
+        };
+
+        document.getElementById('appGlobalConfirmCancelBtn')?.addEventListener('click', () => {
+            window.closeAppConfirm();
+        });
+
+        document.getElementById('appGlobalConfirmActionBtn')?.addEventListener('click', () => {
+            const cb = _appConfirmCallback;
+            _appConfirmCallback = null;
+            _appCancelCallback = null;
+            const modal = document.getElementById('appGlobalConfirmModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+            if (cb) cb();
+        });
+
+        document.getElementById('appGlobalConfirmModal')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                window.closeAppConfirm();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('appGlobalConfirmModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    window.closeAppConfirm();
+                }
+            }
+        });
+    </script>
+
     @stack('scripts')
 </body>
 </html>

@@ -47,21 +47,21 @@
                     </svg>
                     <span>Cargar otro</span>
                 </a>
-                <a href="{{ route('guest.reset') }}" onclick="return confirm('¿Deseas reiniciar tu prueba gratuita para subir o pegar otro documento?');" class="px-2.5 py-1 text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition text-[11px] font-bold inline-flex items-center gap-1 shadow-sm" title="Reiniciar sesión de prueba">
+                <button type="button" onclick="showAppConfirm({ title: '¿Reiniciar prueba gratuita?', message: 'Se limpiará el libro activo en esta sesión para que puedas procesar uno nuevo.', confirmText: 'Sí, Reiniciar', type: 'warning', confirmClass: 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-black', onConfirm: () => window.location.href = '{{ route('guest.reset') }}' })" class="px-2.5 py-1 text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition text-[11px] font-bold inline-flex items-center gap-1 shadow-sm" title="Reiniciar sesión de prueba">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     <span>Reiniciar</span>
-                </a>
+                </button>
             </div>
         @endauth
 
         <div class="flex items-center gap-2">
             @auth
-                <form action="{{ route('books.destroy', $book->id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este documento de tu biblioteca?');">
+                <form id="deleteBookFormShow" action="{{ route('books.destroy', $book->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition" title="Eliminar documento">
+                    <button type="button" onclick="confirmFormSubmit(event, 'deleteBookFormShow', '¿Eliminar este documento?', 'Se borrará el audio y el contenido del audiolibro de tu biblioteca de forma permanente.', 'Sí, Eliminar')" class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition" title="Eliminar documento">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>

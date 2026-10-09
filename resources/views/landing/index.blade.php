@@ -470,10 +470,14 @@
                         <button 
                             type="button" 
                             id="landingBtnPlayPreview" 
-                            class="w-full btn-neon-tactile py-3 px-4 rounded-xl text-xs font-black text-slate-950 flex items-center justify-center gap-2 shadow-md transition"
+                            class="w-full btn-neon-tactile py-3 px-4 rounded-xl text-xs font-black text-slate-950 flex items-center justify-center gap-2 shadow-md transition disabled:opacity-75 disabled:cursor-wait"
                         >
-                            <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg id="landingPreviewPlayIcon" class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            </svg>
+                            <svg id="landingPreviewSpinner" class="w-4 h-4 text-slate-950 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                             </svg>
                             <span id="landingPreviewBtnText">Escuchar Muestra de Audio</span>
                         </button>
@@ -568,37 +572,56 @@
 </div>
 
 <script>
-    // Live Voice Demo Player Handler
+    // Live Voice Demo Player Handler (With Craft Floor 7 Interactive States)
     document.addEventListener('DOMContentLoaded', () => {
         const btnPlay = document.getElementById('landingBtnPlayPreview');
         const selectVoice = document.getElementById('landingVoiceSelect');
         const audio = document.getElementById('landingPreviewAudioPlayer');
         const btnText = document.getElementById('landingPreviewBtnText');
+        const spinner = document.getElementById('landingPreviewSpinner');
+        const playIcon = document.getElementById('landingPreviewPlayIcon');
 
         if (btnPlay && selectVoice && audio) {
+            const resetBtnState = (label = 'Escuchar Muestra de Audio') => {
+                btnPlay.disabled = false;
+                if (spinner) spinner.classList.add('hidden');
+                if (playIcon) playIcon.classList.remove('hidden');
+                if (btnText) btnText.textContent = label;
+            };
+
             btnPlay.addEventListener('click', () => {
                 if (!audio.paused) {
                     audio.pause();
-                    btnText.textContent = 'Escuchar Muestra de Audio';
+                    resetBtnState('Escuchar Muestra de Audio');
                     return;
                 }
 
                 const voice = selectVoice.value;
                 const url = `{{ route('voices.preview') }}?voice=${encodeURIComponent(voice)}&t=${Date.now()}`;
                 audio.src = url;
-                btnText.textContent = 'Cargando voz...';
+
+                btnPlay.disabled = true;
+                if (spinner) spinner.classList.remove('hidden');
+                if (playIcon) playIcon.classList.add('hidden');
+                if (btnText) btnText.textContent = 'Cargando muestra...';
 
                 audio.play()
                     .then(() => {
-                        btnText.textContent = '⏸ Pausar Muestra';
+                        btnPlay.disabled = false;
+                        if (spinner) spinner.classList.add('hidden');
+                        if (playIcon) playIcon.classList.remove('hidden');
+                        if (btnText) btnText.textContent = '⏸ Pausar Muestra';
                     })
                     .catch((err) => {
                         console.error('Error al reproducir muestra:', err);
-                        btnText.textContent = 'Escuchar Muestra de Audio';
+                        resetBtnState('Escuchar Muestra de Audio');
+                        if (typeof window.showAppToast === 'function') {
+                            window.showAppToast('No se pudo cargar la muestra de audio en este momento.', 'error');
+                        }
                     });
 
                 audio.onended = () => {
-                    btnText.textContent = 'Escuchar Muestra de Audio';
+                    resetBtnState('Escuchar Muestra de Audio');
                 };
             });
         }

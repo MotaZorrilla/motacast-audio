@@ -875,6 +875,10 @@
 
         submitBtn.disabled = true;
         submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+        const submitIcon = document.getElementById('submitBtnIcon');
+        const submitSpinner = document.getElementById('submitBtnSpinner');
+        if (submitIcon) submitIcon.classList.add('hidden');
+        if (submitSpinner) submitSpinner.classList.remove('hidden');
         submitBtnText.textContent = 'Subiendo y preparando procesamiento...';
 
         if (submitOverlay) {
