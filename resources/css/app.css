@@ -6,35 +6,33 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --color-neon-50: #f0fdf4;
-  --color-neon-100: #dcfce7;
-  --color-neon-200: #bbf7d0;
-  --color-neon-300: #86efac;
-  --color-neon-400: #22ff88;
-  --color-neon-500: #00ff87;
-  --color-neon-600: #10e86b;
-  --color-neon-700: #05df72;
-  --color-neon-800: #00b853;
-  --color-neon-900: #044e26;
-  --color-neon-950: #022411;
+  /* Modern Audio SaaS Indigo & Violet Core */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
 
-  --color-electric-cyan: #00f0ff;
-  --color-electric-blue: #38bdf8;
-  --color-electric-sky: #67e8f9;
-  --color-electric-deep: #0284c7;
+  /* Subtle Emerald for Playback & Status */
+  --color-emerald-accent: #10b981;
+  --color-emerald-deep: #059669;
 
-  --color-cyber-bg: #080d0f;
-  --color-cyber-card: #0e171b;
-  --color-cyber-border: #1b2a30;
-  --color-cyber-accent: #00ff87;
+  /* Deep Slate / Obsidian Dark Mode Canvas */
+  --color-canvas-dark: #090d16;
+  --color-surface-dark: #0f172a;
+  --color-border-dark: #1e293b;
 
-  --shadow-neon-sm: 0 0 10px rgba(0, 255, 135, 0.35);
-  --shadow-neon-md: 0 0 20px rgba(0, 255, 135, 0.45);
-  --shadow-neon-lg: 0 0 35px rgba(0, 255, 135, 0.55);
-  --shadow-cyan-sm: 0 0 10px rgba(0, 240, 255, 0.35);
-  --shadow-cyan-md: 0 0 20px rgba(0, 240, 255, 0.45);
-  --shadow-tactile: 0 8px 24px -4px rgba(15, 23, 42, 0.18), 0 3px 8px -2px rgba(15, 23, 42, 0.08);
-  --shadow-tactile-lg: 0 14px 30px -4px rgba(15, 23, 42, 0.22), 0 4px 10px -2px rgba(15, 23, 42, 0.12);
+  --shadow-brand-sm: 0 0 10px rgba(99, 102, 241, 0.25);
+  --shadow-brand-md: 0 0 20px rgba(99, 102, 241, 0.35);
+  --shadow-brand-lg: 0 0 35px rgba(99, 102, 241, 0.45);
+  --shadow-tactile: 0 8px 24px -4px rgba(15, 23, 42, 0.12), 0 3px 8px -2px rgba(15, 23, 42, 0.06);
+  --shadow-tactile-lg: 0 14px 30px -4px rgba(15, 23, 42, 0.18), 0 4px 10px -2px rgba(15, 23, 42, 0.10);
   --shadow-tactile-dark: 0 10px 30px -4px rgba(0, 0, 0, 0.7);
 }
 
@@ -43,58 +41,69 @@
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-.dark ::-webkit-scrollbar-thumb { background: #1b2a30; }
+.dark ::-webkit-scrollbar-thumb { background: #1e293b; }
 
 /* Mobile tap highlight reset */
 * { -webkit-tap-highlight-color: transparent; }
 
-/* Tactile 3D Buttons & Controls */
-.btn-neon-tactile {
-    background: linear-gradient(180deg, #10e86b 0%, #00ff87 40%, #00c965 100%);
-    color: #032010;
-    box-shadow: 0 4px 15px rgba(0, 255, 135, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -2px 2px rgba(0, 0, 0, 0.15);
+/* Tactile 3D Buttons & Controls - Modern Indigo SaaS */
+.btn-neon-tactile,
+.btn-primary-tactile {
+    background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -2px 2px rgba(0, 0, 0, 0.2);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.btn-neon-tactile:hover {
-    background: linear-gradient(180deg, #38ff9c 0%, #10e86b 100%);
-    box-shadow: 0 6px 22px rgba(0, 255, 135, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+.btn-neon-tactile:hover,
+.btn-primary-tactile:hover {
+    background: linear-gradient(180deg, #818cf8 0%, #6366f1 100%);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4);
     transform: translateY(-1px);
 }
-.btn-neon-tactile:active {
+.btn-neon-tactile:active,
+.btn-primary-tactile:active {
     transform: translateY(1px);
-    box-shadow: 0 2px 8px rgba(0, 255, 135, 0.3), inset 0 2px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25), inset 0 2px 3px rgba(0, 0, 0, 0.25);
 }
 
-/* Tactile 3D Cards: Luminous Glassmorphism Depth in day mode, cyber glow in dark mode */
+/* Secondary Emerald Badge / Button */
+.btn-emerald-tactile {
+    background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    transition: all 0.2s ease;
+}
+
+/* Tactile 3D Cards: Sleek Glassmorphism */
 .card-tactile {
-    background-color: rgba(255, 255, 255, 0.92);
+    background-color: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(226, 232, 240, 0.95);
-    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 1);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .dark .card-tactile {
-    background-color: rgba(13, 21, 25, 0.90);
+    background-color: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(0, 240, 255, 0.22);
-    box-shadow: 0 14px 40px -4px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(0, 240, 255, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    box-shadow: 0 14px 40px -4px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* Interactive hover cards */
 .card-tactile:hover {
     transform: translateY(-2px);
-    box-shadow: 0 20px 35px -5px rgba(15, 23, 42, 0.16), 0 8px 16px -3px rgba(0, 201, 101, 0.15);
-    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 20px 35px -5px rgba(15, 23, 42, 0.12), 0 8px 16px -3px rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.4);
 }
 .dark .card-tactile:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 45px -4px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 240, 255, 0.25);
-    border-color: rgba(0, 240, 255, 0.45);
+    box-shadow: 0 18px 45px -4px rgba(0, 0, 0, 0.9), 0 0 20px rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.35);
 }
 
-/* Radioactive Equalizer wave animation (Active only on playback) */
+/* Audio Equalizer wave animation (Active on playback) */
 @keyframes soundwave {
     0%, 100% { height: 4px; }
     50% { height: 18px; }
@@ -109,17 +118,18 @@
 .is-playing .bar-wave-3 { animation: soundwave 1.4s ease-in-out infinite 0.4s; }
 .is-playing .bar-wave-4 { animation: soundwave 0.9s ease-in-out infinite 0.1s; }
 
-/* In-App PDF Canvas Viewer Styling */
-#pdfCanvasWrapper {
-    max-height: calc(88vh - 120px);
-    overflow-y: auto;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+/* Custom slider thumb */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #6366f1;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    transition: transform 0.15s ease;
 }
-#pdfCanvas {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%;
-    height: auto !important;
-    transition: transform 0.2s ease;
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
 }

@@ -147,12 +147,17 @@
                     @auth
                         <!-- User Profile Badge & Logout -->
                         <div class="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
-                            <div class="text-right hidden md:block">
-                                <p class="text-xs font-bold text-slate-900 dark:text-white leading-tight">{{ Auth::user()->name }}</p>
-                                <p class="text-[10px] font-mono font-semibold uppercase {{ Auth::user()->isAdmin() ? 'text-teal-500' : 'text-[#00c965] dark:text-[#00ff87]' }}">
-                                    {{ Auth::user()->role === 'admin' ? 'Administrador' : 'Usuario' }}
-                                </p>
-                            </div>
+                            <a href="{{ route('profile.show') }}" class="flex items-center gap-2 group text-right hover:opacity-90 transition" title="Ver mi Perfil y Ajustes">
+                                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-xs font-black shadow-sm group-hover:scale-105 transition">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </div>
+                                <div class="text-right hidden md:block">
+                                    <p class="text-xs font-bold text-slate-900 dark:text-white leading-tight group-hover:text-indigo-400 transition">{{ Auth::user()->name }}</p>
+                                    <p class="text-[10px] font-mono font-semibold uppercase {{ Auth::user()->isAdmin() ? 'text-amber-500' : 'text-indigo-400' }}">
+                                        {{ Auth::user()->role === 'admin' ? 'Administrador' : 'Mi Perfil' }}
+                                    </p>
+                                </div>
+                            </a>
                             <form action="{{ route('logout') }}" method="POST" class="inline">
                                 @csrf
                                 <button type="submit" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition" title="Cerrar Sesión">
@@ -245,9 +250,15 @@
     </div>
 
     <!-- Main Content Stage -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full pb-28 sm:pb-12">
-        @yield('content')
-    </main>
+    @hasSection('full_width')
+        <main class="flex-grow w-full">
+            @yield('full_width')
+        </main>
+    @else
+        <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full pb-28 sm:pb-12">
+            @yield('content')
+        </main>
+    @endif
 
     <!-- Mobile-First Bottom Navigation Dock (Fixed for Ergonomic Thumb Interaction) -->
     @auth
@@ -294,13 +305,21 @@
             </a>
         @endif
 
+        <!-- Tab: Perfil & Preferencias -->
+        <a href="{{ route('profile.show') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('profile.*') ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-sky-400' }} transition">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7 7z" />
+            </svg>
+            <span class="text-[9px]">Perfil</span>
+        </a>
+
         <!-- Tab: Reproductor / Streaming con Estado Reactivo -->
-        <button type="button" id="mobileAudioDockBtn" onclick="handleDockAudioClick(event)" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-slate-500 dark:text-sky-400 hover:text-[#00c965] dark:hover:text-[#00ff87] transition cursor-pointer" title="Control de Audio">
+        <button type="button" id="mobileAudioDockBtn" onclick="handleDockAudioClick(event)" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-slate-500 dark:text-sky-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer" title="Control de Audio">
             <div id="dockSoundwave" class="flex items-center gap-0.5 h-4 transition-all">
-                <span class="w-0.5 bg-[#00ff87] rounded-full bar-wave-1 transition-all duration-200"></span>
-                <span class="w-0.5 bg-[#00ff87] rounded-full bar-wave-2 transition-all duration-200"></span>
-                <span class="w-0.5 bg-[#00ff87] rounded-full bar-wave-3 transition-all duration-200"></span>
-                <span class="w-0.5 bg-[#00ff87] rounded-full bar-wave-4 transition-all duration-200"></span>
+                <span class="w-0.5 bg-indigo-500 rounded-full bar-wave-1 transition-all duration-200"></span>
+                <span class="w-0.5 bg-indigo-500 rounded-full bar-wave-2 transition-all duration-200"></span>
+                <span class="w-0.5 bg-indigo-500 rounded-full bar-wave-3 transition-all duration-200"></span>
+                <span class="w-0.5 bg-indigo-500 rounded-full bar-wave-4 transition-all duration-200"></span>
             </div>
             <span id="dockAudioLabel" class="text-[9px]">Audio</span>
         </button>
