@@ -1,13 +1,13 @@
 <!-- Intake Mode Tabs: File Upload vs Direct Text Paste -->
 <div>
-    <div class="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mb-3 shadow-inner">
+    <div class="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-[#121619] border border-slate-200 dark:border-white/10 mb-3 shadow-inner">
         <button 
             type="button" 
             id="tabModeFile" 
             onclick="switchInputMode('file')"
-            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-slate-800 text-slate-900 dark:text-indigo-400 shadow-sm border border-slate-200 dark:border-slate-700"
+            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-[#00f0bc]/10 text-slate-900 dark:text-[#00f0bc] shadow-sm border border-slate-200 dark:border-[#00f0bc]/30 font-display"
         >
-            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4 text-slate-700 dark:text-[#00f0bc]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             <span>Subir Documento</span>
@@ -17,13 +17,13 @@
             type="button" 
             id="tabModeText" 
             onclick="switchInputMode('text')"
-            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            class="flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-display"
         >
-            <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 012 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             <span>Pegar Texto Directo</span>
-            <span class="px-1.5 py-0.5 rounded-md text-[9px] font-mono font-black bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">NUEVO</span>
+            <span class="px-1.5 py-0.5 rounded-md text-[9px] font-mono font-black bg-[#00f0bc]/10 text-[#00f0bc] border border-[#00f0bc]/30">NUEVO</span>
         </button>
     </div>
     <input type="hidden" name="input_mode" id="inputModeHidden" value="file">
@@ -32,17 +32,17 @@
 
 <!-- Section 1: File Drag & Drop Zone -->
 <div id="sectionFileDrop">
-    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 font-display">
         Documento, Imagen, Audio o Video a convertir <span class="text-rose-500">*</span>
     </label>
     <div 
         id="dropZone"
-        class="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-indigo-500 rounded-2xl p-8 text-center transition cursor-pointer bg-slate-50/70 dark:bg-slate-950/60 hover:bg-indigo-500/5 group"
+        class="border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-[#00f0bc] dark:hover:border-[#00f0bc] rounded-2xl p-8 text-center transition cursor-pointer bg-slate-50/70 dark:bg-[#0d1217]/80 hover:bg-[#00f0bc]/5 group"
     >
         <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp,.bmp,.mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden">
         
         <div class="flex flex-col items-center justify-center space-y-3">
-            <div id="dropZoneIconBox" class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 shadow-sm flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 group-hover:border-indigo-500 transition">
+            <div id="dropZoneIconBox" class="w-14 h-14 rounded-2xl bg-white dark:bg-[#121619] border border-slate-300 dark:border-white/10 shadow-sm flex items-center justify-center text-slate-700 dark:text-[#00f0bc] group-hover:scale-105 group-hover:border-[#00f0bc] transition">
                 <span id="dropZoneIcon">
                     <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />

@@ -21,7 +21,7 @@
                 </svg>
                 <span>{{ Auth::check() ? 'Volver a Mis Documentos' : 'Inicio' }}</span>
             </a>
-            <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Agregar Documento o Libro</h1>
+            <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight font-display">Agregar Documento o Libro</h1>
             <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Convierte tus documentos Word, PDFs o textos en audiolibros con voces neuronales naturales de alta calidad.
             </p>
@@ -29,30 +29,30 @@
     </div>
 
     <!-- Guía Visual para Usuarios (Onboarding Simple en 3 Pasos) -->
-    <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-indigo-500/5 to-emerald-500/10 border border-indigo-500/20 text-slate-800 dark:text-slate-100 shadow-sm">
+    <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#00f0bc]/10 via-[#5b4f96]/10 to-transparent border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 shadow-sm dark:bg-[#121619]/80">
         <div class="flex items-center gap-2 mb-3">
             <span class="text-base">🎧</span>
-            <h2 class="text-xs sm:text-sm font-black uppercase tracking-wider text-indigo-900 dark:text-indigo-300">
+            <h2 class="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-[#00f0bc] font-display">
                 ¿Cómo usar MotaCastAudio? — Fácil en 3 Pasos
             </h2>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-                <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center text-xs shrink-0">1</span>
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/80 dark:bg-[#0d1217] border border-slate-200/80 dark:border-white/10 shadow-xs">
+                <span class="w-6 h-6 rounded-full bg-[#00f0bc] text-[#0d1217] font-black flex items-center justify-center text-xs shrink-0 font-display">1</span>
                 <div>
                     <strong class="text-slate-900 dark:text-white block text-xs">Elige tu archivo o audio</strong>
                     <span class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug block mt-0.5">Sube Word (.doc/.docx), PDF, fotos (OCR), audios (MP3, WAV) o pega texto directo.</span>
                 </div>
             </div>
-            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-                <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center text-xs shrink-0">2</span>
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/80 dark:bg-[#0d1217] border border-slate-200/80 dark:border-white/10 shadow-xs">
+                <span class="w-6 h-6 rounded-full bg-[#00f0bc] text-[#0d1217] font-black flex items-center justify-center text-xs shrink-0 font-display">2</span>
                 <div>
                     <strong class="text-slate-900 dark:text-white block text-xs">Configura según el formato</strong>
                     <span class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug block mt-0.5">Si es texto, prueba y elige la voz deseada. Si es audio, activa la transcripción a texto (STT).</span>
                 </div>
             </div>
-            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-                <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center text-xs shrink-0">3</span>
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-white/80 dark:bg-[#0d1217] border border-slate-200/80 dark:border-white/10 shadow-xs">
+                <span class="w-6 h-6 rounded-full bg-[#00f0bc] text-[#0d1217] font-black flex items-center justify-center text-xs shrink-0 font-display">3</span>
                 <div>
                     <strong class="text-slate-900 dark:text-white block text-xs">Escucha y exporta al instante</strong>
                     <span class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug block mt-0.5">Tu audiolibro comenzará al instante. Podrás escucharlo o descargarlo en MP3, TXT o Markdown.</span>
@@ -112,7 +112,7 @@
                     id="title" 
                     value="{{ old('title') }}" 
                     placeholder="Se usará el nombre del documento si está vacío"
-                    class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-[#0d1217] border border-slate-300 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f0bc] transition"
                 >
             </div>
             <div>
@@ -125,7 +125,7 @@
                     id="author" 
                     value="{{ old('author') }}" 
                     placeholder="Ej. Héctor Mota Zorrilla"
-                    class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-[#0d1217] border border-slate-300 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f0bc] transition"
                 >
             </div>
         </div>
@@ -133,9 +133,9 @@
         <!-- Admin Only: Assign Book to specific user -->
         @auth
             @if (Auth::user()->isAdmin() && isset($registeredUsers) && $registeredUsers->count() > 0)
-                <div class="p-3.5 rounded-xl bg-indigo-50/50 dark:bg-slate-900/60 border border-indigo-500/20">
-                    <label for="assigned_user_id" class="block text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="p-3.5 rounded-xl bg-indigo-50/50 dark:bg-[#121619] border border-indigo-500/20 dark:border-white/10">
+                    <label for="assigned_user_id" class="block text-xs font-bold text-indigo-900 dark:text-[#00f0bc] uppercase tracking-wider mb-1.5 flex items-center gap-1.5 font-display">
+                        <svg class="w-4 h-4 text-[#00f0bc]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         <span>Asignar este libro a un usuario específico (Privilegio Admin):</span>
@@ -143,7 +143,7 @@
                     <select 
                         name="assigned_user_id" 
                         id="assigned_user_id"
-                        class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+                        class="w-full px-3 py-2 text-xs bg-white dark:bg-[#0d1217] border border-slate-300 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#00f0bc] outline-none font-medium"
                     >
                         <option value="{{ Auth::id() }}">Mí mismo ({{ Auth::user()->name }})</option>
                         @foreach ($registeredUsers as $u)
@@ -171,12 +171,12 @@
             <button 
                 type="submit" 
                 id="submitBtn"
-                class="w-full py-3.5 px-6 btn-primary-tactile rounded-xl text-sm font-black transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 active:scale-95"
+                class="w-full py-3.5 px-6 btn-primary-tactile rounded-xl text-sm font-black transition flex items-center justify-center gap-2 shadow-lg shadow-[#00f0bc]/20 active:scale-95 text-[#0d1217]"
             >
-                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-5 h-5 text-[#0d1217]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
                 </svg>
-                <span id="submitBtnText" class="text-white">Comenzar Extracción y Síntesis</span>
+                <span id="submitBtnText" class="text-[#0d1217] font-display font-black">Comenzar Extracción y Síntesis</span>
             </button>
         </div>
 

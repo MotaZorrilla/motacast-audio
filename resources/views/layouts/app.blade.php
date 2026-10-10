@@ -36,10 +36,10 @@
     <link rel="icon" type="image/png" href="{{ asset('images/icono.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/icono.png') }}">
 
-    <!-- Fonts -->
+    <!-- Fonts: Kairos Outfit Display + Inter + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Compiled Production Vite Assets (Zero CDN warnings) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -56,33 +56,33 @@
 
     @stack('styles')
 </head>
-<body class="flex flex-col min-h-full bg-slate-50 dark:bg-[#090d16] text-slate-800 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-200 relative overflow-x-hidden">
+<body class="flex flex-col min-h-full bg-slate-50 dark:bg-[#0d1217] text-slate-800 dark:text-slate-100 antialiased selection:bg-[#00f0bc] selection:text-[#0d1217] transition-colors duration-200 relative overflow-x-hidden">
 
     <!-- Interactive Ambient Canvas Background (High-Performance 60FPS Particles & Dynamic Mesh) -->
     <canvas id="ambientCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-30"></canvas>
 
     <!-- Top Technical Header -->
-    <header class="bg-white/90 dark:bg-[#090d16]/90 backdrop-blur-md border-b border-slate-200/90 dark:border-slate-800/80 sticky top-0 z-40 shadow-sm transition-colors relative">
+    <header class="bg-white/90 dark:bg-[#0d1217]/90 backdrop-blur-md border-b border-slate-200/90 dark:border-white/10 sticky top-0 z-40 shadow-sm transition-colors relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Brand Signature with Bespoke MotaCastAudio Vector Icon -->
                 <div class="flex items-center gap-3">
                     <a href="{{ Auth::check() ? route('books.index') : route('home') }}" class="flex items-center gap-3 group">
-                        <!-- Bespoke Squircle Audio Icon with Indigo/Emerald Halo -->
+                        <!-- Bespoke Squircle Audio Icon with Cyan/Emerald Halo -->
                         <div class="relative flex-shrink-0">
                             <img src="{{ asset('images/motacast-icon.svg') }}" 
                                  alt="MotaCastAudio" 
-                                 class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain drop-shadow-[0_2px_10px_rgba(99,102,241,0.35)] group-hover:scale-105 transition"
+                                 class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain drop-shadow-[0_2px_10px_rgba(0,240,188,0.35)] group-hover:scale-105 transition"
                                  onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
-                            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#090d16]"></span>
+                            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#00f0bc] ring-2 ring-white dark:ring-[#0d1217]"></span>
                         </div>
 
-                        <div class="border-l border-slate-200 dark:border-slate-800 pl-3">
+                        <div class="border-l border-slate-200 dark:border-white/10 pl-3">
                             <div class="flex items-center gap-1.5">
-                                <span class="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white group-hover:text-indigo-400 transition">
-                                    MotaCast<span class="text-indigo-600 dark:text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.3)]">Audio</span>
+                                <span class="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white group-hover:text-[#00f0bc] transition font-display">
+                                    MotaCast<span class="text-[#00f0bc] drop-shadow-[0_0_8px_rgba(0,240,188,0.35)]">Audio</span>
                                 </span>
-                                <span class="hidden xs:inline-block px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300/80 dark:border-slate-700/60">v0.9.5-beta</span>
+                                <span class="hidden xs:inline-block px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold bg-slate-100 dark:bg-[#121619] text-slate-600 dark:text-slate-300 border border-slate-300/80 dark:border-white/10">v0.9.5-beta</span>
                             </div>
                             <p class="text-[10px] font-mono text-slate-500 dark:text-slate-400 hidden sm:block">Streaming & Podcasts Personales</p>
                         </div>
@@ -95,18 +95,18 @@
                     @auth
                         <!-- Desktop Navigation Links -->
                         <div class="hidden sm:flex items-center gap-1.5">
-                            <a href="{{ route('books.index') }}" class="px-3 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('books.index') && !request()->routeIs('admin.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/40' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition">
+                            <a href="{{ route('books.index') }}" class="px-3 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('books.index') && !request()->routeIs('admin.*') ? 'text-[#00f0bc] bg-[#00f0bc]/10 border border-[#00f0bc]/30 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition">
                                 Mis Libros
                             </a>
 
                             @if (Auth::user()->isAdmin())
-                                <a href="{{ route('admin.users.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.users.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/40' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Usuarios">
-                                    <span>Usuarios</span>
+                                <a href="{{ route('admin.users.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.users.*') ? 'text-[#00f0bc] bg-[#00f0bc]/10 border border-[#00f0bc]/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Usuarios">
+                                <span>Usuarios</span>
                                 </a>
-                                <a href="{{ route('admin.telemetry.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.telemetry.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/40' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Telemetría">
+                                <a href="{{ route('admin.telemetry.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.telemetry.*') ? 'text-[#00f0bc] bg-[#00f0bc]/10 border border-[#00f0bc]/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Telemetría">
                                     <span>Telemetría</span>
                                 </a>
-                                <a href="{{ route('admin.tickets.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.tickets.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/40' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Tickets">
+                                <a href="{{ route('admin.tickets.index') }}" class="px-2.5 py-1.5 rounded-xl text-xs font-bold {{ request()->routeIs('admin.tickets.*') ? 'text-[#00f0bc] bg-[#00f0bc]/10 border border-[#00f0bc]/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition inline-flex items-center gap-1" title="Tickets">
                                     <span>Tickets</span>
                                 </a>
                             @endif
@@ -119,7 +119,7 @@
                             </button>
 
                             <a href="{{ route('books.create') }}" class="btn-primary-tactile inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition">
-                                <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                                 </svg>
                                 <span>Agregar</span>
@@ -131,11 +131,11 @@
                     <button 
                         type="button" 
                         id="themeToggleBtn"
-                        class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700/60 transition"
+                        class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#121619] hover:bg-slate-200 dark:hover:bg-slate-800 border border-transparent dark:border-white/10 transition"
                         title="Alternar Modo Claro / Oscuro"
                     >
                         <!-- Sun Icon (shown in dark mode) -->
-                        <svg id="sunIcon" class="w-4 h-4 hidden dark:block text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg id="sunIcon" class="w-4 h-4 hidden dark:block text-[#00f0bc]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                         <!-- Moon Icon (shown in light mode) -->
@@ -146,14 +146,14 @@
 
                     @auth
                         <!-- User Profile Badge & Logout -->
-                        <div class="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-white/10">
                             <a href="{{ route('profile.show') }}" class="flex items-center gap-2 group text-right hover:opacity-90 transition" title="Ver mi Perfil y Ajustes">
-                                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-xs font-black shadow-sm group-hover:scale-105 transition">
+                                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#00f0bc] to-[#5b4f96] flex items-center justify-center text-[#0d1217] text-xs font-black shadow-sm group-hover:scale-105 transition">
                                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                                 </div>
                                 <div class="text-right hidden md:block">
-                                    <p class="text-xs font-bold text-slate-900 dark:text-white leading-tight group-hover:text-indigo-400 transition">{{ Auth::user()->name }}</p>
-                                    <p class="text-[10px] font-mono font-semibold uppercase {{ Auth::user()->isAdmin() ? 'text-amber-500' : 'text-indigo-400' }}">
+                                    <p class="text-xs font-bold text-slate-900 dark:text-white leading-tight group-hover:text-[#00f0bc] transition font-display">{{ Auth::user()->name }}</p>
+                                    <p class="text-[10px] font-mono font-semibold uppercase {{ Auth::user()->isAdmin() ? 'text-amber-500' : 'text-[#00f0bc]' }}">
                                         {{ Auth::user()->role === 'admin' ? 'Administrador' : 'Mi Perfil' }}
                                     </p>
                                 </div>
@@ -263,9 +263,9 @@
     <!-- Mobile-First Bottom Navigation Dock (Fixed for Ergonomic Thumb Interaction) -->
     @auth
     @if (!request()->routeIs('books.show'))
-    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800/80 z-40 px-2 py-2 flex items-center justify-around shadow-2xl">
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0d1217]/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 z-40 px-2 py-2 flex items-center justify-around shadow-2xl">
         <!-- Tab 1: Mis Libros -->
-        <a href="{{ route('books.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('books.index') && !request()->routeIs('admin.*') ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400' }} transition">
+        <a href="{{ route('books.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('books.index') && !request()->routeIs('admin.*') ? 'text-[#00f0bc] font-bold' : 'text-slate-500 dark:text-slate-400' }} transition">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
@@ -274,14 +274,14 @@
 
         <!-- Admin Links or User Support -->
         @if (Auth::user()->isAdmin())
-            <a href="{{ route('admin.telemetry.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('admin.telemetry.*') ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400' }} transition">
+            <a href="{{ route('admin.telemetry.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('admin.telemetry.*') ? 'text-[#00f0bc] font-bold' : 'text-slate-500 dark:text-slate-400' }} transition">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
                 <span class="text-[9px]">Métricas</span>
             </a>
         @else
-            <button type="button" onclick="openSupportModal()" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-amber-500 transition">
+            <button type="button" onclick="openSupportModal()" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-[#00f0bc] transition">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
@@ -290,14 +290,14 @@
         @endif
 
         <!-- Tab Central: + Agregar Documento (Destacado y Radiante 3D) -->
-        <a href="{{ route('books.create') }}" class="flex flex-col items-center justify-center w-11 h-11 -mt-4 btn-primary-tactile rounded-2xl shadow-lg shadow-indigo-500/30 transition transform active:scale-95" title="Agregar nuevo documento">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <a href="{{ route('books.create') }}" class="flex flex-col items-center justify-center w-11 h-11 -mt-4 btn-primary-tactile rounded-2xl shadow-lg shadow-[#00f0bc]/30 transition transform active:scale-95" title="Agregar nuevo documento">
+            <svg class="w-5 h-5 text-[#0d1217]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
             </svg>
         </a>
 
         @if (Auth::user()->isAdmin())
-            <a href="{{ route('admin.tickets.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('admin.tickets.*') ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400' }} transition relative">
+            <a href="{{ route('admin.tickets.index') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('admin.tickets.*') ? 'text-[#00f0bc] font-bold' : 'text-slate-500 dark:text-slate-400' }} transition relative">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
@@ -306,7 +306,7 @@
         @endif
 
         <!-- Tab: Perfil & Preferencias -->
-        <a href="{{ route('profile.show') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('profile.*') ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400' }} transition">
+        <a href="{{ route('profile.show') }}" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl {{ request()->routeIs('profile.*') ? 'text-[#00f0bc] font-bold' : 'text-slate-500 dark:text-slate-400' }} transition">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7 7z" />
             </svg>
@@ -314,12 +314,12 @@
         </a>
 
         <!-- Tab: Reproductor / Streaming con Estado Reactivo -->
-        <button type="button" id="mobileAudioDockBtn" onclick="handleDockAudioClick(event)" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer" title="Control de Audio">
+        <button type="button" id="mobileAudioDockBtn" onclick="handleDockAudioClick(event)" class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-[#00f0bc] transition cursor-pointer" title="Control de Audio">
             <div id="dockSoundwave" class="flex items-center gap-0.5 h-4 transition-all">
-                <span class="w-0.5 bg-indigo-500 rounded-full bar-wave-1 transition-all duration-200"></span>
-                <span class="w-0.5 bg-indigo-500 rounded-full bar-wave-2 transition-all duration-200"></span>
-                <span class="w-0.5 bg-indigo-500 rounded-full bar-wave-3 transition-all duration-200"></span>
-                <span class="w-0.5 bg-indigo-500 rounded-full bar-wave-4 transition-all duration-200"></span>
+                <span class="w-0.5 bg-[#00f0bc] rounded-full bar-wave-1 transition-all duration-200"></span>
+                <span class="w-0.5 bg-[#7c3aed] rounded-full bar-wave-2 transition-all duration-200"></span>
+                <span class="w-0.5 bg-[#00f0bc] rounded-full bar-wave-3 transition-all duration-200"></span>
+                <span class="w-0.5 bg-[#7c3aed] rounded-full bar-wave-4 transition-all duration-200"></span>
             </div>
             <span id="dockAudioLabel" class="text-[9px]">Audio</span>
         </button>
@@ -329,19 +329,19 @@
 
     <!-- Clean, Friendly Footer: Displayed on Welcome / Public Pages and Library (hidden on show to avoid player console clash) -->
     @if (!request()->routeIs('books.show'))
-    <footer class="bg-white/80 dark:bg-[#090d16]/80 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800/80 py-4 mt-auto relative z-10 w-full overflow-hidden pb-20 sm:pb-4">
+    <footer class="bg-white/80 dark:bg-[#0d1217]/80 backdrop-blur-md border-t border-slate-200/80 dark:border-white/10 py-4 mt-auto relative z-10 w-full overflow-hidden pb-20 sm:pb-4">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
             <div class="flex items-center gap-2">
                 <img src="{{ asset('images/motacast-icon.svg') }}" alt="MotaCastAudio" class="w-5 h-5 object-contain" onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
-                <span class="font-black text-slate-900 dark:text-white tracking-tight">MotaCast<span class="text-indigo-600 dark:text-indigo-400">Audio</span></span>
-                <span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 shadow-sm">v0.9.5-beta</span>
+                <span class="font-black text-slate-900 dark:text-white tracking-tight font-display">MotaCast<span class="text-[#00f0bc]">Audio</span></span>
+                <span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-[#121619] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 shadow-sm">v0.9.5-beta</span>
             </div>
             
             <div class="text-slate-500 dark:text-slate-400 text-center sm:text-right text-[11px] leading-relaxed max-w-full">
                 <span>Diseñado para escuchar y estudiar en movimiento por</span>
-                <a href="https://neobranding.cl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-slate-900 dark:text-slate-200 hover:text-indigo-400 font-bold transition ml-1">
-                    <img src="{{ asset('images/neobranding-isotipo.png') }}" alt="neobranding.cl" class="w-3.5 h-3.5 object-contain filter drop-shadow-[0_0_6px_rgba(99,102,241,0.4)]">
-                    <span class="underline decoration-indigo-500/50 underline-offset-2">neobranding.cl</span>
+                <a href="https://neobranding.cl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-slate-900 dark:text-slate-200 hover:text-[#00f0bc] font-bold transition ml-1">
+                    <img src="{{ asset('images/neobranding-isotipo.png') }}" alt="neobranding.cl" class="w-3.5 h-3.5 object-contain filter drop-shadow-[0_0_6px_rgba(0,240,188,0.4)]">
+                    <span class="underline decoration-[#00f0bc]/50 underline-offset-2">neobranding.cl</span>
                 </a>
             </div>
         </div>
@@ -425,9 +425,9 @@
                 ctx.clearRect(0, 0, width, height);
                 const dark = isDarkMode();
 
-                const color1 = dark ? '#6366f1' : '#4f46e5';
-                const color2 = dark ? '#10b981' : '#059669';
-                const lineColor = dark ? 'rgba(99, 102, 241, 0.08)' : 'rgba(79, 70, 229, 0.06)';
+                const color1 = dark ? '#00f0bc' : '#00c9a7';
+                const color2 = dark ? '#7c3aed' : '#5b4f96';
+                const lineColor = dark ? 'rgba(0, 240, 188, 0.08)' : 'rgba(91, 79, 150, 0.06)';
 
                 // Draw connecting filaments
                 for (let i = 0; i < particles.length; i++) {
@@ -549,10 +549,10 @@
     </script>
 
     <!-- Global Support / Feedback / Admin Note Modal -->
-    <div id="supportTicketModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="card-tactile w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#090d16] p-6 sm:p-7 space-y-4 relative shadow-2xl">
+    <div id="supportTicketModal" class="fixed inset-0 z-50 hidden bg-[#0d1217]/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="card-tactile w-full max-w-lg rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#121619] p-6 sm:p-7 space-y-4 relative shadow-2xl">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
                 <div class="flex items-center gap-2">
                     <span class="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

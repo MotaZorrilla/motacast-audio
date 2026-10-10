@@ -17,42 +17,42 @@
         border-left: 3px solid transparent;
     }
     .read-along-paragraph:hover {
-        background-color: rgba(99, 102, 241, 0.08);
+        background-color: rgba(0, 240, 188, 0.08);
     }
     .read-along-active {
-        background-color: rgba(99, 102, 241, 0.14) !important;
-        border-left: 4px solid #6366f1 !important;
+        background-color: rgba(0, 240, 188, 0.14) !important;
+        border-left: 4px solid #00f0bc !important;
         padding-left: calc(0.75rem - 1px) !important;
-        box-shadow: 0 0 20px rgba(99, 102, 241, 0.22), inset 0 0 10px rgba(99, 102, 241, 0.05);
+        box-shadow: 0 0 20px rgba(0, 240, 188, 0.22), inset 0 0 10px rgba(0, 240, 188, 0.05);
         border-top-left-radius: 0.25rem;
         border-bottom-left-radius: 0.25rem;
     }
     .dark .read-along-active {
-        background-color: rgba(99, 102, 241, 0.2) !important;
-        border-left: 4px solid #818cf8 !important;
+        background-color: rgba(0, 240, 188, 0.2) !important;
+        border-left: 4px solid #00f0bc !important;
         color: #f8fafc !important;
-        box-shadow: 0 0 25px rgba(99, 102, 241, 0.35), inset 0 0 15px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 0 25px rgba(0, 240, 188, 0.35), inset 0 0 15px rgba(0, 240, 188, 0.1);
     }
     .active-reading-chapter {
-        border-color: rgba(99, 102, 241, 0.6) !important;
-        box-shadow: 0 0 25px rgba(99, 102, 241, 0.15);
+        border-color: rgba(0, 240, 188, 0.6) !important;
+        box-shadow: 0 0 25px rgba(0, 240, 188, 0.15);
     }
 </style>
 
 <!-- Integrated Universal In-App Document Reader Modal (PDF Canvas + Markdown / DOCX / TXT Typography Reader) -->
-<div id="pdfViewerModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md p-1 sm:p-3 md:p-5 flex flex-col items-center justify-center">
-    <div class="card-tactile rounded-2xl w-full max-w-6xl h-[98vh] sm:h-[95vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#090d16]">
+<div id="pdfViewerModal" class="fixed inset-0 z-50 hidden bg-[#0d1217]/85 backdrop-blur-md p-1 sm:p-3 md:p-5 flex flex-col items-center justify-center">
+    <div class="card-tactile rounded-2xl w-full max-w-6xl h-[98vh] sm:h-[95vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0d1217]">
         
         <!-- Modal Top Bar: Title, Mode Switcher, Thumbnails/Chapters Toggle, Zoom/Text Controls & Window Actions -->
-        <div class="px-2.5 sm:px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-white/95 dark:bg-[#090d16]/95 flex-shrink-0 gap-1.5 sm:gap-2">
+        <div class="px-2.5 sm:px-4 py-2 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-white/95 dark:bg-[#0d1217]/95 flex-shrink-0 gap-1.5 sm:gap-2">
             <!-- Book Info, Format Badge & Drawer Toggle -->
             <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
-                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm shadow-indigo-500/30">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-[#00f0bc] to-[#5b4f96] text-[#0d1217] flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm shadow-[#00f0bc]/30">
                     📖
                 </div>
                 <div class="min-w-0 max-w-[90px] xs:max-w-[130px] sm:max-w-[200px] md:max-w-[260px]">
                     <div class="flex items-center gap-1.5">
-                        <p class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate leading-tight">{{ $book->title }}</p>
+                        <p class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate leading-tight font-display">{{ $book->title }}</p>
                         <span class="uppercase px-1.5 py-0.2 rounded text-[9px] font-mono font-black {{ $isPdf ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 border border-rose-300 dark:border-rose-800/40' : ($fileExt === 'docx' ? 'bg-blue-100 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-800/40' : ($fileExt === 'md' || $fileExt === 'markdown' ? 'bg-purple-100 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 border border-purple-300 dark:border-purple-800/40' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700')) }}">
                             {{ $fileExt }}
                         </span>
@@ -65,10 +65,10 @@
                     type="button" 
                     id="btnToggleThumbnails"
                     onclick="toggleThumbnailsDrawer()" 
-                    class="px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-slate-900 hover:bg-indigo-500/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 flex items-center gap-1 transition flex-shrink-0"
+                    class="px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-[#121619] hover:bg-[#00f0bc]/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 flex items-center gap-1 transition flex-shrink-0"
                     title="Alternar panel de navegación"
                 >
-                    <svg class="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-3.5 h-3.5 text-[#00f0bc]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                     <span id="lblDrawerToggleText" class="hidden sm:inline">{{ $isPdf ? 'Miniaturas' : 'Capítulos' }}</span>
@@ -77,8 +77,8 @@
 
                 <!-- PDF vs Text View Switcher (Only shown if document is PDF) -->
                 @if ($isPdf)
-                <div class="hidden sm:flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                    <button type="button" id="btnModeCanvas" onclick="setReaderViewMode('canvas')" class="px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm">
+                <div class="hidden sm:flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-[#121619] border border-slate-200 dark:border-white/10">
+                    <button type="button" id="btnModeCanvas" onclick="setReaderViewMode('canvas')" class="px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-[#00f0bc] text-indigo-600 dark:text-[#0d1217] shadow-sm">
                         PDF
                     </button>
                     <button type="button" id="btnModeText" onclick="setReaderViewMode('text')" class="px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white">
@@ -234,20 +234,25 @@
                 <canvas id="pdfCanvas" class="shadow-2xl rounded-xl bg-white max-w-full my-auto transition-transform duration-150"></canvas>
 
                 <!-- Floating PDF Live Read-Along Sync HUD -->
-                <div id="pdfSyncHud" class="sticky bottom-2 z-30 max-w-xl w-11/12 mx-auto card-tactile rounded-2xl p-2 sm:p-2.5 bg-white/95 dark:bg-[#090d16]/95 border border-indigo-500/30 shadow-2xl backdrop-blur-md flex items-center justify-between gap-2.5 transition-all duration-300">
+                <div id="pdfSyncHud" class="sticky bottom-2 z-30 max-w-xl w-11/12 mx-auto card-tactile rounded-2xl p-2 sm:p-2.5 bg-white/95 dark:bg-[#121619]/95 border border-[#00f0bc]/30 shadow-2xl backdrop-blur-md flex items-center justify-between gap-2.5 transition-all duration-300">
                     <div class="flex items-center gap-2 min-w-0 flex-1">
-                        <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse flex-shrink-0 shadow-sm shadow-indigo-500/50"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#00f0bc] animate-pulse flex-shrink-0 shadow-sm shadow-[#00f0bc]/50"></span>
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-1.5">
-                                <span class="text-[9px] font-mono font-black uppercase text-indigo-600 dark:text-indigo-400">Sincronía en Vivo</span>
-                                <span id="pdfSyncPageBadge" class="text-[9px] font-mono px-1 rounded bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300">Pág. 1</span>
+                                <span class="text-[9px] font-mono font-black uppercase text-[#00f0bc]">Sincronía en Vivo</span>
+                                <span id="pdfSyncPageBadge" class="text-[9px] font-mono px-1 rounded bg-slate-100 dark:bg-[#0d1217] text-slate-600 dark:text-slate-300">Pág. 1</span>
                             </div>
                             <p id="pdfSyncSnippetText" class="text-xs text-slate-800 dark:text-slate-200 font-medium truncate mt-0.5">Sincronizando audio con documento...</p>
                         </div>
                     </div>
-                    <button type="button" onclick="setReaderViewMode('text')" class="px-2.5 py-1 text-[10px] sm:text-[11px] font-black rounded-lg btn-primary-tactile text-white flex items-center gap-1 flex-shrink-0 shadow-sm" title="Ver texto guiado con resaltado de párrafos">
-                        <span>📖 Ver Texto Guiado</span>
-                    </button>
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <button type="button" onclick="syncPdfToAudioNow()" class="px-2 py-1 text-[10px] font-bold rounded-lg bg-[#00f0bc]/10 text-[#00f0bc] hover:bg-[#00f0bc]/20 border border-[#00f0bc]/30 flex items-center gap-1 shadow-sm transition active:scale-95" title="Sincronizar visor con la página actual del audio">
+                            <span>🎯 Alinear Audio</span>
+                        </button>
+                        <button type="button" onclick="setReaderViewMode('text')" class="px-2.5 py-1 text-[10px] sm:text-[11px] font-black rounded-lg btn-primary-tactile text-[#0d1217] flex items-center gap-1 flex-shrink-0 shadow-sm active:scale-95" title="Ver texto guiado con resaltado de párrafos">
+                            <span>📖 Ver Texto</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -429,18 +434,18 @@
         </div>
 
         <!-- Modal Full Integrated Audio Playback Console -->
-        <div id="modalAudioConsole" class="px-3 sm:px-6 py-2.5 bg-white/95 dark:bg-[#090d16]/95 border-t border-slate-200 dark:border-slate-800 shadow-[0_-8px_25px_rgba(0,0,0,0.08)] flex-shrink-0">
+        <div id="modalAudioConsole" class="px-3 sm:px-6 py-2.5 bg-white/95 dark:bg-[#0d1217]/95 border-t border-slate-200 dark:border-white/10 shadow-[0_-8px_25px_rgba(0,0,0,0.5)] flex-shrink-0">
             <div class="flex flex-col md:flex-row items-center justify-between gap-2.5 sm:gap-4">
                 
                 <!-- Track Info inside Modal -->
                 <div class="flex items-center gap-2.5 w-full md:w-1/4 min-w-0">
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-indigo-500/20">
-                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00f0bc]/20 to-[#5b4f96]/30 border border-[#00f0bc]/30 text-[#00f0bc] flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#00f0bc]/20">
+                        <svg class="w-4 h-4 text-[#00f0bc]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                         </svg>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate" id="modalChapterTitle">Selecciona una pista</p>
+                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate font-display" id="modalChapterTitle">Selecciona una pista</p>
                         <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ $book->title }}</p>
                     </div>
                 </div>
@@ -449,38 +454,38 @@
                 <div class="flex flex-col items-center gap-1 w-full md:w-2/4">
                     <div class="flex items-center gap-3 sm:gap-4">
                         <!-- Previous Chapter -->
-                        <button type="button" id="btnModalPrevChapter" class="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition" title="Pista Anterior">
+                        <button type="button" id="btnModalPrevChapter" class="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-[#00f0bc] transition" title="Pista Anterior">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                             </svg>
                         </button>
 
                         <!-- Rewind 15s -->
-                        <button type="button" id="btnModalRewind15" class="p-1 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition" title="Retroceder 15s">
+                        <button type="button" id="btnModalRewind15" class="p-1 text-slate-600 dark:text-slate-400 hover:text-[#00f0bc] transition" title="Retroceder 15s">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
                             </svg>
                         </button>
 
                         <!-- Master Play/Pause inside Modal -->
-                        <button type="button" id="btnModalMasterPlay" onclick="togglePlay()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full btn-primary-tactile text-white flex items-center justify-center shadow-indigo-500/25 transition transform hover:scale-105 active:scale-95" title="Reproducir / Pausar">
-                            <svg id="iconModalPlay" class="w-4 h-4 sm:w-5 sm:h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <button type="button" id="btnModalMasterPlay" onclick="togglePlay()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full btn-primary-tactile text-[#0d1217] flex items-center justify-center shadow-lg transition transform hover:scale-105 active:scale-95" title="Reproducir / Pausar">
+                            <svg id="iconModalPlay" class="w-4 h-4 sm:w-5 sm:h-5 ml-0.5 text-[#0d1217]" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                             </svg>
-                            <svg id="iconModalPause" class="w-4 h-4 sm:w-5 sm:h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                            <svg id="iconModalPause" class="w-4 h-4 sm:w-5 sm:h-5 hidden text-[#0d1217]" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                             </svg>
                         </button>
 
                         <!-- Forward 15s -->
-                        <button type="button" id="btnModalForward15" class="p-1 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition" title="Adelantar 15s">
+                        <button type="button" id="btnModalForward15" class="p-1 text-slate-600 dark:text-slate-400 hover:text-[#00f0bc] transition" title="Adelantar 15s">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
                             </svg>
                         </button>
 
                         <!-- Next Chapter -->
-                        <button type="button" id="btnModalNextChapter" class="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition" title="Siguiente Pista">
+                        <button type="button" id="btnModalNextChapter" class="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-[#00f0bc] transition" title="Siguiente Pista">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                             </svg>
@@ -496,7 +501,7 @@
                             min="0" 
                             max="100" 
                             value="0" 
-                            class="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 focus:outline-none"
+                            class="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#00f0bc] focus:outline-none"
                         >
                         <span id="modalDuration" class="font-mono text-[10px] text-slate-500 dark:text-slate-400 w-8 font-semibold">00:00</span>
                     </div>
@@ -505,7 +510,7 @@
                 <!-- Right Side: Speed Selector, Volume, Download inside Modal -->
                 <div class="flex items-center justify-end gap-2 w-full md:w-1/4">
                     <!-- Speed Switcher -->
-                    <select id="modalPlaybackRate" class="px-2 py-0.5 text-xs font-bold bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-300 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 transition cursor-pointer">
+                    <select id="modalPlaybackRate" class="px-2 py-0.5 text-xs font-bold bg-slate-100 dark:bg-[#121619] hover:bg-slate-200 dark:hover:bg-[#121619]/80 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-300 dark:border-white/10 focus:ring-1 focus:ring-[#00f0bc] transition cursor-pointer">
                         <option value="0.75">0.75x</option>
                         <option value="1.0" selected>1.0x</option>
                         <option value="1.25">1.25x</option>
@@ -525,7 +530,7 @@
                     </button>
 
                     <!-- Download Current Track -->
-                    <a id="btnModalDownload" href="#" class="p-1 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition" title="Descargar MP3 de la pista actual">
+                    <a id="btnModalDownload" href="#" class="p-1 text-slate-500 dark:text-slate-400 hover:text-[#00f0bc] transition" title="Descargar MP3 de la pista actual">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>

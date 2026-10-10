@@ -71,6 +71,10 @@
     let pageNumPending = null;
     let pdfZoomLevel = 1.0;
     const pdfUrl = "{{ route('books.pdf', $book->id) }}";
+    let userManualPaging = false;
+    let userPagingTimer = null;
+    let lastAutoTurnPage = 1;
+    let currentRenderTask = null;
 
     // Real-Time Read-Along Karaoke & Document Sync Engine
     let autoScrollEnabled = true;
@@ -274,6 +278,14 @@
         const loading = document.getElementById('pdfLoadingIndicator');
         if (loading) loading.classList.remove('hidden');
 
+        // Cancel previous running render task if any to prevent collision
+        if (currentRenderTask) {
+            try {
+                currentRenderTask.cancel();
+            } catch (e) {}
+            currentRenderTask = null;
+        }
+
         pdfDoc.getPage(num).then(function(page) {
             const wrapper = document.getElementById('pdfCanvasWrapper');
             let availableWidth = (wrapper ? wrapper.clientWidth : window.innerWidth) - 36;
@@ -300,17 +312,32 @@
             };
 
             const renderTask = page.render(renderContext);
+            currentRenderTask = renderTask;
+
             renderTask.promise.then(function() {
                 pageRendering = false;
+                currentRenderTask = null;
                 if (loading) loading.classList.add('hidden');
                 if (pageNumPending !== null) {
                     renderPage(pageNumPending);
                     pageNumPending = null;
                 }
+            }).catch(function(err) {
+                if (err && err.name === 'RenderingCancelledException') {
+                    // Safe cancellation upon fast page flip
+                    pageRendering = false;
+                    currentRenderTask = null;
+                    return;
+                }
+                console.error('Error al renderizar página:', err);
+                pageRendering = false;
+                currentRenderTask = null;
+                if (loading) loading.classList.add('hidden');
             });
         }).catch(function(err) {
-            console.error('Error al renderizar pÃ¡gina:', err);
+            console.error('Error al obtener página de PDF:', err);
             pageRendering = false;
+            currentRenderTask = null;
             if (loading) loading.classList.add('hidden');
         });
 
@@ -329,41 +356,74 @@
         }
     }
 
+    function updatePdfSyncHudBadge(num, isManual = false) {
+        const badge = document.getElementById('pdfSyncPageBadge');
+        if (badge && pdfDoc) {
+            if (isManual) {
+                badge.innerHTML = `Pág. ${num} / ${pdfDoc.numPages} <span class="text-amber-500 font-bold ml-1">(Manual)</span>`;
+            } else {
+                badge.textContent = `Pág. ${num} / ${pdfDoc.numPages}`;
+            }
+        }
+    }
+
     function onPdfPrevPage() {
         if (pageNum <= 1) return;
-        pageNum--;
-        queueRenderPage(pageNum);
+        goToPdfPage(pageNum - 1, true);
     }
 
     function onPdfNextPage() {
         if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
-        pageNum++;
-        queueRenderPage(pageNum);
+        goToPdfPage(pageNum + 1, true);
     }
 
-    function goToPdfPage(num) {
+    function goToPdfPage(num, isManual = false) {
         if (!pdfDoc) return;
         num = Math.max(1, Math.min(pdfDoc.numPages, parseInt(num) || 1));
+        if (isManual) {
+            userManualPaging = true;
+            if (userPagingTimer) clearTimeout(userPagingTimer);
+            userPagingTimer = setTimeout(() => {
+                userManualPaging = false;
+            }, 20000);
+            updatePdfSyncHudBadge(num, true);
+        } else {
+            updatePdfSyncHudBadge(num, false);
+        }
         pageNum = num;
         queueRenderPage(pageNum);
     }
 
     function goToLastPdfPage() {
         if (!pdfDoc) return;
-        goToPdfPage(pdfDoc.numPages);
+        goToPdfPage(pdfDoc.numPages, true);
     }
 
     function handlePageInputChange(val) {
-        goToPdfPage(val);
+        goToPdfPage(val, true);
     }
 
     function handleQuickJump() {
         const input = document.getElementById('quickPageJumpInput');
         if (input && input.value) {
-            goToPdfPage(input.value);
+            goToPdfPage(input.value, true);
             input.value = '';
         }
     }
+
+    function syncPdfToAudioNow() {
+        userManualPaging = false;
+        if (userPagingTimer) {
+            clearTimeout(userPagingTimer);
+            userPagingTimer = null;
+        }
+        if (audioEngine && !isNaN(audioEngine.duration) && audioEngine.duration > 0) {
+            const progress = Math.min(1.0, Math.max(0.0, audioEngine.currentTime / audioEngine.duration));
+            lastAutoTurnPage = null; // force recalculation and turn
+            syncPdfPageAutoTurn(progress);
+        }
+    }
+    window.syncPdfToAudioNow = syncPdfToAudioNow;
 
     function toggleThumbnailsDrawer() {
         const drawer = document.getElementById('pdfThumbnailsDrawer');
@@ -385,7 +445,7 @@
                 <button 
                     type="button" 
                     id="thumbItem-${i}" 
-                    onclick="goToPdfPage(${i})" 
+                    onclick="goToPdfPage(${i}, true)" 
                     class="w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs ${i === pageNum ? 'bg-indigo-500/15 border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-500/50'}"
                 >
                     <div class="flex items-center gap-2 min-w-0">
@@ -1181,6 +1241,8 @@
 
     function syncPdfPageAutoTurn(chapterProgress) {
         if (!pdfDoc || !pdfDoc.numPages || pdfDoc.numPages <= 1) return;
+        if (!autoScrollEnabled) return;
+        if (userManualPaging) return; // User is manually browsing, do not hijack their page view
 
         let totalWordsAll = 0;
         let wordsBefore = 0;
@@ -1206,8 +1268,9 @@
         const badge = document.getElementById('pdfSyncPageBadge');
         if (badge) badge.textContent = `Pág. ${targetPage} / ${pdfDoc.numPages}`;
 
-        if (targetPage !== pageNum && !pageRendering) {
-            goToPdfPage(targetPage);
+        if (targetPage !== lastAutoTurnPage && !pageRendering) {
+            lastAutoTurnPage = targetPage;
+            goToPdfPage(targetPage, false);
         }
     }
 </script>

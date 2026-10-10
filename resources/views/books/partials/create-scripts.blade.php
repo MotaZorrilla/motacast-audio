@@ -169,8 +169,8 @@
             sectionFileDrop.classList.remove('hidden');
             sectionRawText.classList.add('hidden');
 
-            tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-slate-800 text-slate-900 dark:text-indigo-400 shadow-sm border border-slate-200 dark:border-slate-700";
-            tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+            tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-[#00f0bc]/10 text-slate-900 dark:text-[#00f0bc] shadow-sm border border-slate-200 dark:border-[#00f0bc]/30 font-display";
+            tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-display";
 
             if (fileInput && fileInput.files && fileInput.files.length > 0) {
                 updateFileInfo(fileInput.files[0]);
@@ -183,8 +183,8 @@
             sectionFileDrop.classList.add('hidden');
             sectionRawText.classList.remove('hidden');
 
-            tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-slate-800 text-slate-900 dark:text-indigo-400 shadow-sm border border-slate-200 dark:border-slate-700";
-            tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+            tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-[#00f0bc]/10 text-slate-900 dark:text-[#00f0bc] shadow-sm border border-slate-200 dark:border-[#00f0bc]/30 font-display";
+            tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-display";
 
             if (stepAudioSection) stepAudioSection.classList.add('hidden');
 
