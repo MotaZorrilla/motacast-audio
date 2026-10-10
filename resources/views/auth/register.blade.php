@@ -11,35 +11,35 @@
             <div class="inline-flex relative group">
                 <img src="{{ asset('images/motacast-icon.svg') }}" 
                      alt="MotaCastAudio" 
-                     class="w-16 h-16 rounded-2xl object-contain drop-shadow-[0_4px_20px_rgba(0,255,135,0.45)] group-hover:scale-105 transition transform duration-300"
+                     class="w-16 h-16 rounded-2xl object-contain drop-shadow-[0_4px_20px_rgba(99,102,241,0.35)] group-hover:scale-105 transition transform duration-300"
                      onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
-                <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#00ff87] ring-4 ring-white dark:ring-[#070b0d] animate-pulse"></span>
+                <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-[#090d16] animate-pulse"></span>
             </div>
             
             <div>
-                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-cyan-200">
-                    Crear Cuenta <span class="text-[#00c965] dark:text-[#00ff87] drop-shadow-[0_0_10px_rgba(0,255,135,0.4)]">Personal</span>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                    Crear Cuenta <span class="text-indigo-600 dark:text-indigo-400 drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">Personal</span>
                 </h1>
-                <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-sky-300/80 mt-1">
-                    Convierte tus PDFs técnicos en audiolibros y escúchalos en streaming
+                <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
+                    Convierte tus documentos en podcasts y escúchalos en streaming
                 </p>
             </div>
         </div>
 
         <!-- Glassmorphism Tactile Register Card -->
-        <div class="card-tactile rounded-3xl p-6 sm:p-8 space-y-6">
+        <div class="card-tactile rounded-3xl p-6 sm:p-8 space-y-6 bg-white/95 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl shadow-black/30 backdrop-blur-xl">
             @if (session('guest_book_id'))
                 <div class="p-3.5 rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 text-center space-y-2">
-                    <p class="text-xs text-slate-700 dark:text-cyan-200 font-medium">
+                    <p class="text-xs text-slate-700 dark:text-emerald-300 font-medium">
                         ¿Deseas seguir escuchando tu audiolibro antes de crear tu cuenta?
                     </p>
-                    <a href="{{ route('books.show', session('guest_book_id')) }}" class="btn-neon-tactile inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition transform active:scale-95 shadow-sm">
-                        <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <a href="{{ route('books.show', session('guest_book_id')) }}" class="btn-primary-tactile inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black text-white transition transform active:scale-95 shadow-sm">
+                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         <span>Volver a mi Audiolibro de Prueba</span>
                     </a>
-                    <div class="p-2 rounded-xl bg-[#00ff87]/10 border border-[#00ff87]/20 flex items-center justify-center gap-1.5 text-[11px] text-[#00c965] dark:text-[#00ff87] font-semibold">
+                    <div class="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold">
                         <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                         <span>Tu audiolibro se vinculará automáticamente a tu biblioteca al completar el registro.</span>
                     </div>
@@ -54,10 +54,10 @@
                 </div>
             @elseif (session('guest_upload_count'))
                 <div class="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 text-center space-y-2">
-                    <p class="text-xs text-slate-700 dark:text-cyan-200 font-medium">
+                    <p class="text-xs text-slate-700 dark:text-amber-300 font-medium">
                         ¿Deseas probar con otro documento antes de registrarte?
                     </p>
-                    <a href="{{ route('guest.reset') }}" class="btn-neon-tactile inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition transform active:scale-95 shadow-sm">
+                    <a href="{{ route('guest.reset') }}" class="btn-primary-tactile inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black text-white transition transform active:scale-95 shadow-sm">
                         <span>↺ Reiniciar y Cargar Otro Documento</span>
                     </a>
                 </div>
@@ -68,11 +68,11 @@
 
                 <!-- Name Input -->
                 <div class="space-y-1.5">
-                    <label for="name" class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
+                    <label for="name" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Nombre Completo
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-cyan-500/70">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -85,18 +85,18 @@
                             required 
                             autofocus
                             placeholder="Ej. Héctor Mota"
-                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/80 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/60 rounded-xl text-slate-900 dark:text-cyan-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00ff87] focus:border-transparent transition"
+                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                         >
                     </div>
                 </div>
 
                 <!-- Email Input -->
                 <div class="space-y-1.5">
-                    <label for="email" class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
+                    <label for="email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Correo Electrónico
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-cyan-500/70">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                             </svg>
@@ -108,18 +108,18 @@
                             value="{{ old('email') }}" 
                             required 
                             placeholder="tu@correo.com"
-                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/80 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/60 rounded-xl text-slate-900 dark:text-cyan-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00ff87] focus:border-transparent transition"
+                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                         >
                     </div>
                 </div>
 
                 <!-- Password Input -->
                 <div class="space-y-1.5">
-                    <label for="password" class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
+                    <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Contraseña
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-cyan-500/70">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
@@ -131,18 +131,18 @@
                             required 
                             autocomplete="new-password"
                             placeholder="Mínimo 6 caracteres"
-                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/80 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/60 rounded-xl text-slate-900 dark:text-cyan-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00ff87] focus:border-transparent transition"
+                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                         >
                     </div>
                 </div>
 
                 <!-- Confirm Password Input -->
                 <div class="space-y-1.5">
-                    <label for="password_confirmation" class="block text-xs font-bold text-slate-700 dark:text-cyan-300 uppercase tracking-wider">
+                    <label for="password_confirmation" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Confirmar Contraseña
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-cyan-500/70">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
@@ -153,7 +153,7 @@
                             id="password_confirmation" 
                             required 
                             placeholder="Repite la contraseña"
-                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/80 dark:bg-[#071014] border border-slate-300 dark:border-cyan-900/60 rounded-xl text-slate-900 dark:text-cyan-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00ff87] focus:border-transparent transition"
+                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                         >
                     </div>
                 </div>
@@ -166,19 +166,19 @@
                         </span>
                     </div>
                     <p class="text-xs text-slate-700 dark:text-amber-100 leading-relaxed">
-                        <strong>MotaCastAudio</strong> está en fase de pruebas activas. Durante esta etapa pueden ocurrir ajustes técnicos, errores imprevistos o depuración periódica de archivos.
+                        <strong>MotaCastAudio</strong> está en fase de pruebas activas. Durante esta etapa pueden ocurrir ajustes técnicos, mejoras o depuración periódica de archivos.
                     </p>
                     <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-start gap-2.5">
                         <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                         <p class="text-xs font-semibold text-slate-800 dark:text-amber-200 leading-snug">
-                            <strong>Recomendación importante:</strong> Te recomendamos descargar tus audios en MP3 a tu dispositivo una vez generados para garantizar que no los pierdas.
+                            <strong>Recomendación:</strong> Te recomendamos descargar tus audios en MP3 a tu dispositivo una vez generados para conservarlos sin conexión.
                         </p>
                     </div>
                     <div class="pt-1">
                         <label class="flex items-start gap-2.5 cursor-pointer">
-                            <input type="checkbox" name="beta_disclaimer" value="1" {{ old('beta_disclaimer') ? 'checked' : '' }} required class="mt-0.5 rounded border-amber-400 text-[#00c965] focus:ring-[#00ff87]">
+                            <input type="checkbox" name="beta_disclaimer" value="1" {{ old('beta_disclaimer') ? 'checked' : '' }} required class="mt-0.5 rounded border-amber-400 text-indigo-600 focus:ring-indigo-500">
                             <span class="text-xs font-semibold text-slate-800 dark:text-amber-200">
                                 Entiendo que es una versión Beta experimental y me comprometo a descargar mis audios para conservarlos.
                             </span>
@@ -186,22 +186,22 @@
                     </div>
                 </div>
 
-                <!-- Master Neon Tactile Submit Button -->
+                <!-- Master Primary Tactile Submit Button -->
                 <button 
                     type="submit" 
-                    class="w-full btn-neon-tactile py-3 px-4 rounded-xl text-sm font-black text-slate-950 flex items-center justify-center gap-2 transition transform active:scale-95 shadow-neon-md mt-3"
+                    class="w-full btn-primary-tactile py-3.5 px-4 rounded-xl text-sm font-black text-white flex items-center justify-center gap-2 transition transform active:scale-95 shadow-lg shadow-indigo-500/25 mt-3"
                 >
                     <span>Registrarme y Comenzar</span>
-                    <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                 </button>
             </form>
 
             <!-- Login Navigation Callout -->
-            <div class="text-center pt-3 border-t border-slate-200/80 dark:border-cyan-950/60 text-xs text-slate-500 dark:text-sky-300">
+            <div class="text-center pt-3 border-t border-slate-200/80 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
                 ¿Ya tienes una cuenta? 
-                <a href="{{ route('login') }}" class="font-bold text-[#00c965] dark:text-[#00ff87] hover:underline transition ml-1">
+                <a href="{{ route('login') }}" class="font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition ml-1">
                     Inicia sesión aquí
                 </a>
             </div>

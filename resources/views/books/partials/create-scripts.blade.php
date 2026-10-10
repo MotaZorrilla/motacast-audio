@@ -90,12 +90,12 @@
             iconBox.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-500');
             icon.textContent = 'âš ï¸';
         } else if (type === 'success') {
-            box.classList.add('border-[#00ff87]/50', 'shadow-[0_0_25px_rgba(0,255,135,0.15)]');
-            iconBox.classList.add('bg-[#00ff87]/10', 'border-[#00ff87]/30', 'text-[#00ff87]');
+            box.classList.add('border-emerald-500/50', 'shadow-[0_0_25px_rgba(16,185,129,0.15)]');
+            iconBox.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-500');
             icon.textContent = 'âœ…';
         } else { // info
-            box.classList.add('border-cyan-500/50', 'shadow-[0_0_25px_rgba(6,182,212,0.15)]');
-            iconBox.classList.add('bg-cyan-500/10', 'border-cyan-500/30', 'text-cyan-400');
+            box.classList.add('border-indigo-500/50', 'shadow-[0_0_25px_rgba(99,102,241,0.15)]');
+            iconBox.classList.add('bg-indigo-500/10', 'border-indigo-500/30', 'text-indigo-500');
             icon.textContent = 'â„¹ï¸';
         }
 
@@ -169,8 +169,8 @@
             sectionFileDrop.classList.remove('hidden');
             sectionRawText.classList.add('hidden');
 
-            tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-[#0d1c22] text-slate-900 dark:text-[#00ff87] shadow-sm border border-slate-200 dark:border-cyan-800/60";
-            tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-sky-400 hover:text-slate-900 dark:hover:text-cyan-200";
+            tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-slate-800 text-slate-900 dark:text-indigo-400 shadow-sm border border-slate-200 dark:border-slate-700";
+            tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
 
             if (fileInput && fileInput.files && fileInput.files.length > 0) {
                 updateFileInfo(fileInput.files[0]);
@@ -183,8 +183,8 @@
             sectionFileDrop.classList.add('hidden');
             sectionRawText.classList.remove('hidden');
 
-            tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-[#0d1c22] text-slate-900 dark:text-[#00ff87] shadow-sm border border-slate-200 dark:border-cyan-800/60";
-            tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-sky-400 hover:text-slate-900 dark:hover:text-cyan-200";
+            tabModeText.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-white dark:bg-slate-800 text-slate-900 dark:text-indigo-400 shadow-sm border border-slate-200 dark:border-slate-700";
+            tabModeFile.className = "flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
 
             if (stepAudioSection) stepAudioSection.classList.add('hidden');
 
@@ -235,7 +235,7 @@
                 counterChars.className = "text-amber-500 font-bold";
                 if (counterLimitWarning) counterLimitWarning.classList.add('hidden');
             } else {
-                counterChars.className = "text-slate-800 dark:text-cyan-200 font-bold";
+                counterChars.className = "text-slate-800 dark:text-white font-bold";
                 if (counterLimitWarning) counterLimitWarning.classList.add('hidden');
             }
         }
@@ -409,30 +409,30 @@
             if (miniIconEl) miniIconEl.textContent = '🎬';
             if (badgeEl) {
                 badgeEl.textContent = 'Video';
-                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-cyan-500/20 border border-cyan-500/40 text-cyan-700 dark:text-cyan-300';
+                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400';
             }
             if (titleEl) titleEl.textContent = 'Archivo de Video Detectado';
             if (subtitleEl) subtitleEl.textContent = 'Se detectó un video multimedia. Extraeremos su pista de audio con IA para convertirlo en audiolibro neuronal o texto.';
             if (box) {
-                box.className = "card-tactile rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col relative transform transition-all duration-300 border border-cyan-500/40 shadow-2xl overflow-hidden my-auto";
+                box.className = "card-tactile rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col relative transform transition-all duration-300 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto bg-white dark:bg-[#090d16]";
             }
             if (iconBox) {
-                iconBox.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0 text-xl shadow-sm text-cyan-400";
+                iconBox.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0 text-xl shadow-sm text-indigo-500";
             }
         } else {
             if (iconEl) iconEl.textContent = '🎙️';
             if (miniIconEl) miniIconEl.textContent = '🎙️';
             if (badgeEl) {
                 badgeEl.textContent = 'Audio';
-                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-[#00ff87]/20 border border-[#00ff87]/40 text-[#00c965] dark:text-[#00ff87]';
+                badgeEl.className = 'px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400';
             }
             if (titleEl) titleEl.textContent = 'Archivo de Audio Detectado';
             if (subtitleEl) subtitleEl.textContent = 'Se detectó una grabación de voz. Selecciona la estrategia de procesamiento y retención deseada.';
             if (box) {
-                box.className = "card-tactile rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col relative transform transition-all duration-300 border border-[#00ff87]/40 shadow-2xl overflow-hidden my-auto";
+                box.className = "card-tactile rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col relative transform transition-all duration-300 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-auto bg-white dark:bg-[#090d16]";
             }
             if (iconBox) {
-                iconBox.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#00ff87]/10 border border-[#00ff87]/30 flex items-center justify-center flex-shrink-0 text-xl shadow-sm text-[#00ff87]";
+                iconBox.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0 text-xl shadow-sm text-indigo-500";
             }
         }
 
@@ -709,14 +709,14 @@
     ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, (e) => {
             e.preventDefault();
-            dropZone.classList.add('border-[#00ff87]', 'bg-[#00ff87]/10');
+            dropZone.classList.add('border-indigo-500', 'bg-indigo-500/10');
         }, false);
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, (e) => {
             e.preventDefault();
-            dropZone.classList.remove('border-[#00ff87]', 'bg-[#00ff87]/10');
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-500/10');
         }, false);
     });
 
@@ -771,25 +771,25 @@
             if (iconEl) iconEl.textContent = '🎬';
             if (badgeEl) {
                 badgeEl.textContent = 'VIDEO';
-                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/40';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20';
             }
             if (fileSelectedBox) {
-                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-cyan-500/10 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-300 border border-cyan-500/40 rounded-xl text-xs font-semibold shadow-sm transition-all';
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-semibold shadow-sm transition-all';
             }
             if (dropIconBox) {
-                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-cyan-500/10 dark:bg-cyan-950/50 border border-cyan-500/40 shadow-sm flex items-center justify-center text-cyan-400 group-hover:scale-105 transition';
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-indigo-500/10 dark:bg-indigo-950/50 border border-indigo-500/20 shadow-sm flex items-center justify-center text-indigo-500 group-hover:scale-105 transition';
             }
         } else if (isAudio) {
             if (iconEl) iconEl.textContent = '🎙️';
             if (badgeEl) {
                 badgeEl.textContent = 'AUDIO';
-                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#00ff87]/20 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20';
             }
             if (fileSelectedBox) {
-                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-[#00ff87]/10 dark:bg-cyan-950/60 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 rounded-xl text-xs font-semibold shadow-sm transition-all';
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-semibold shadow-sm transition-all';
             }
             if (dropIconBox) {
-                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-emerald-500/10 dark:bg-[#00ff87]/10 border border-[#00ff87]/40 shadow-sm flex items-center justify-center text-[#00ff87] group-hover:scale-105 transition';
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-indigo-500/10 dark:bg-indigo-950/50 border border-indigo-500/20 shadow-sm flex items-center justify-center text-indigo-500 group-hover:scale-105 transition';
             }
         } else if (isImg) {
             if (iconEl) iconEl.textContent = '📸';
@@ -807,13 +807,13 @@
             if (iconEl) iconEl.textContent = '📄';
             if (badgeEl) {
                 badgeEl.textContent = isDocx ? 'WORD' : (nameLower.endsWith('.pdf') ? 'PDF' : 'DOC');
-                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/40';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
             }
             if (fileSelectedBox) {
-                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-cyan-500/10 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-300 border border-cyan-500/40 rounded-xl text-xs font-semibold shadow-sm transition-all';
+                fileSelectedBox.className = 'mt-4 inline-flex items-center gap-2.5 px-3.5 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold shadow-sm transition-all';
             }
             if (dropIconBox) {
-                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-white dark:bg-[#0d1c22] border border-slate-300 dark:border-cyan-700/50 shadow-sm flex items-center justify-center text-emerald-600 dark:text-cyan-400 group-hover:scale-105 group-hover:shadow-neon-sm transition';
+                dropIconBox.className = 'w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition';
             }
         }
 
