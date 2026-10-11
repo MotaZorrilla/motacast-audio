@@ -7,15 +7,14 @@
 
     <!-- Top Hero & Stats Card: Sleek Podcast Library Header -->
     <div class="card-tactile rounded-3xl p-5 sm:p-7 relative overflow-hidden transition-all">
-        <!-- Subtle Kairos ambient glow -->
-        <div class="absolute -top-16 -right-16 w-56 h-56 bg-[#00f0bc]/10 dark:bg-[#00f0bc]/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-[#5b4f96]/15 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- Subtle Indigo ambient glow -->
+        <div class="absolute -top-16 -right-16 w-56 h-56 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
             <div>
                 <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-[#00f0bc]/10 text-[#00f0bc] border border-[#00f0bc]/30">
-                        <span class="w-2 h-2 rounded-full bg-[#00f0bc] animate-pulse"></span> Streaming Activo
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-indigo-500/10 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Streaming Activo
                     </span>
                     @auth
                         @if (!Auth::user()->isAdmin())
@@ -25,14 +24,14 @@
                         @endif
                     @endauth
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight font-display">Mis Documentos & Podcasts</h1>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Mis Documentos & Podcasts</h1>
                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                     Tu biblioteca personal de audiolibros, lecturas y notas narradas con voces neuronales.
                 </p>
             </div>
             
-            <a href="{{ route('books.create') }}" class="btn-primary-tactile inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-black transition flex-shrink-0 shadow-lg shadow-[#00f0bc]/20 active:scale-95">
-                <svg class="w-4 h-4 text-[#0d1217]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <a href="{{ route('books.create') }}" class="btn-primary-tactile inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-black transition flex-shrink-0 shadow-lg shadow-indigo-500/20 active:scale-95">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                 </svg>
                 <span>+ Nuevo Documento</span>
@@ -40,22 +39,22 @@
         </div>
 
         <!-- Metrics Row -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-5 border-t border-slate-200/80 dark:border-white/10 relative z-10">
-            <div class="bg-slate-50 dark:bg-[#121619]/90 rounded-2xl p-3.5 border border-slate-200/80 dark:border-white/5 hover:border-[#00f0bc]/30 transition shadow-inner">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-5 border-t border-slate-200/80 dark:border-slate-800/80 relative z-10">
+            <div class="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800/60 shadow-inner">
                 <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Documentos</p>
-                <p class="text-2xl font-black text-slate-900 dark:text-white mt-0.5 font-display">{{ $stats['total'] }}</p>
+                <p class="text-2xl font-black text-slate-900 dark:text-white mt-0.5">{{ $stats['total'] }}</p>
             </div>
-            <div class="bg-slate-50 dark:bg-[#121619]/90 rounded-2xl p-3.5 border border-slate-200/80 dark:border-white/5 hover:border-[#00f0bc]/30 transition shadow-inner">
+            <div class="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800/60 shadow-inner">
                 <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Listos para Escuchar</p>
-                <p class="text-2xl font-black text-[#00f0bc] mt-0.5 font-display drop-shadow-[0_0_8px_rgba(0,240,188,0.25)]">{{ $stats['ready'] }}</p>
+                <p class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">{{ $stats['ready'] }}</p>
             </div>
-            <div class="bg-slate-50 dark:bg-[#121619]/90 rounded-2xl p-3.5 border border-slate-200/80 dark:border-white/5 hover:border-amber-400/30 transition shadow-inner">
+            <div class="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800/60 shadow-inner">
                 <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">En Síntesis</p>
-                <p class="text-2xl font-black text-amber-400 mt-0.5 font-display">{{ $stats['processing'] }}</p>
+                <p class="text-2xl font-black text-amber-500 dark:text-amber-400 mt-0.5">{{ $stats['processing'] }}</p>
             </div>
-            <div class="bg-slate-50 dark:bg-[#121619]/90 rounded-2xl p-3.5 border border-slate-200/80 dark:border-white/5 hover:border-purple-400/30 transition shadow-inner">
+            <div class="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800/60 shadow-inner">
                 <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Horas de Audio</p>
-                <p class="text-2xl font-black text-violet-400 mt-0.5 font-display">{{ $stats['total_hours'] }}h</p>
+                <p class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-0.5">{{ $stats['total_hours'] }}h</p>
             </div>
         </div>
 
@@ -163,7 +162,7 @@
                     name="search" 
                     value="{{ request('search') }}"
                     placeholder="Buscar documento por título o autor..."
-                    class="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-[#121619] border border-slate-300 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f0bc] transition"
+                    class="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                 >
                 <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -173,13 +172,13 @@
 
         <!-- Status Filter Pills -->
         <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-0.5">
-            <a href="{{ route('books.index', array_merge(request()->except('status'))) }}" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap {{ !request('status') || request('status') === 'all' ? 'bg-[#00f0bc] text-[#0d1217] font-black shadow-md shadow-[#00f0bc]/25' : 'bg-slate-100 dark:bg-[#121619] text-slate-600 dark:text-slate-300 border border-transparent dark:border-white/5 hover:text-slate-900 dark:hover:text-white' }} transition">
+            <a href="{{ route('books.index', array_merge(request()->except('status'))) }}" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap {{ !request('status') || request('status') === 'all' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }} transition">
                 Todos ({{ $stats['total'] }})
             </a>
-            <a href="{{ route('books.index', array_merge(request()->except('status'), ['status' => 'ready'])) }}" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap {{ request('status') === 'ready' ? 'bg-[#00f0bc] text-[#0d1217] font-black shadow-md shadow-[#00f0bc]/25' : 'bg-slate-100 dark:bg-[#121619] text-slate-600 dark:text-slate-300 border border-transparent dark:border-white/5 hover:text-slate-900 dark:hover:text-white' }} transition">
+            <a href="{{ route('books.index', array_merge(request()->except('status'), ['status' => 'ready'])) }}" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap {{ request('status') === 'ready' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }} transition">
                 Listos ({{ $stats['ready'] }})
             </a>
-            <a href="{{ route('books.index', array_merge(request()->except('status'), ['status' => 'synthesizing'])) }}" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap {{ in_array(request('status'), ['synthesizing', 'extracting', 'pending']) ? 'bg-amber-400 text-[#0d1217] font-black' : 'bg-slate-100 dark:bg-[#121619] text-slate-600 dark:text-slate-300 border border-transparent dark:border-white/5 hover:text-slate-900 dark:hover:text-white' }} transition">
+            <a href="{{ route('books.index', array_merge(request()->except('status'), ['status' => 'synthesizing'])) }}" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap {{ in_array(request('status'), ['synthesizing', 'extracting', 'pending']) ? 'bg-amber-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }} transition">
                 En Proceso ({{ $stats['processing'] }})
             </a>
         </div>
@@ -189,44 +188,44 @@
     @if ($books->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             @foreach ($books as $book)
-                <div class="card-tactile rounded-3xl overflow-hidden hover:border-[#00f0bc]/40 transition-all flex flex-col group shadow-sm">
+                <div class="card-tactile rounded-3xl overflow-hidden hover:border-indigo-500/40 transition-all flex flex-col group shadow-sm">
                     
                     <!-- Card Header & Cover Artwork -->
                     <div class="p-5 pb-3 flex items-start gap-3.5">
-                        <div class="w-14 h-16 sm:w-16 sm:h-20 rounded-2xl bg-gradient-to-br from-[#00f0bc]/25 via-[#5b4f96]/40 to-[#0d1217] border border-[#00f0bc]/30 text-white flex flex-col items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition">
+                        <div class="w-14 h-16 sm:w-16 sm:h-20 rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-900 text-white flex flex-col items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition">
                             <span class="text-2xl">🎧</span>
-                            <span class="text-[8px] font-black font-mono tracking-wider mt-1 uppercase text-[#00f0bc]">EPISODIO</span>
+                            <span class="text-[8px] font-black font-mono tracking-wider mt-1 uppercase text-indigo-200">EPISODIO</span>
                         </div>
                         <div class="min-w-0 flex-grow">
                             <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
                                 @if ($book->status === 'ready')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00f0bc]/10 text-[#00f0bc] border border-[#00f0bc]/30">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-[#00f0bc]"></span> Listo
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Listo
                                     </span>
                                 @elseif ($book->isProcessing())
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 animate-pulse">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 animate-pulse">
                                         <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> {{ $book->progress_percentage }}%
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/30">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Error
                                     </span>
                                 @endif
 
                                 @if (Auth::user() && Auth::user()->isAdmin())
                                     @if ($book->user)
-                                        <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#121619] text-slate-600 dark:text-slate-300 truncate max-w-[120px] border border-transparent dark:border-white/5" title="Cargado por {{ $book->user->name }}">
+                                        <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 truncate max-w-[120px]" title="Cargado por {{ $book->user->name }}">
                                             👤 {{ $book->user->name }}
                                         </span>
                                     @else
-                                        <span class="text-[10px] px-2 py-0.5 rounded-md font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 truncate max-w-[160px]" title="{{ $book->guest_fingerprint ?? 'Invitado Anónimo' }}">
+                                        <span class="text-[10px] px-2 py-0.5 rounded-md font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 truncate max-w-[160px]" title="{{ $book->guest_fingerprint ?? 'Invitado Anónimo' }}">
                                             {{ $book->guest_fingerprint ? Str::limit($book->guest_fingerprint, 22) : '👤 Invitado' }}
                                         </span>
                                     @endif
                                 @endif
                             </div>
 
-                            <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white group-hover:text-[#00f0bc] transition truncate font-display" title="{{ $book->title }}">
+                            <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white group-hover:text-indigo-400 transition truncate" title="{{ $book->title }}">
                                 <a href="{{ route('books.show', $book->id) }}">{{ $book->title }}</a>
                             </h3>
                             <p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
@@ -236,9 +235,9 @@
                     </div>
 
                     <!-- Meta Tags: Chapters & Total Audio Duration -->
-                    <div class="px-5 py-2.5 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 border-t border-b border-slate-200/80 dark:border-white/5 bg-slate-50/70 dark:bg-[#0d1217]/60">
+                    <div class="px-5 py-2.5 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 border-t border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/50">
                         <span class="font-bold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#00f0bc]"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                             <span>{{ $book->chapters_count }} Capítulos</span>
                         </span>
                         <span class="font-mono font-bold text-slate-900 dark:text-white">{{ $book->formatted_duration }}</span>
@@ -246,15 +245,15 @@
 
                     <!-- Executive Summary Excerpt -->
                     @if ($book->summary)
-                        <div class="px-5 py-3 bg-slate-50/40 dark:bg-[#121619]/40 border-b border-slate-200/60 dark:border-white/5 text-xs">
+                        <div class="px-5 py-3 bg-slate-50/40 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-slate-800/60 text-xs">
                             <div class="summary-container" data-expanded="false">
                                 <div class="flex items-center justify-between gap-2 mb-1">
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#00f0bc]">
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-indigo-500">
                                         <span>⚡ Resumen</span>
                                     </span>
                                     @if ($book->summary_audio_path)
-                                        <a href="{{ route('books.show', $book->id) }}?play=summary" class="inline-flex items-center gap-1 text-[10px] font-bold text-[#00f0bc] hover:underline transition" title="Escuchar audio del resumen">
-                                            <svg class="w-3 h-3 text-[#00f0bc]" fill="currentColor" viewBox="0 0 20 20">
+                                        <a href="{{ route('books.show', $book->id) }}?play=summary" class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition" title="Escuchar audio del resumen">
+                                            <svg class="w-3 h-3 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                                             </svg>
                                             <span>Escuchar</span>
@@ -265,7 +264,7 @@
                                     {{ $book->summary }}
                                 </p>
                                 @if (mb_strlen($book->summary) > 110)
-                                    <button type="button" onclick="toggleSummary(this)" class="mt-1 text-[11px] font-bold text-[#00f0bc] hover:underline inline-flex items-center gap-1 transition">
+                                    <button type="button" onclick="toggleSummary(this)" class="mt-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 transition">
                                         <span class="btn-label">Ver más</span>
                                         <svg class="w-3 h-3 chevron transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -279,8 +278,8 @@
                     <!-- Processing Progress Bar -->
                     @if ($book->isProcessing())
                         <div class="px-5 pt-3">
-                            <div class="w-full bg-slate-100 dark:bg-[#121619] rounded-full h-1.5 overflow-hidden">
-                                <div class="bg-[#00f0bc] h-1.5 rounded-full transition-all duration-500 shadow-sm shadow-[#00f0bc]/50" style="width: {{ $book->progress_percentage }}%"></div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500 shadow-sm" style="width: {{ $book->progress_percentage }}%"></div>
                             </div>
                         </div>
                     @endif
@@ -288,14 +287,14 @@
                     <!-- Card Action Footer -->
                     <div class="p-5 pt-3 mt-auto flex items-center justify-between gap-2.5">
                         <a href="{{ route('books.show', $book->id) }}" class="flex-grow btn-primary-tactile inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition active:scale-95 shadow-sm">
-                            <svg class="w-3.5 h-3.5 text-[#0d1217]" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                             </svg>
                             <span>{{ $book->status === 'ready' ? 'Escuchar' : 'Ver Progreso' }}</span>
                         </a>
 
                         <!-- In-App Book Reader Quick Launch Link -->
-                        <a href="{{ route('books.show', $book->id) }}#read" class="p-2.5 text-slate-500 dark:text-slate-400 hover:text-[#00f0bc] hover:bg-[#00f0bc]/10 dark:hover:bg-[#121619] rounded-xl transition" title="Leer Documento en pantalla">
+                        <a href="{{ route('books.show', $book->id) }}#read" class="p-2.5 text-slate-500 dark:text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition" title="Leer Documento en pantalla">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
