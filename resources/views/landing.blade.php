@@ -92,12 +92,11 @@
                             <span class="w-2 h-2 rounded-full bg-indigo-500/60"></span>
                         </div>
 
-                        <!-- Screen Content: Kairos Mockup App Preview -->
-                        <div class="relative rounded-[32px] overflow-hidden bg-slate-950 aspect-[9/18] flex flex-col">
-                            <img src="{{ asset('images/landing/hero-app-screens-800.png') }}" 
-                                 alt="MotaCast Mobile Player" 
-                                 class="w-full h-full object-cover object-top filter brightness-95 contrast-105"
-                                 onerror="this.onerror=null; this.src='{{ asset('images/landing/app-screen-600.png') }}';">
+                        <!-- Screen Content: MotaCast App In Action -->
+                        <div class="relative rounded-[32px] overflow-hidden bg-slate-950 aspect-[9/16] flex flex-col">
+                            <img src="{{ asset('images/landing/user-listening-motacast.jpg') }}" 
+                                 alt="MotaCast Mobile Experience" 
+                                 class="w-full h-full object-cover object-center filter brightness-95 contrast-105">
 
                             <!-- Floating Glass Mini-Player Overlay -->
                             <div class="absolute bottom-4 left-3 right-3 p-3.5 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-slate-700/60 shadow-xl flex items-center justify-between gap-3">

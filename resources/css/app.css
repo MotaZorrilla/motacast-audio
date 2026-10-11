@@ -133,3 +133,85 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-thumb:hover {
     transform: scale(1.2);
 }
+
+/* ===================================================================
+ * Kairos Aesthetic Components & Utilities
+ * Authentic Agency Styling: Iris Purple #5b4f96, Dark #121619, Slate #181f25
+ * =================================================================== */
+.card-kairos {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dark .card-kairos {
+    background-color: #181f25;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6);
+}
+
+.btn-kairos-primary {
+    background-color: #5b4f96;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: 0 4px 18px rgba(91, 79, 150, 0.35);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-kairos-primary:hover {
+    background-color: #514686;
+    box-shadow: 0 8px 25px rgba(91, 79, 150, 0.45);
+    transform: translateY(-1px);
+}
+.btn-kairos-primary:active {
+    background-color: #453a73;
+    box-shadow: 0 2px 8px rgba(91, 79, 150, 0.25);
+    transform: translateY(1px);
+}
+
+.input-kairos {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #0f172a;
+    transition: all 0.2s ease;
+}
+.dark .input-kairos {
+    background-color: #121619;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+.input-kairos:focus {
+    outline: none;
+    border-color: #5b4f96;
+    box-shadow: 0 0 0 3px rgba(91, 79, 150, 0.25);
+}
+
+.tab-kairos-active {
+    background-color: #ffffff;
+    color: #5b4f96;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.dark .tab-kairos-active {
+    background-color: #5b4f96;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 14px rgba(91, 79, 150, 0.4);
+}
+
+.tab-kairos-inactive {
+    color: #64748b;
+    border: 1px solid transparent;
+}
+.dark .tab-kairos-inactive {
+    color: #94a3b8;
+}
+.tab-kairos-inactive:hover {
+    color: #0f172a;
+}
+.dark .tab-kairos-inactive:hover {
+    color: #ffffff;
+}
+
