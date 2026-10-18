@@ -68,13 +68,13 @@
                 <!-- Brand Signature with Bespoke MotaCastAudio Vector Icon -->
                 <div class="flex items-center gap-3">
                     <a href="{{ Auth::check() ? route('books.index') : route('home') }}" class="flex items-center gap-3 group">
-                        <!-- Bespoke Squircle Audio Icon with Indigo/Emerald Halo -->
+                        <!-- Bespoke Squircle Audio Icon with Iris Purple Halo -->
                         <div class="relative flex-shrink-0">
                             <img src="{{ asset('images/motacast-icon.svg') }}" 
                                  alt="MotaCastAudio" 
                                  class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain drop-shadow-[0_2px_10px_rgba(99,102,241,0.35)] group-hover:scale-105 transition"
                                  onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
-                            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#090d16]"></span>
+                            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-[#090d16]"></span>
                         </div>
 
                         <div class="border-l border-slate-200 dark:border-slate-800 pl-3">
