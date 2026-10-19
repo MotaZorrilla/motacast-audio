@@ -9,11 +9,11 @@
         <!-- Brand Header with Bespoke Squircle Icon -->
         <div class="text-center space-y-3">
             <div class="inline-flex relative group">
-                <img src="{{ asset('images/motacast-icon.svg') }}" 
+                <img src="{{ asset('images/motacast-icon.svg') }}?v=2.0" 
                      alt="MotaCastAudio" 
                      class="w-16 h-16 rounded-2xl object-contain drop-shadow-[0_4px_20px_rgba(99,102,241,0.35)] group-hover:scale-105 transition transform duration-300"
                      onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
-                <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-[#090d16] animate-pulse"></span>
+                <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-indigo-500 ring-4 ring-white dark:ring-[#090d16] animate-pulse"></span>
             </div>
             
             <div>

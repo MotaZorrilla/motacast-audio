@@ -70,7 +70,7 @@
                     <a href="{{ Auth::check() ? route('books.index') : route('home') }}" class="flex items-center gap-3 group">
                         <!-- Bespoke Squircle Audio Icon with Iris Purple Halo -->
                         <div class="relative flex-shrink-0">
-                            <img src="{{ asset('images/motacast-icon.svg') }}" 
+                            <img src="{{ asset('images/motacast-icon.svg') }}?v=2.0" 
                                  alt="MotaCastAudio" 
                                  class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain drop-shadow-[0_2px_10px_rgba(99,102,241,0.35)] group-hover:scale-105 transition"
                                  onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
@@ -332,7 +332,7 @@
     <footer class="bg-white/80 dark:bg-[#090d16]/80 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800/80 py-4 mt-auto relative z-10 w-full overflow-hidden pb-20 sm:pb-4">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
             <div class="flex items-center gap-2">
-                <img src="{{ asset('images/motacast-icon.svg') }}" alt="MotaCastAudio" class="w-5 h-5 object-contain" onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
+                <img src="{{ asset('images/motacast-icon.svg') }}?v=2.0" alt="MotaCastAudio" class="w-5 h-5 object-contain" onerror="this.onerror=null; this.src='{{ asset('images/icono.png') }}';">
                 <span class="font-black text-slate-900 dark:text-white tracking-tight">MotaCast<span class="text-indigo-600 dark:text-indigo-400">Audio</span></span>
                 <span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 shadow-sm">v0.9.5-beta</span>
             </div>
