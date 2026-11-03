@@ -748,6 +748,21 @@
 
     function updateFileInfo(file) {
         if (!file) return;
+
+        const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100MB
+        if (file.size > MAX_UPLOAD_BYTES) {
+            showNoticeModal({
+                title: 'Archivo Demasiado Pesado',
+                message: `El archivo seleccionado "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) supera el límite máximo permitido de 100 MB.`,
+                detail: 'Por favor utiliza una herramienta de compresión (como ilovepdf.com para PDFs o Handbrake/ffmpeg para video/audio) antes de subirlo.',
+                type: 'error'
+            });
+            fileInput.value = '';
+            if (fileSelectedBox) fileSelectedBox.style.display = 'none';
+            if (fileLabel) fileLabel.textContent = 'Arrastra y suelta tu archivo aquí, o haz clic para examinar';
+            return;
+        }
+
         if (selectedFileName) selectedFileName.textContent = file.name;
         const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
         if (selectedFileSize) selectedFileSize.textContent = `(${sizeMb} MB)`;
@@ -844,6 +859,16 @@
                     title: 'Documento Requerido',
                     message: 'Por favor selecciona o arrastra un archivo antes de comenzar.',
                     type: 'warning'
+                });
+                return false;
+            }
+
+            if (fileInput.files[0].size > 100 * 1024 * 1024) {
+                e.preventDefault();
+                showNoticeModal({
+                    title: 'Límite de Tamaño Excedido',
+                    message: `El archivo supera el límite máximo permitido de 100 MB (${(fileInput.files[0].size / (1024 * 1024)).toFixed(1)} MB).`,
+                    type: 'error'
                 });
                 return false;
             }

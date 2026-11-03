@@ -73,13 +73,13 @@ class TelemetryController extends Controller
         $activeUsers = User::where('status', 'active')->count();
         $suspendedUsers = User::where('status', 'suspended')->count();
         $autoExtensionsUsed = User::where('auto_extension_used', true)->count();
-        
+
         // Count users who have reached or exceeded their limit
         $usersAtLimit = User::where('role', '!=', 'admin')
             ->where('book_limit', '!=', -1)
             ->withCount('books')
             ->get()
-            ->filter(fn($u) => $u->books_count >= $u->book_limit)
+            ->filter(fn ($u) => $u->books_count >= $u->book_limit)
             ->count();
 
         $userMetrics = [
@@ -174,14 +174,14 @@ class TelemetryController extends Controller
 
     protected function authorizeAdmin(): void
     {
-        if (!Auth::check() || !Auth::user()->isAdmin()) {
+        if (! Auth::check() || ! Auth::user()->isAdmin()) {
             abort(403, 'Acceso denegado: Se requieren privilegios de Administrador.');
         }
     }
 
     private function calculateDirectorySize(string $path): int
     {
-        if (!File::isDirectory($path)) {
+        if (! File::isDirectory($path)) {
             return 0;
         }
 
@@ -189,12 +189,13 @@ class TelemetryController extends Controller
         foreach (File::allFiles($path) as $file) {
             $size += $file->getSize();
         }
+
         return $size;
     }
 
     private function countFilesInDir(string $path, array $extensions): int
     {
-        if (!File::isDirectory($path)) {
+        if (! File::isDirectory($path)) {
             return 0;
         }
 
@@ -204,6 +205,7 @@ class TelemetryController extends Controller
                 $count++;
             }
         }
+
         return $count;
     }
 
@@ -220,13 +222,13 @@ class TelemetryController extends Controller
 
         $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        return round($bytes, $precision).' '.$units[$pow];
     }
 
     private function getRecentLogs(int $lines = 70): array
     {
         $logFile = storage_path('logs/laravel.log');
-        if (!File::exists($logFile)) {
+        if (! File::exists($logFile)) {
             return ['No hay archivo de registro laravel.log generado aún.'];
         }
 

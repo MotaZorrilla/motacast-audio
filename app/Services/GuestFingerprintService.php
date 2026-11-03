@@ -86,7 +86,7 @@ class GuestFingerprintService
 
         if ($cfCountry && is_string($cfCountry)) {
             $code = strtoupper(trim($cfCountry));
-            if (strlen($code) === 2 && ctype_alpha($code) && !in_array($code, ['XX', 'T1'])) {
+            if (strlen($code) === 2 && ctype_alpha($code) && ! in_array($code, ['XX', 'T1'])) {
                 return $code;
             }
         }
@@ -110,7 +110,7 @@ class GuestFingerprintService
             return '🏠';
         }
 
-        if ($code === 'INTL' || strlen($code) !== 2 || !ctype_alpha($code)) {
+        if ($code === 'INTL' || strlen($code) !== 2 || ! ctype_alpha($code)) {
             return '🌐';
         }
 
@@ -118,7 +118,7 @@ class GuestFingerprintService
         $first = 127397 + ord($code[0]);
         $second = 127397 + ord($code[1]);
 
-        return mb_chr($first, 'UTF-8') . mb_chr($second, 'UTF-8');
+        return mb_chr($first, 'UTF-8').mb_chr($second, 'UTF-8');
     }
 
     /**
@@ -183,7 +183,7 @@ class GuestFingerprintService
     public static function generateCorrelative(string $ip, string $ua, Request $request): string
     {
         $sessionId = $request->hasSession() ? $request->session()->getId() : '';
-        $seed = $ip . '|' . $ua . '|' . ($sessionId ? substr($sessionId, 0, 16) : '');
+        $seed = $ip.'|'.$ua.'|'.($sessionId ? substr($sessionId, 0, 16) : '');
         $num = (abs(crc32($seed)) % 900) + 100; // Produces 100 to 999
 
         return (string) $num;
@@ -194,7 +194,7 @@ class GuestFingerprintService
      */
     public static function detectActionAndBook(Request $request, ?Response $response = null): array
     {
-        $path = '/' . ltrim($request->path(), '/');
+        $path = '/'.ltrim($request->path(), '/');
         $method = strtoupper($request->method());
         $action = 'Navegación general';
         $bookId = null;
@@ -225,6 +225,7 @@ class GuestFingerprintService
         if (preg_match('#^/chapters/(\d+)/stream#', $path, $matches)) {
             $chapterId = (int) $matches[1];
             $action = "Escuchando audio (Capítulo #{$chapterId})";
+
             return [$action, null];
         }
 
@@ -238,9 +239,11 @@ class GuestFingerprintService
                     $book = self::findBookTitle($bookId);
                     $title = $book ? " «{$book->title}»" : '';
                     $action = "Creó audiolibro{$title} (#{$bookId})";
+
                     return [$action, $bookId];
                 }
             }
+
             return ['Envió documento para procesar', null];
         }
 
@@ -260,6 +263,7 @@ class GuestFingerprintService
             if (str_contains($path, 'tickets')) {
                 return ['Revisando tickets de soporte', null];
             }
+
             return ['Panel de administración', null];
         }
 

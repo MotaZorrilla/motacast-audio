@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\Book;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class GuestSessionService
 {
     public const SESSION_COUNT_KEY = 'guest_upload_count';
+
     public const SESSION_BOOK_KEY = 'guest_book_id';
 
     /**
@@ -36,7 +38,7 @@ class GuestSessionService
      */
     public function recordTrialUpload(int $bookId): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             $current = (int) session(self::SESSION_COUNT_KEY, 0);
             session([
                 self::SESSION_COUNT_KEY => $current + 1,
@@ -63,13 +65,14 @@ class GuestSessionService
      */
     public function getActiveTrialBook(): ?Book
     {
-        if (!session()->has(self::SESSION_BOOK_KEY)) {
+        if (! session()->has(self::SESSION_BOOK_KEY)) {
             return null;
         }
 
         $book = Book::find(session(self::SESSION_BOOK_KEY));
-        if (!$book) {
+        if (! $book) {
             $this->resetSession();
+
             return null;
         }
 
@@ -79,10 +82,10 @@ class GuestSessionService
     /**
      * Claim and transfer the active trial book to a newly registered or authenticated user.
      */
-    public function claimTrialBook(\App\Models\User $user): ?Book
+    public function claimTrialBook(User $user): ?Book
     {
         $book = $this->getActiveTrialBook();
-        if (!$book) {
+        if (! $book) {
             return null;
         }
 
@@ -93,6 +96,7 @@ class GuestSessionService
         }
 
         $this->resetSession();
+
         return $book;
     }
 }

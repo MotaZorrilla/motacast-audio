@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\VoicePreviewController;
 use App\Services\AudioSynthesisService;
 use Illuminate\Console\Command;
 
@@ -21,7 +20,7 @@ class GenerateVoicePreviews extends Command
             mkdir($previewDir, 0755, true);
         }
 
-        $this->info('Iniciando pre-generación de ' . count($voices) . ' muestras de voz...');
+        $this->info('Iniciando pre-generación de '.count($voices).' muestras de voz...');
 
         $phrases = [
             'es-VE-SebastianNeural' => 'Hola, soy Sebastián de Venezuela. Con mi voz puedes escuchar tus libros y documentos con entonación natural.',
@@ -36,10 +35,11 @@ class GenerateVoicePreviews extends Command
 
         foreach ($voices as $v) {
             $voiceId = $v['id'];
-            $filePath = $previewDir . DIRECTORY_SEPARATOR . $voiceId . '.mp3';
+            $filePath = $previewDir.DIRECTORY_SEPARATOR.$voiceId.'.mp3';
 
             if (file_exists($filePath) && ! $this->option('force')) {
                 $this->line("  [OK] {$v['name']} (ya existe en caché)");
+
                 continue;
             }
 
@@ -50,11 +50,12 @@ class GenerateVoicePreviews extends Command
                 $res = $synthesisService->synthesize($phrase, $filePath, $voiceId, '+0%', '+0Hz');
                 $this->info("Listo ({$res['duration_seconds']}s, {$res['file_size']} bytes)");
             } catch (\Throwable $e) {
-                $this->error('Error: ' . $e->getMessage());
+                $this->error('Error: '.$e->getMessage());
             }
         }
 
         $this->info('Pre-generación completada exitosamente.');
+
         return Command::SUCCESS;
     }
 }

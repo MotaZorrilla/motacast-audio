@@ -15,19 +15,19 @@ class DemoUsersSeeder extends Seeder
     {
         // Ensure real sample files exist on public disk
         if (Storage::disk('public')->exists('pdfs/manifiesto_homelab.pdf')) {
-            if (!Storage::disk('public')->exists('pdfs/demo_alumno.pdf')) {
+            if (! Storage::disk('public')->exists('pdfs/demo_alumno.pdf')) {
                 Storage::disk('public')->copy('pdfs/manifiesto_homelab.pdf', 'pdfs/demo_alumno.pdf');
             }
-            if (!Storage::disk('public')->exists('pdfs/demo_invitado.pdf')) {
+            if (! Storage::disk('public')->exists('pdfs/demo_invitado.pdf')) {
                 Storage::disk('public')->copy('pdfs/manifiesto_homelab.pdf', 'pdfs/demo_invitado.pdf');
             }
         }
 
         if (Storage::disk('public')->exists('audiobooks/1/chapter_1.mp3')) {
-            if (!Storage::disk('public')->exists('audiobooks/demo_alumno_ch1.mp3')) {
+            if (! Storage::disk('public')->exists('audiobooks/demo_alumno_ch1.mp3')) {
                 Storage::disk('public')->copy('audiobooks/1/chapter_1.mp3', 'audiobooks/demo_alumno_ch1.mp3');
             }
-            if (!Storage::disk('public')->exists('audiobooks/demo_invitado_ch1.mp3')) {
+            if (! Storage::disk('public')->exists('audiobooks/demo_invitado_ch1.mp3')) {
                 Storage::disk('public')->copy('audiobooks/1/chapter_1.mp3', 'audiobooks/demo_invitado_ch1.mp3');
             }
         }

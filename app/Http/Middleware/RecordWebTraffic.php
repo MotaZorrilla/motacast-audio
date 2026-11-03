@@ -31,9 +31,9 @@ class RecordWebTraffic
 
         try {
             $userAgent = (string) $request->userAgent();
-            $path = '/' . ltrim($request->path(), '/');
+            $path = '/'.ltrim($request->path(), '/');
             $ip = $request->ip() ?? '127.0.0.1';
-            $ipHash = hash('sha256', $ip . (config('app.key') ?? 'motacast_salt'));
+            $ipHash = hash('sha256', $ip.(config('app.key') ?? 'motacast_salt'));
 
             $isCrawler = $this->detectCrawler($userAgent);
             $deviceType = $isCrawler ? 'bot' : $this->detectDevice($userAgent);

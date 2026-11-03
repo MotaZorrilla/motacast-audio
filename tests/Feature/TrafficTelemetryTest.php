@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Book;
 use App\Models\TrafficLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class TrafficTelemetryTest extends TestCase
@@ -130,7 +132,7 @@ class TrafficTelemetryTest extends TestCase
 
     public function test_book_access_correlates_action_details_and_book_id(): void
     {
-        $book = \App\Models\Book::create([
+        $book = Book::create([
             'title' => 'Tratado de Medicina Integral',
             'author' => 'Héctor Mota',
             'original_filename' => 'test.pdf',
@@ -194,7 +196,7 @@ class TrafficTelemetryTest extends TestCase
 
     public function test_guest_uploading_book_persists_fingerprint_and_country(): void
     {
-        $file = \Illuminate\Http\UploadedFile::fake()->create('guia.pdf', 10, 'application/pdf');
+        $file = UploadedFile::fake()->create('guia.pdf', 10, 'application/pdf');
 
         $response = $this->withHeaders([
             'CF-IPCountry' => 'CL',
@@ -208,7 +210,7 @@ class TrafficTelemetryTest extends TestCase
 
         $response->assertStatus(302);
 
-        $book = \App\Models\Book::latest('id')->first();
+        $book = Book::latest('id')->first();
         $this->assertNotNull($book);
         $this->assertEquals('CL', $book->country_code);
         $this->assertNotNull($book->guest_fingerprint);

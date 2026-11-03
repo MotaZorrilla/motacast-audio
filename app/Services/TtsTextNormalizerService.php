@@ -109,6 +109,7 @@ class TtsTextNormalizerService
             if (! preg_match('/[.:!?]$/u', $heading)) {
                 $heading .= '.';
             }
+
             return $heading;
         }, $text);
 
@@ -140,6 +141,7 @@ class TtsTextNormalizerService
         $text = preg_replace_callback('/^[ \t]*\|(.+)\|[ \t]*$/m', function ($matches) {
             $cells = explode('|', $matches[1]);
             $cleaned = array_filter(array_map('trim', $cells));
+
             return implode(', ', $cleaned).'.';
         }, $text);
 

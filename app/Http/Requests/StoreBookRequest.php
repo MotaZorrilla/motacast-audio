@@ -41,6 +41,7 @@ class StoreBookRequest extends FormRequest
     {
         return [
             'pdf_file.required_without' => 'Debes adjuntar un archivo o ingresar texto en el modo de pegado directo.',
+            'pdf_file.max' => 'El archivo adjunto excede el límite máximo permitido de 100 MB. Por favor optimiza el documento o comprime el archivo antes de cargarlo.',
             'raw_text.required_without' => 'Debes adjuntar un archivo o ingresar texto en el modo de pegado directo.',
             'raw_text.min' => 'El texto pegado debe contener al menos 10 caracteres.',
             'raw_text.max' => 'El texto pegado excede el límite de 50,000 caracteres (~10,000 palabras). Para documentos extensos o libros completos, por favor súbelo como archivo (PDF, Word, TXT) en la pestaña "Subir Archivo".',

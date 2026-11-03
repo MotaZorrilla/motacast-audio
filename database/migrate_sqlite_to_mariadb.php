@@ -4,13 +4,12 @@
  * MotaCastAudio - SQLite to MariaDB Data Migration Script
  * Preserves all users, books, chapters, and media references.
  */
-
-$sqliteFile = getenv('SQLITE_PATH') ?: __DIR__ . '/database.sqlite';
-if (!file_exists($sqliteFile)) {
+$sqliteFile = getenv('SQLITE_PATH') ?: __DIR__.'/database.sqlite';
+if (! file_exists($sqliteFile)) {
     $sqliteFile = '/app/database/database.sqlite';
 }
 
-if (!file_exists($sqliteFile)) {
+if (! file_exists($sqliteFile)) {
     fwrite(STDERR, "ERROR: SQLite database file not found at $sqliteFile\n");
     exit(1);
 }
@@ -34,15 +33,16 @@ echo "Connection successful!\n\n";
 
 $tablesToMigrate = ['users', 'books', 'chapters', 'failed_jobs'];
 
-$mariadb->exec("SET FOREIGN_KEY_CHECKS = 0;");
+$mariadb->exec('SET FOREIGN_KEY_CHECKS = 0;');
 
 foreach ($tablesToMigrate as $table) {
     echo "--- Migrating table: $table ---\n";
-    
+
     // Check if table exists in SQLite
     $checkSqlite = $sqlite->query("SELECT name FROM sqlite_master WHERE type='table' AND name='$table'")->fetch();
-    if (!$checkSqlite) {
+    if (! $checkSqlite) {
         echo "Table $table does not exist in SQLite, skipping.\n";
+
         continue;
     }
 
@@ -83,7 +83,7 @@ foreach ($tablesToMigrate as $table) {
     echo "\n";
 }
 
-$mariadb->exec("SET FOREIGN_KEY_CHECKS = 1;");
+$mariadb->exec('SET FOREIGN_KEY_CHECKS = 1;');
 
 echo "========================================\n";
 echo "VERIFICATION SUMMARY:\n";
@@ -91,7 +91,7 @@ echo "========================================\n";
 foreach ($tablesToMigrate as $table) {
     $sqCount = $sqlite->query("SELECT count(*) FROM \"$table\"")->fetchColumn();
     $maCount = $mariadb->query("SELECT count(*) FROM `$table`")->fetchColumn();
-    $status = ($sqCount == $maCount) ? "MATCH [OK]" : "MISMATCH [WARNING]";
+    $status = ($sqCount == $maCount) ? 'MATCH [OK]' : 'MISMATCH [WARNING]';
     echo sprintf("%-15s | SQLite: %4d | MariaDB: %4d | %s\n", $table, $sqCount, $maCount, $status);
 }
 

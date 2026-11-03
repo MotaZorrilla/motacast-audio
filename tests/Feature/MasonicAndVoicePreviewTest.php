@@ -34,7 +34,7 @@ class MasonicAndVoicePreviewTest extends TestCase
     {
         $normalizer = app(TtsTextNormalizerService::class);
 
-        $masonicSample = <<<TXT
+        $masonicSample = <<<'TXT'
 A L( G( D( G( A( D( U(
 Ven( M(
 Q( H(Ex - Ven(M(
@@ -83,7 +83,7 @@ TXT;
     {
         $normalizer = app(TtsTextNormalizerService::class);
 
-        $legacyText = "Ven( M( y Q( H( se reunieron en la Resp(Log( de este Or(de Ciudad Bolívar. S(F(U(";
+        $legacyText = 'Ven( M( y Q( H( se reunieron en la Resp(Log( de este Or(de Ciudad Bolívar. S(F(U(';
 
         $reconstructed = $normalizer->reconstructTripunctuatedText($legacyText);
 
@@ -250,11 +250,11 @@ TXT;
         $normalizer = app(TtsTextNormalizerService::class);
 
         $commonTexts = [
-            "Vamos al cine este fin de semana con la familia.",
-            "En el taller de carpintería se reparan muebles antiguos.",
-            "De acuerdo a (1) las normas y (2) los reglamentos vigentes.",
-            "El sol sale por el oriente y se oculta por el poniente.",
-            "El hermano menor fue a comprar pan al supermercado.",
+            'Vamos al cine este fin de semana con la familia.',
+            'En el taller de carpintería se reparan muebles antiguos.',
+            'De acuerdo a (1) las normas y (2) los reglamentos vigentes.',
+            'El sol sale por el oriente y se oculta por el poniente.',
+            'El hermano menor fue a comprar pan al supermercado.',
             "# Título de prueba\n\nEste es un documento Markdown estándar con listas:\n- Elemento 1\n- Elemento 2",
         ];
 
@@ -270,7 +270,7 @@ TXT;
     {
         $normalizer = app(TtsTextNormalizerService::class);
 
-        $markdownInput = <<<MD
+        $markdownInput = <<<'MD'
 # Título Principal
 
 ## Subtítulo de Sección
@@ -352,4 +352,3 @@ MD;
         $response->assertSee('Bienvenidos al Ensayo', false);
     }
 }
-

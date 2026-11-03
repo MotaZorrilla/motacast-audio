@@ -20,6 +20,7 @@ class AudiobookTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected User $admin;
 
     protected function setUp(): void
@@ -816,5 +817,3 @@ doc.close()
         $response->assertSee('property="og:title"', false);
     }
 }
-
-

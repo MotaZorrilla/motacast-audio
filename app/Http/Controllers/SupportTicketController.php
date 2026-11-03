@@ -37,7 +37,7 @@ class SupportTicketController extends Controller
      */
     public function requestExtension(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('register')
                 ->with('info', 'Por favor regístrate o inicia sesión para solicitar una cuota ampliada.');
         }

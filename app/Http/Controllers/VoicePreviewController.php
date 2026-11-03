@@ -53,11 +53,11 @@ class VoicePreviewController extends Controller
 
         // Standard default rate & pitch uses canonical single filename if available
         if ($speedRate === '+0%' && $pitch === '+0Hz') {
-            $filePath = $previewDir . DIRECTORY_SEPARATOR . $voice . '.mp3';
+            $filePath = $previewDir.DIRECTORY_SEPARATOR.$voice.'.mp3';
         } else {
             $safeRate = str_replace(['+', '%', '-'], ['p', 'pct', 'm'], $speedRate);
             $safePitch = str_replace(['+', 'Hz', 'hz', '-'], ['p', 'hz', 'hz', 'm'], $pitch);
-            $filePath = $previewDir . DIRECTORY_SEPARATOR . "{$voice}_{$safeRate}_{$safePitch}.mp3";
+            $filePath = $previewDir.DIRECTORY_SEPARATOR."{$voice}_{$safeRate}_{$safePitch}.mp3";
         }
 
         if (! file_exists($filePath)) {

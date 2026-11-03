@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,19 +27,19 @@ class TicketController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('subject', 'like', "%{$search}%")
-                  ->orWhere('message', 'like', "%{$search}%")
-                  ->orWhere('guest_email', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                  });
+                    ->orWhere('message', 'like', "%{$search}%")
+                    ->orWhere('guest_email', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
             });
         }
 
         $tickets = $query->orderByRaw("CASE WHEN status = 'pendiente' THEN 1 WHEN status = 'en_revision' THEN 2 ELSE 3 END")
-                         ->orderBy('created_at', 'desc')
-                         ->paginate(15)
-                         ->withQueryString();
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
 
         $stats = [
             'total' => SupportTicket::count(),
@@ -109,7 +108,7 @@ class TicketController extends Controller
 
     protected function authorizeAdmin(): void
     {
-        if (!Auth::check() || !Auth::user()->isAdmin()) {
+        if (! Auth::check() || ! Auth::user()->isAdmin()) {
             abort(403, 'Acceso denegado: Se requieren privilegios de Administrador.');
         }
     }

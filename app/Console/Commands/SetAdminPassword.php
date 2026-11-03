@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 class SetAdminPassword extends Command
 {
     protected $signature = 'admin:set-password {password=admin123}';
+
     protected $description = 'Set or reset admin password and ensure admin role';
 
     public function handle(): int
@@ -31,6 +32,7 @@ class SetAdminPassword extends Command
         $admin->save();
 
         $this->info("Admin 'admin@motazorrilla.com' updated with role 'admin' and password set successfully.");
+
         return self::SUCCESS;
     }
 }

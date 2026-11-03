@@ -22,7 +22,7 @@ class UserController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -90,7 +90,7 @@ class UserController extends Controller
             }
         }
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
@@ -113,8 +113,8 @@ class UserController extends Controller
         $newStatus = $user->status === 'active' ? 'suspended' : 'active';
         $user->update(['status' => $newStatus]);
 
-        $msg = $newStatus === 'active' 
-            ? "Cuenta de '{$user->name}' activada con éxito." 
+        $msg = $newStatus === 'active'
+            ? "Cuenta de '{$user->name}' activada con éxito."
             : "Cuenta de '{$user->name}' suspendida.";
 
         return back()->with('success', $msg);
@@ -145,7 +145,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return back()->with('success', "Cuota de '{$user->name}' actualizada a: " . ($user->book_limit === -1 ? 'Ilimitado' : "{$user->book_limit} libros") . ".");
+        return back()->with('success', "Cuota de '{$user->name}' actualizada a: ".($user->book_limit === -1 ? 'Ilimitado' : "{$user->book_limit} libros").'.');
     }
 
     public function destroy(User $user)
@@ -176,7 +176,7 @@ class UserController extends Controller
 
     protected function authorizeAdmin(): void
     {
-        if (!Auth::check() || !Auth::user()->isAdmin()) {
+        if (! Auth::check() || ! Auth::user()->isAdmin()) {
             abort(403, 'Acceso denegado: Se requieren privilegios de Administrador.');
         }
     }

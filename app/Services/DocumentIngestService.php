@@ -34,16 +34,16 @@ class DocumentIngestService
                 $cleanFirstLine = trim(preg_replace('/^[#\s*_-]+/', '', $firstLine));
                 $title = Str::limit($cleanFirstLine, 50, '...');
                 if (empty($title)) {
-                    $title = 'Texto Directo ' . now()->format('d/m/Y H:i');
+                    $title = 'Texto Directo '.now()->format('d/m/Y H:i');
                 }
             }
 
             $slug = Str::slug($title) ?: 'texto-directo';
-            $fileName = $slug . '-' . time() . '.txt';
-            $storedPath = 'pdfs/' . $fileName;
+            $fileName = $slug.'-'.time().'.txt';
+            $storedPath = 'pdfs/'.$fileName;
 
             Storage::disk('public')->put($storedPath, $rawText);
-            $originalFilename = $title . '.txt';
+            $originalFilename = $title.'.txt';
         }
 
         return [
