@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\VoicePreviewController;
 use App\Models\Book;
@@ -82,7 +83,7 @@ Route::get('/', function (Request $request) {
             ->with('info', 'Has utilizado tu conversión de prueba gratuita. Inicia sesión o regístrate para acceder a tu biblioteca.');
     }
 
-    return app(BookController::class)->create($request);
+    return view('landing');
 })->name('home');
 
 // Support & Feedback Routes (Tickets & Quota Extensions)
@@ -92,6 +93,11 @@ Route::post('/support/request-extension', [SupportTicketController::class, 'requ
 // Authenticated Main Library
 Route::middleware('auth')->group(function () {
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
+
+    // Profile & Account Settings
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Admin Control Center: User Management, Telemetry & Support Tickets
     Route::prefix('admin')->name('admin.')->group(function () {

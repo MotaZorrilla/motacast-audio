@@ -24,6 +24,8 @@ class User extends Authenticatable
         'role',
         'status',
         'book_limit',
+        'preferred_voice',
+        'preferred_speed',
         'beta_disclaimer_accepted_at',
         'auto_extension_used',
     ];
@@ -60,6 +62,8 @@ class User extends Authenticatable
         'role' => 'user',
         'status' => 'active',
         'book_limit' => 3,
+        'preferred_voice' => 'es-ES-AlvaroNeural',
+        'preferred_speed' => '+0%',
         'auto_extension_used' => false,
     ];
 

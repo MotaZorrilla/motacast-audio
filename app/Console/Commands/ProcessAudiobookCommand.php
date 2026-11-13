@@ -6,6 +6,7 @@ use App\Jobs\ProcessBookJob;
 use App\Models\Book;
 use App\Services\AudioSynthesisService;
 use App\Services\PdfExtractorService;
+use App\Services\TtsTextNormalizerService;
 use Illuminate\Console\Command;
 
 class ProcessAudiobookCommand extends Command
@@ -14,8 +15,11 @@ class ProcessAudiobookCommand extends Command
 
     protected $description = 'Procesa un libro PDF, extrayendo texto y sintetizando audiolibro con edge-tts';
 
-    public function handle(PdfExtractorService $extractor, AudioSynthesisService $synthesizer)
-    {
+    public function handle(
+        PdfExtractorService $extractor,
+        AudioSynthesisService $synthesizer,
+        TtsTextNormalizerService $normalizer
+    ) {
         $bookId = $this->argument('book_id');
 
         if ($bookId) {
@@ -38,7 +42,7 @@ class ProcessAudiobookCommand extends Command
 
         if ($this->option('sync')) {
             $job = new ProcessBookJob($book->id);
-            $job->handle($extractor, $synthesizer);
+            $job->handle($extractor, $synthesizer, $normalizer);
             $book->refresh();
             if ($book->status === 'ready') {
                 $this->info("¡Audiolibro procesado con éxito! Duración total: {$book->formatted_duration}");

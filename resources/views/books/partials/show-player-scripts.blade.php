@@ -71,6 +71,10 @@
     let pageNumPending = null;
     let pdfZoomLevel = 1.0;
     const pdfUrl = "{{ route('books.pdf', $book->id) }}";
+    let userManualPaging = false;
+    let userPagingTimer = null;
+    let lastAutoTurnPage = 1;
+    let currentRenderTask = null;
 
     // Real-Time Read-Along Karaoke & Document Sync Engine
     let autoScrollEnabled = true;
@@ -107,12 +111,12 @@
             if (quickJumpBox) quickJumpBox.classList.remove('hidden');
 
             if (btnCanvas) {
-                btnCanvas.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-[#071014] text-emerald-600 dark:text-[#00ff87] shadow-sm";
+                btnCanvas.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm";
             }
             if (btnText) {
-                btnText.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-cyan-200";
+                btnText.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white";
             }
-            if (drawerTitle) drawerTitle.innerHTML = '<svg class="w-4 h-4 text-[#00ff87]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg><span>Miniaturas de PÃ¡ginas</span>';
+            if (drawerTitle) drawerTitle.innerHTML = '<svg class="w-4 h-4 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg><span>Miniaturas de Páginas</span>';
             if (drawerToggleText) drawerToggleText.textContent = 'Miniaturas';
 
             if (pdfDoc) {
@@ -132,12 +136,12 @@
             if (quickJumpBox) quickJumpBox.classList.add('hidden');
 
             if (btnCanvas) {
-                btnCanvas.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-cyan-200";
+                btnCanvas.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white";
             }
             if (btnText) {
-                btnText.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-[#071014] text-emerald-600 dark:text-[#00ff87] shadow-sm";
+                btnText.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm";
             }
-            if (drawerTitle) drawerTitle.innerHTML = '<svg class="w-4 h-4 text-[#00ff87]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg><span>Ãndice de CapÃ­tulos</span>';
+            if (drawerTitle) drawerTitle.innerHTML = '<svg class="w-4 h-4 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg><span>Índice de Capítulos</span>';
             if (drawerToggleText) drawerToggleText.textContent = 'CapÃ­tulos';
 
             populateChapterDrawer();
@@ -176,19 +180,19 @@
             mdViews.forEach(el => el.classList.add('hidden'));
             rawViews.forEach(el => el.classList.remove('hidden'));
             if (btnRaw) {
-                btnRaw.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-[#071014] text-emerald-600 dark:text-[#00ff87] shadow-sm flex items-center gap-1";
+                btnRaw.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm flex items-center gap-1";
             }
             if (btnMd) {
-                btnMd.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-cyan-200 flex items-center gap-1";
+                btnMd.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center gap-1";
             }
         } else {
             mdViews.forEach(el => el.classList.remove('hidden'));
             rawViews.forEach(el => el.classList.add('hidden'));
             if (btnMd) {
-                btnMd.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-[#071014] text-emerald-600 dark:text-[#00ff87] shadow-sm flex items-center gap-1";
+                btnMd.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm flex items-center gap-1";
             }
             if (btnRaw) {
-                btnRaw.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-cyan-200 flex items-center gap-1";
+                btnRaw.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center gap-1";
             }
         }
     }
@@ -207,16 +211,16 @@
                     type="button" 
                     id="drawerChapItem-${chapNum}" 
                     onclick="jumpToReaderChapter(${chapNum})" 
-                    class="w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs ${chapNum === activeReaderChapter ? 'bg-[#00ff87]/15 border-[#00ff87] text-[#00c965] dark:text-[#00ff87]' : 'bg-white dark:bg-[#0c181d] border-slate-200 dark:border-cyan-900/40 text-slate-700 dark:text-cyan-300 hover:border-[#00ff87]/50'}"
+                    class="w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs ${chapNum === activeReaderChapter ? 'bg-indigo-500/15 border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-500/50'}"
                 >
                     <div class="flex items-center gap-2 min-w-0">
-                        <span class="w-6 h-6 rounded-lg ${chapNum === activeReaderChapter ? 'bg-[#00ff87] text-slate-950 font-black' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold'} flex items-center justify-center font-mono text-[10px] flex-shrink-0">${chapNum}</span>
+                        <span class="w-6 h-6 rounded-lg ${chapNum === activeReaderChapter ? 'bg-indigo-600 text-white font-black' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold'} flex items-center justify-center font-mono text-[10px] flex-shrink-0">${chapNum}</span>
                         <div class="truncate">
                             <p class="font-medium truncate leading-tight">${escapeHtml(ch.title)}</p>
                             <span class="text-[10px] text-slate-400 font-mono">${ch.duration_seconds > 0 ? formatTime(ch.duration_seconds) : ''}</span>
                         </div>
                     </div>
-                    <span class="text-[10px] font-mono text-slate-400 flex-shrink-0">Leer â†’</span>
+                    <span class="text-[10px] font-mono text-slate-400 flex-shrink-0">Leer →</span>
                 </button>
             `;
         });
@@ -228,8 +232,8 @@
         const target = document.getElementById(`readerChapSection-${chapNumber}`);
         if (target) {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            target.classList.add('ring-2', 'ring-[#00ff87]');
-            setTimeout(() => target.classList.remove('ring-2', 'ring-[#00ff87]'), 2000);
+            target.classList.add('ring-2', 'ring-indigo-500');
+            setTimeout(() => target.classList.remove('ring-2', 'ring-indigo-500'), 2000);
         }
         const lblNum = document.getElementById('lblActiveReaderChapNum');
         if (lblNum) lblNum.textContent = chapNumber;
@@ -247,9 +251,9 @@
             const btn = document.getElementById(`drawerChapItem-${chapNum}`);
             if (btn) {
                 if (chapNum === num) {
-                    btn.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs bg-[#00ff87]/15 border-[#00ff87] text-[#00c965] dark:text-[#00ff87]";
+                    btn.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs bg-indigo-500/15 border-indigo-500 text-indigo-600 dark:text-indigo-400";
                 } else {
-                    btn.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs bg-white dark:bg-[#0c181d] border-slate-200 dark:border-cyan-900/40 text-slate-700 dark:text-cyan-300 hover:border-[#00ff87]/50";
+                    btn.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-500/50";
                 }
             }
         });
@@ -273,6 +277,14 @@
         const ctx = canvas.getContext('2d');
         const loading = document.getElementById('pdfLoadingIndicator');
         if (loading) loading.classList.remove('hidden');
+
+        // Cancel previous running render task if any to prevent collision
+        if (currentRenderTask) {
+            try {
+                currentRenderTask.cancel();
+            } catch (e) {}
+            currentRenderTask = null;
+        }
 
         pdfDoc.getPage(num).then(function(page) {
             const wrapper = document.getElementById('pdfCanvasWrapper');
@@ -300,17 +312,32 @@
             };
 
             const renderTask = page.render(renderContext);
+            currentRenderTask = renderTask;
+
             renderTask.promise.then(function() {
                 pageRendering = false;
+                currentRenderTask = null;
                 if (loading) loading.classList.add('hidden');
                 if (pageNumPending !== null) {
                     renderPage(pageNumPending);
                     pageNumPending = null;
                 }
+            }).catch(function(err) {
+                if (err && err.name === 'RenderingCancelledException') {
+                    // Safe cancellation upon fast page flip
+                    pageRendering = false;
+                    currentRenderTask = null;
+                    return;
+                }
+                console.error('Error al renderizar página:', err);
+                pageRendering = false;
+                currentRenderTask = null;
+                if (loading) loading.classList.add('hidden');
             });
         }).catch(function(err) {
-            console.error('Error al renderizar pÃ¡gina:', err);
+            console.error('Error al obtener página de PDF:', err);
             pageRendering = false;
+            currentRenderTask = null;
             if (loading) loading.classList.add('hidden');
         });
 
@@ -329,41 +356,74 @@
         }
     }
 
+    function updatePdfSyncHudBadge(num, isManual = false) {
+        const badge = document.getElementById('pdfSyncPageBadge');
+        if (badge && pdfDoc) {
+            if (isManual) {
+                badge.innerHTML = `Pág. ${num} / ${pdfDoc.numPages} <span class="text-amber-500 font-bold ml-1">(Manual)</span>`;
+            } else {
+                badge.textContent = `Pág. ${num} / ${pdfDoc.numPages}`;
+            }
+        }
+    }
+
     function onPdfPrevPage() {
         if (pageNum <= 1) return;
-        pageNum--;
-        queueRenderPage(pageNum);
+        goToPdfPage(pageNum - 1, true);
     }
 
     function onPdfNextPage() {
         if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
-        pageNum++;
-        queueRenderPage(pageNum);
+        goToPdfPage(pageNum + 1, true);
     }
 
-    function goToPdfPage(num) {
+    function goToPdfPage(num, isManual = false) {
         if (!pdfDoc) return;
         num = Math.max(1, Math.min(pdfDoc.numPages, parseInt(num) || 1));
+        if (isManual) {
+            userManualPaging = true;
+            if (userPagingTimer) clearTimeout(userPagingTimer);
+            userPagingTimer = setTimeout(() => {
+                userManualPaging = false;
+            }, 20000);
+            updatePdfSyncHudBadge(num, true);
+        } else {
+            updatePdfSyncHudBadge(num, false);
+        }
         pageNum = num;
         queueRenderPage(pageNum);
     }
 
     function goToLastPdfPage() {
         if (!pdfDoc) return;
-        goToPdfPage(pdfDoc.numPages);
+        goToPdfPage(pdfDoc.numPages, true);
     }
 
     function handlePageInputChange(val) {
-        goToPdfPage(val);
+        goToPdfPage(val, true);
     }
 
     function handleQuickJump() {
         const input = document.getElementById('quickPageJumpInput');
         if (input && input.value) {
-            goToPdfPage(input.value);
+            goToPdfPage(input.value, true);
             input.value = '';
         }
     }
+
+    function syncPdfToAudioNow() {
+        userManualPaging = false;
+        if (userPagingTimer) {
+            clearTimeout(userPagingTimer);
+            userPagingTimer = null;
+        }
+        if (audioEngine && !isNaN(audioEngine.duration) && audioEngine.duration > 0) {
+            const progress = Math.min(1.0, Math.max(0.0, audioEngine.currentTime / audioEngine.duration));
+            lastAutoTurnPage = null; // force recalculation and turn
+            syncPdfPageAutoTurn(progress);
+        }
+    }
+    window.syncPdfToAudioNow = syncPdfToAudioNow;
 
     function toggleThumbnailsDrawer() {
         const drawer = document.getElementById('pdfThumbnailsDrawer');
@@ -385,14 +445,14 @@
                 <button 
                     type="button" 
                     id="thumbItem-${i}" 
-                    onclick="goToPdfPage(${i})" 
-                    class="w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs ${i === pageNum ? 'bg-[#00ff87]/15 border-[#00ff87] text-[#00c965] dark:text-[#00ff87]' : 'bg-white dark:bg-[#0c181d] border-slate-200 dark:border-cyan-900/40 text-slate-700 dark:text-cyan-300 hover:border-[#00ff87]/50'}"
+                    onclick="goToPdfPage(${i}, true)" 
+                    class="w-full text-left p-2 rounded-xl flex items-center justify-between border transition text-xs ${i === pageNum ? 'bg-indigo-500/15 border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-500/50'}"
                 >
                     <div class="flex items-center gap-2 min-w-0">
-                        <span class="w-6 h-6 rounded-lg ${i === pageNum ? 'bg-[#00ff87] text-slate-950 font-black' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold'} flex items-center justify-center font-mono text-[10px] flex-shrink-0">${i}</span>
-                        <span class="font-medium truncate">PÃ¡gina ${i}</span>
+                        <span class="w-6 h-6 rounded-lg ${i === pageNum ? 'bg-indigo-600 text-white font-black' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold'} flex items-center justify-center font-mono text-[10px] flex-shrink-0">${i}</span>
+                        <span class="font-medium truncate">Página ${i}</span>
                     </div>
-                    <span class="text-[10px] font-mono text-slate-400">Ver â†’</span>
+                    <span class="text-[10px] font-mono text-slate-400">Ver →</span>
                 </button>
             `;
         }
@@ -401,8 +461,8 @@
 
     function highlightActiveThumbnail(num) {
         document.querySelectorAll('#pdfThumbnailsContainer button').forEach(btn => {
-            btn.classList.remove('bg-[#00ff87]/15', 'border-[#00ff87]', 'text-[#00c965]', 'dark:text-[#00ff87]');
-            btn.classList.add('bg-white', 'dark:bg-[#0c181d]', 'border-slate-200', 'dark:border-cyan-900/40', 'text-slate-700', 'dark:text-cyan-300');
+            btn.classList.remove('bg-indigo-500/15', 'border-indigo-500', 'text-indigo-600', 'dark:text-indigo-400');
+            btn.classList.add('bg-white', 'dark:bg-slate-900', 'border-slate-200', 'dark:border-slate-800', 'text-slate-700', 'dark:text-slate-300');
             const badge = btn.querySelector('span');
             if (badge) {
                 badge.className = 'w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold flex items-center justify-center font-mono text-[10px] flex-shrink-0';
@@ -410,11 +470,11 @@
         });
         const activeBtn = document.getElementById(`thumbItem-${num}`);
         if (activeBtn) {
-            activeBtn.classList.add('bg-[#00ff87]/15', 'border-[#00ff87]', 'text-[#00c965]', 'dark:text-[#00ff87]');
-            activeBtn.classList.remove('bg-white', 'dark:bg-[#0c181d]');
+            activeBtn.classList.add('bg-indigo-500/15', 'border-indigo-500', 'text-indigo-600', 'dark:text-indigo-400');
+            activeBtn.classList.remove('bg-white', 'dark:bg-slate-900');
             const badge = activeBtn.querySelector('span');
             if (badge) {
-                badge.className = 'w-6 h-6 rounded-lg bg-[#00ff87] text-slate-950 font-black flex items-center justify-center font-mono text-[10px] flex-shrink-0';
+                badge.className = 'w-6 h-6 rounded-lg bg-indigo-600 text-white font-black flex items-center justify-center font-mono text-[10px] flex-shrink-0';
             }
         }
     }
@@ -550,11 +610,11 @@
 
         // Highlight active chapter row in main playlist
         document.querySelectorAll('.chapter-row').forEach(row => {
-            row.classList.remove('bg-[#00ff87]/15', 'dark:bg-[#00ff87]/20', 'border-l-4', 'border-[#00ff87]');
+            row.classList.remove('bg-indigo-500/10', 'dark:bg-indigo-500/20', 'border-l-4', 'border-indigo-500');
         });
         const activeRow = document.getElementById(`chapterRow-${chapter.id}`);
         if (activeRow) {
-            activeRow.classList.add('bg-[#00ff87]/15', 'dark:bg-[#00ff87]/20', 'border-l-4', 'border-[#00ff87]');
+            activeRow.classList.add('bg-indigo-500/10', 'dark:bg-indigo-500/20', 'border-l-4', 'border-indigo-500');
         }
 
         // Highlight active chapter section in reader
@@ -683,7 +743,7 @@
 
         // Deselect chapter rows
         document.querySelectorAll('.chapter-row').forEach(row => {
-            row.classList.remove('bg-[#00ff87]/15', 'dark:bg-[#00ff87]/20', 'border-l-4', 'border-[#00ff87]');
+            row.classList.remove('bg-indigo-500/10', 'dark:bg-indigo-500/20', 'border-l-4', 'border-indigo-500');
         });
 
         audioEngine.play().then(() => {
@@ -1087,7 +1147,7 @@
         const lbl = document.getElementById('lblAutoScrollText');
         const icon = document.getElementById('iconAutoScroll');
         if (autoScrollEnabled) {
-            if (btn) btn.className = "px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-[#00ff87]/15 hover:bg-[#00ff87]/25 text-[#00c965] dark:text-[#00ff87] border border-[#00ff87]/40 flex items-center gap-1 transition flex-shrink-0 shadow-sm";
+            if (btn) btn.className = "px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex items-center gap-1 transition flex-shrink-0 shadow-sm";
             if (lbl) lbl.textContent = "Auto-scroll";
             if (icon) icon.textContent = "🎯";
             userScrolledRecently = false;
@@ -1095,7 +1155,7 @@
                 lastActiveParagraph.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         } else {
-            if (btn) btn.className = "px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-[#0d1c22] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-cyan-900/40 flex items-center gap-1 transition flex-shrink-0";
+            if (btn) btn.className = "px-2 py-1 rounded-xl text-[10px] sm:text-[11px] font-bold bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 flex items-center gap-1 transition flex-shrink-0";
             if (lbl) lbl.textContent = "Pausado";
             if (icon) icon.textContent = "⏸";
         }
@@ -1181,6 +1241,8 @@
 
     function syncPdfPageAutoTurn(chapterProgress) {
         if (!pdfDoc || !pdfDoc.numPages || pdfDoc.numPages <= 1) return;
+        if (!autoScrollEnabled) return;
+        if (userManualPaging) return; // User is manually browsing, do not hijack their page view
 
         let totalWordsAll = 0;
         let wordsBefore = 0;
@@ -1206,8 +1268,9 @@
         const badge = document.getElementById('pdfSyncPageBadge');
         if (badge) badge.textContent = `Pág. ${targetPage} / ${pdfDoc.numPages}`;
 
-        if (targetPage !== pageNum && !pageRendering) {
-            goToPdfPage(targetPage);
+        if (targetPage !== lastAutoTurnPage && !pageRendering) {
+            lastAutoTurnPage = targetPage;
+            goToPdfPage(targetPage, false);
         }
     }
 </script>
