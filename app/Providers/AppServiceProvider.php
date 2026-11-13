@@ -33,5 +33,9 @@ class AppServiceProvider extends ServiceProvider
             $scheme = (request()->secure() || request()->header('X-Forwarded-Proto') === 'https') ? 'https://' : 'http://';
             URL::forceRootUrl($scheme.request()->getHttpHost().'/'.trim($prefix, '/'));
         }
+
+        if ($baseUrl = request()->getBaseUrl()) {
+            config(['app.asset_url' => $baseUrl]);
+        }
     }
 }
