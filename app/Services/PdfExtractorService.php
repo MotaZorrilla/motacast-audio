@@ -34,7 +34,7 @@ class PdfExtractorService
             $pdfAbsolutePath,
         ]);
 
-        $process->setTimeout(300); // 5 minutes max for huge PDFs
+        $process->setTimeout(1800); // 30 minutes max for huge PDFs or long admin audio/video files
         $process->run();
 
         if (! $process->isSuccessful()) {

@@ -28,6 +28,8 @@
     </div>
     <input type="hidden" name="input_mode" id="inputModeHidden" value="file">
     <input type="hidden" name="keep_original_media" id="keepOriginalMediaHidden" value="0">
+    <input type="hidden" name="chunked_upload_id" id="chunkedUploadIdHidden" value="">
+    <input type="hidden" name="chunked_filename" id="chunkedFilenameHidden" value="">
 </div>
 
 <!-- Section 1: File Drag & Drop Zone -->
@@ -39,7 +41,7 @@
         id="dropZone"
         class="border-2 border-dashed border-slate-300 dark:border-white/[0.12] hover:border-[#5b4f96] dark:hover:border-[#5b4f96] rounded-2xl p-8 sm:p-10 text-center transition cursor-pointer bg-slate-50/60 dark:bg-[#121619]/60 hover:bg-[#5b4f96]/5 group"
     >
-        <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp,.bmp,.mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden">
+        <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp,.bmp,.mp3,.wav,.m4a,.ogg,.opus,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden">
         
         <div class="flex flex-col items-center justify-center space-y-3">
             <div id="dropZoneIconBox" class="w-14 h-14 rounded-2xl bg-white dark:bg-[#181f25] border border-slate-200 dark:border-white/[0.1] shadow-sm flex items-center justify-center text-[#5b4f96] dark:text-[#a59be0] group-hover:scale-105 group-hover:border-[#5b4f96] transition">
@@ -53,7 +55,14 @@
                 <p class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
                     Arrastra aquí tu archivo o <span class="text-[#5b4f96] dark:text-[#a59be0] underline">haz clic para explorar</span>
                 </p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Word (.docx, .doc), PDF, TXT, MD, Fotos (PNG, JPG), Audio (MP3, WAV) o Video (MP4, MKV) — hasta 100 MB</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Word (.docx, .doc), PDF, TXT, MD, Fotos (PNG, JPG), Audio (MP3, WAV, OGG/OPUS) o Video (MP4, MKV)
+                    @if(Auth::check() && Auth::user()->isAdmin())
+                        — <span class="font-bold text-emerald-600 dark:text-emerald-400">sin límite de tamaño (Admin)</span>
+                    @else
+                        — hasta 100 MB
+                    @endif
+                </p>
                 <div class="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
                     <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">WORD (.DOCX, .DOC)</span>
                     <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">PDF</span>
@@ -100,7 +109,7 @@
             >
                 <span>🎙️ Audio / Video a Texto (STT)</span>
             </button>
-            <input type="file" id="sttAudioInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden" onchange="handleSttAudioUpload(this)">
+            <input type="file" id="sttAudioInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.opus,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden" onchange="handleSttAudioUpload(this)">
 
             <button 
                 type="button" 

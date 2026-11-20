@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\ChunkedUploadController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupportTicketController;
@@ -92,6 +93,7 @@ Route::post('/support/request-extension', [SupportTicketController::class, 'requ
 
 // Authenticated Main Library
 Route::middleware('auth')->group(function () {
+    Route::post('/uploads/chunk', [ChunkedUploadController::class, 'store'])->name('uploads.chunk');
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
 
     // Profile & Account Settings

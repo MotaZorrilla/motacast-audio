@@ -1,5 +1,62 @@
 <script>
     let currentInputMode = 'file';
+    const IS_ADMIN_USER = @json(Auth::check() && Auth::user()->isAdmin());
+    const MAX_STANDARD_UPLOAD_BYTES = 100 * 1024 * 1024; // 100MB para usuarios estándar / invitados
+    const CHUNK_UPLOAD_THRESHOLD_BYTES = 80 * 1024 * 1024; // 80MB: umbral seguro bajo el límite de Cloudflare
+    const CHUNK_SIZE_BYTES = 20 * 1024 * 1024; // 20MB por fragmento
+    const chunkedUploadIdHidden = document.getElementById('chunkedUploadIdHidden');
+    const chunkedFilenameHidden = document.getElementById('chunkedFilenameHidden');
+
+    function generateUploadUuid() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+            return window.crypto.randomUUID();
+        }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    async function uploadFileInChunks(file, onProgress = null) {
+        const uploadId = generateUploadUuid();
+        const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE_BYTES));
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        for (let index = 0; index < totalChunks; index++) {
+            const start = index * CHUNK_SIZE_BYTES;
+            const end = Math.min(file.size, start + CHUNK_SIZE_BYTES);
+            const slice = file.slice(start, end);
+
+            if (typeof onProgress === 'function') {
+                const pct = Math.round(((index + 0.5) / totalChunks) * 100);
+                onProgress(index + 1, totalChunks, pct);
+            }
+
+            const chunkForm = new FormData();
+            chunkForm.append('upload_id', uploadId);
+            chunkForm.append('chunk_index', String(index));
+            chunkForm.append('total_chunks', String(totalChunks));
+            chunkForm.append('filename', file.name);
+            chunkForm.append('chunk', slice, `${file.name}.part${index}`);
+
+            const res = await fetch("{{ route('uploads.chunk') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: chunkForm
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || `Error subiendo fragmento ${index + 1} de ${totalChunks}.`);
+            }
+        }
+
+        return { upload_id: uploadId, filename: file.name };
+    }
     const tabModeFile = document.getElementById('tabModeFile');
     const tabModeText = document.getElementById('tabModeText');
     const sectionFileDrop = document.getElementById('sectionFileDrop');
@@ -595,12 +652,13 @@
         }
     }
 
-    function uploadAndTranscribeAudio(file, customBoxId = null, customLabelId = null, onSuccessCallback = null) {
+    async function uploadAndTranscribeAudio(file, customBoxId = null, customLabelId = null, onSuccessCallback = null) {
         const boxId = customBoxId || 'sttStatusBox';
         const labelId = customLabelId || 'sttStatusText';
         const box = document.getElementById(boxId);
         const textLabel = document.getElementById(labelId);
         const btnTranscribe = document.getElementById('btnTranscribeAudioNow');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         if (btnTranscribe) {
             btnTranscribe.disabled = true;
@@ -610,21 +668,42 @@
             box.classList.remove('hidden');
             box.classList.add('flex');
         }
-        if (textLabel) textLabel.textContent = `Transcribiendo voz del audio "${file.name || 'grabación'}" con IA...`;
 
-        const formData = new FormData();
-        formData.append('audio', file);
+        try {
+            let fetchOptions;
+            if (IS_ADMIN_USER && file.size > CHUNK_UPLOAD_THRESHOLD_BYTES) {
+                const chunked = await uploadFileInChunks(file, (part, total, pct) => {
+                    if (textLabel) {
+                        textLabel.textContent = `Subiendo audio pesado (${part}/${total}, ${pct}%) antes de transcribir...`;
+                    }
+                });
+                if (textLabel) textLabel.textContent = `Transcribiendo voz del audio "${file.name || 'grabación'}" con IA...`;
+                fetchOptions = {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ chunked_upload_id: chunked.upload_id })
+                };
+            } else {
+                if (textLabel) textLabel.textContent = `Transcribiendo voz del audio "${file.name || 'grabación'}" con IA...`;
+                const formData = new FormData();
+                formData.append('audio', file);
+                fetchOptions = {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                };
+            }
 
-        fetch("{{ route('books.stt.preview') }}", {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-            },
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
+            const res = await fetch("{{ route('books.stt.preview') }}", fetchOptions);
+            const data = await res.json();
+
             if (box) {
                 box.classList.add('hidden');
                 box.classList.remove('flex');
@@ -633,6 +712,7 @@
                 btnTranscribe.disabled = false;
                 btnTranscribe.classList.remove('opacity-60', 'cursor-not-allowed');
             }
+
             if (data.success && data.text) {
                 switchInputMode('text');
                 const prev = rawTextInput.value.trim();
@@ -666,8 +746,7 @@
                     type: 'warning'
                 });
             }
-        })
-        .catch(err => {
+        } catch (err) {
             console.error('STT Error:', err);
             if (box) {
                 box.classList.add('hidden');
@@ -683,7 +762,7 @@
                 detail: err ? err.message : null,
                 type: 'error'
             });
-        });
+        }
     }
 
     // Global Paste Listener for Images (Ctrl+V with image screenshot)
@@ -749,8 +828,7 @@
     function updateFileInfo(file) {
         if (!file) return;
 
-        const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100MB
-        if (file.size > MAX_UPLOAD_BYTES) {
+        if (!IS_ADMIN_USER && file.size > MAX_STANDARD_UPLOAD_BYTES) {
             showNoticeModal({
                 title: 'Archivo Demasiado Pesado',
                 message: `El archivo seleccionado "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) supera el límite máximo permitido de 100 MB.`,
@@ -763,6 +841,9 @@
             return;
         }
 
+        if (chunkedUploadIdHidden) chunkedUploadIdHidden.value = '';
+        if (chunkedFilenameHidden) chunkedFilenameHidden.value = '';
+
         if (selectedFileName) selectedFileName.textContent = file.name;
         const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
         if (selectedFileSize) selectedFileSize.textContent = `(${sizeMb} MB)`;
@@ -770,7 +851,7 @@
         if (fileLabel) fileLabel.textContent = 'Archivo seleccionado correctamente';
 
         const nameLower = file.name.toLowerCase();
-        const audioExts = ['.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac'];
+        const audioExts = ['.mp3', '.wav', '.m4a', '.ogg', '.opus', '.aac', '.flac'];
         const videoExts = ['.mp4', '.mkv', '.mov', '.avi', '.webm'];
         const imgExts = ['.png', '.jpg', '.jpeg', '.webp', '.bmp'];
         const isAudio = audioExts.some(ext => nameLower.endsWith(ext));
@@ -851,9 +932,10 @@
     }
 
     // Submit state feedback & overlay activation
-    uploadForm.addEventListener('submit', (e) => {
+    uploadForm.addEventListener('submit', async (e) => {
         if (currentInputMode === 'file') {
-            if (!fileInput.files || fileInput.files.length === 0) {
+            const hasChunkedUpload = IS_ADMIN_USER && chunkedUploadIdHidden && chunkedUploadIdHidden.value;
+            if (!hasChunkedUpload && (!fileInput.files || fileInput.files.length === 0)) {
                 e.preventDefault();
                 showNoticeModal({
                     title: 'Documento Requerido',
@@ -863,7 +945,7 @@
                 return false;
             }
 
-            if (fileInput.files[0].size > 100 * 1024 * 1024) {
+            if (!hasChunkedUpload && !IS_ADMIN_USER && fileInput.files[0].size > MAX_STANDARD_UPLOAD_BYTES) {
                 e.preventDefault();
                 showNoticeModal({
                     title: 'Límite de Tamaño Excedido',
@@ -877,6 +959,50 @@
             if (currentDetectedType === 'audio' && currentAudioActionMode === 'stt_only') {
                 e.preventDefault();
                 triggerDirectSttFromSelectedAudio();
+                return false;
+            }
+
+            // Admin heavy files (> 80MB): upload via 20MB chunks so Cloudflare/proxies never block with 413
+            if (!hasChunkedUpload && IS_ADMIN_USER && fileInput.files[0].size > CHUNK_UPLOAD_THRESHOLD_BYTES) {
+                e.preventDefault();
+                const heavyFile = fileInput.files[0];
+                const overlayMsg = document.getElementById('overlayStatusMsg');
+
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                submitBtnText.textContent = 'Subiendo archivo pesado por fragmentos...';
+
+                if (submitOverlay) {
+                    submitOverlay.classList.remove('hidden');
+                    submitOverlay.classList.add('flex');
+                }
+
+                try {
+                    const chunked = await uploadFileInChunks(heavyFile, (part, total, pct) => {
+                        if (overlayMsg) {
+                            overlayMsg.textContent = `Subiendo archivo Admin (${(heavyFile.size / (1024 * 1024)).toFixed(1)} MB) — fragmento ${part} de ${total} (${pct}%)...`;
+                        }
+                    });
+
+                    if (chunkedUploadIdHidden) chunkedUploadIdHidden.value = chunked.upload_id;
+                    if (chunkedFilenameHidden) chunkedFilenameHidden.value = chunked.filename;
+                    fileInput.value = '';
+                    if (overlayMsg) overlayMsg.textContent = 'Archivo recibido. Iniciando pipeline neuronal...';
+                    uploadForm.submit();
+                } catch (err) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    submitBtnText.textContent = '🚀 Comenzar a Crear Audiolibro';
+                    if (submitOverlay) {
+                        submitOverlay.classList.add('hidden');
+                        submitOverlay.classList.remove('flex');
+                    }
+                    showNoticeModal({
+                        title: 'Error en Subida Fragmentada',
+                        message: err ? err.message : 'No se pudo completar la carga del archivo pesado.',
+                        type: 'error'
+                    });
+                }
                 return false;
             }
         } else {

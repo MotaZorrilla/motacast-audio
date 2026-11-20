@@ -19,6 +19,7 @@ class SetAdminPassword extends Command
             ['email' => 'admin@motazorrilla.com'],
             [
                 'name' => 'Héctor Mota',
+                'password' => Hash::make($password),
                 'role' => 'admin',
                 'status' => 'active',
                 'book_limit' => -1,

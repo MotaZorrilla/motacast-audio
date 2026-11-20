@@ -19,11 +19,22 @@ class StoreBookRequest extends FormRequest
      */
     public function rules(): array
     {
-        $allowedMimes = 'pdf,docx,doc,txt,md,markdown,png,jpg,jpeg,webp,bmp,mp3,wav,m4a,ogg,aac,flac,mp4,mkv,mov,avi,webm';
+        $allowedMimes = 'pdf,docx,doc,txt,md,markdown,png,jpg,jpeg,webp,bmp,mp3,wav,m4a,ogg,opus,aac,flac,mp4,mkv,mov,avi,webm';
+        $isAdmin = $this->user()?->isAdmin() ?? false;
+
+        $fileRule = $isAdmin
+            ? "required_without_all:raw_text,chunked_upload_id|nullable|file|mimes:{$allowedMimes}"
+            : "required_without:raw_text|nullable|file|mimes:{$allowedMimes}|max:102400";
+
+        $rawTextRule = $isAdmin
+            ? 'required_without_all:pdf_file,chunked_upload_id|nullable|string|min:10|max:50000'
+            : 'required_without:pdf_file|nullable|string|min:10|max:50000';
 
         return [
-            'pdf_file' => "required_without:raw_text|nullable|file|mimes:{$allowedMimes}|max:102400", // 100MB
-            'raw_text' => 'required_without:pdf_file|nullable|string|min:10|max:50000',
+            'pdf_file' => $fileRule,
+            'raw_text' => $rawTextRule,
+            'chunked_upload_id' => $isAdmin ? 'nullable|uuid' : 'prohibited',
+            'chunked_filename' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
             'author' => 'nullable|string|max:255',
             'voice' => 'required|string',

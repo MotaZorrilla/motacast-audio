@@ -19,8 +19,14 @@ class SttPreviewRequest extends FormRequest
      */
     public function rules(): array
     {
+        $audioMimes = 'mp3,wav,m4a,ogg,opus,aac,flac,mp4,mkv,mov,avi,webm';
+        $isAdmin = $this->user()?->isAdmin() ?? false;
+
         return [
-            'audio' => 'required|file|mimes:mp3,wav,m4a,ogg,aac,flac,mp4,mkv,mov,avi,webm|max:102400', // 100MB
+            'audio' => $isAdmin
+                ? "required_without:chunked_upload_id|nullable|file|mimes:{$audioMimes}"
+                : "required|file|mimes:{$audioMimes}|max:102400", // 100MB para usuarios estándar e invitados
+            'chunked_upload_id' => $isAdmin ? 'nullable|uuid' : 'prohibited',
         ];
     }
 

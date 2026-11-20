@@ -12,6 +12,7 @@ use App\Models\Chapter;
 use App\Models\User;
 use App\Services\AudioStreamingService;
 use App\Services\AudioSynthesisService;
+use App\Services\ChunkedUploadService;
 use App\Services\DocumentIngestService;
 use App\Services\GuestFingerprintService;
 use App\Services\GuestSessionService;
@@ -188,15 +189,28 @@ class BookController extends Controller
     /**
      * Perform instant Speech-to-Text (STT) transcription preview on an uploaded audio file.
      */
-    public function sttPreview(SttPreviewRequest $request, PdfExtractorService $extractor): JsonResponse
+    public function sttPreview(SttPreviewRequest $request, PdfExtractorService $extractor, ChunkedUploadService $chunkedUploadService): JsonResponse
     {
-        $file = $request->file('audio');
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'wav');
-        if (! in_array($ext, ['mp3', 'wav', 'm4a', 'ogg', 'aac', 'flac', 'mp4', 'mkv', 'mov', 'avi', 'webm'])) {
-            $ext = 'wav';
+        $chunkedUploadId = null;
+        $cleanupTempFile = false;
+        $originalFilename = null;
+
+        if ($request->user()?->isAdmin() && $request->filled('chunked_upload_id')) {
+            $chunkedUploadId = (string) $request->input('chunked_upload_id');
+            $resolved = $chunkedUploadService->resolveCompletedUpload($chunkedUploadId);
+            $tempPath = $resolved['path'];
+            $originalFilename = $resolved['original_filename'];
+        } else {
+            $file = $request->file('audio');
+            $originalFilename = $file->getClientOriginalName();
+            $ext = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'wav');
+            if (! in_array($ext, ChunkedUploadService::AUDIO_VIDEO_EXTENSIONS, true)) {
+                $ext = 'wav';
+            }
+            $tempPath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'stt_preview_'.uniqid().'.'.$ext;
+            copy($file->getRealPath(), $tempPath);
+            $cleanupTempFile = true;
         }
-        $tempPath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'stt_preview_'.uniqid().'.'.$ext;
-        copy($file->getRealPath(), $tempPath);
 
         try {
             $extraction = $extractor->extract($tempPath);
@@ -210,9 +224,17 @@ class BookController extends Controller
                 $fullText = $extraction['summary'];
             }
 
+            $title = $extraction['title'] ?? 'Transcripción de Audio (STT)';
+            if ($originalFilename && str_starts_with($title, 'Stt Preview')) {
+                $cleanOriginal = trim(preg_replace('/[_\-]+/', ' ', pathinfo($originalFilename, PATHINFO_FILENAME)));
+                if ($cleanOriginal !== '') {
+                    $title = Str::title($cleanOriginal);
+                }
+            }
+
             return response()->json([
                 'success' => true,
-                'title' => $extraction['title'] ?? 'Transcripción de Audio (STT)',
+                'title' => $title,
                 'text' => $fullText,
                 'words' => $extraction['total_words'] ?? str_word_count($fullText),
                 'chapters_count' => count($extraction['chapters'] ?? []),
@@ -234,8 +256,11 @@ class BookController extends Controller
                 'detail' => $msg,
             ], 422);
         } finally {
-            if (file_exists($tempPath)) {
+            if ($cleanupTempFile && isset($tempPath) && file_exists($tempPath)) {
                 @unlink($tempPath);
+            }
+            if ($chunkedUploadId) {
+                $chunkedUploadService->cleanup($chunkedUploadId);
             }
         }
     }
