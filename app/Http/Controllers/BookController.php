@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Book\DeleteBookAction;
+use App\Enums\ChapterStatus;
 use App\Http\Requests\OcrPreviewRequest;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\SttPreviewRequest;
 use App\Jobs\ProcessBookJob;
+use App\Jobs\SynthesizeChapterJob;
 use App\Models\Book;
 use App\Models\Chapter;
 use App\Models\User;
@@ -445,6 +447,7 @@ class BookController extends Controller
                 'duration_seconds' => $ch->duration_seconds,
                 'audio_url' => $ch->audio_stream_url,
                 'download_url' => $ch->audio_download_url,
+                'error_message' => $ch->error_message,
             ]),
         ]);
     }
@@ -466,6 +469,40 @@ class BookController extends Controller
 
         return redirect()->route('books.show', $book->id)
             ->with('info', 'Reintentando procesamiento del documento.');
+    }
+
+    /**
+     * Retry TTS synthesis for a single failed chapter without re-processing the whole book.
+     */
+    public function retryChapter(Chapter $chapter): RedirectResponse
+    {
+        $book = $chapter->book;
+        $this->authorizeBookAccess($book, 'retry');
+
+        if ($book->transcription_only) {
+            return redirect()->route('books.show', $book->id)
+                ->with('info', 'Este documento es solo transcripción y no requiere síntesis de audio.');
+        }
+
+        if ($chapter->status === ChapterStatus::Ready->value) {
+            return redirect()->route('books.show', $book->id)
+                ->with('info', "El capítulo {$chapter->chapter_number} ya está listo para escuchar.");
+        }
+
+        if ($chapter->status === ChapterStatus::Synthesizing->value) {
+            return redirect()->route('books.show', $book->id)
+                ->with('info', "El capítulo {$chapter->chapter_number} ya se encuentra sintetizando.");
+        }
+
+        $chapter->update([
+            'status' => ChapterStatus::Pending->value,
+            'error_message' => null,
+        ]);
+
+        SynthesizeChapterJob::dispatch($chapter->id);
+
+        return redirect()->route('books.show', $book->id)
+            ->with('info', "Reintentando la síntesis del capítulo {$chapter->chapter_number} en segundo plano.");
     }
 
     /**

@@ -8,6 +8,11 @@ return [
         'tts' => (int) env('AUDIOLIBROS_TTS_TIMEOUT', 600),
     ],
 
+    'tts' => [
+        'max_attempts' => (int) env('AUDIOLIBROS_TTS_MAX_ATTEMPTS', 3),
+        'retry_delay_ms' => (int) env('AUDIOLIBROS_TTS_RETRY_DELAY_MS', 1500),
+    ],
+
     'storage_disk' => env('AUDIOLIBROS_STORAGE_DISK', 'local'),
 
     'retention_days' => (int) env('AUDIOLIBROS_RETENTION_DAYS', 7),

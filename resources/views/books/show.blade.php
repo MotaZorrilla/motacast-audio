@@ -304,6 +304,10 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
+                            @elseif ($chapter->status === 'failed')
+                                <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86l-7.4 12.82A1 1 0 003.75 18h16.5a1 1 0 00.86-1.32l-7.4-12.82a1 1 0 00-1.72 0z" />
+                                </svg>
                             @else
                                 <span class="text-xs font-mono font-bold">{{ $chapter->chapter_number }}</span>
                             @endif
@@ -322,10 +326,15 @@
                                 <span>&bull;</span>
                                 <span class="font-mono text-slate-500 dark:text-slate-400 font-semibold">{{ $chapter->formatted_duration }}</span>
                             </div>
+                            @if ($chapter->status === 'failed' && $chapter->error_message)
+                                <p class="text-[10px] sm:text-[11px] text-rose-600 dark:text-rose-400 mt-0.5 truncate max-w-md" title="{{ $chapter->error_message }}">
+                                    {{ Str::limit($chapter->error_message, 110) }}
+                                </p>
+                            @endif
                         </div>
                     </div>
 
-                    <!-- Right Controls (Download MP3 or Read Section) -->
+                    <!-- Right Controls (Download MP3, Retry Failed Chapter, or Read Section) -->
                     <div class="flex items-center gap-2 flex-shrink-0">
                         @if ($chapter->status === 'ready')
                             @if ($book->transcription_only || empty($chapter->audio_path))
@@ -349,6 +358,23 @@
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                 Generando...
                             </span>
+                        @elseif ($chapter->status === 'failed')
+                            <span class="hidden sm:inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                                Error TTS
+                            </span>
+                            <form action="{{ route('chapters.retry', $chapter->id) }}" method="POST" onclick="event.stopPropagation();">
+                                @csrf
+                                <button
+                                    type="submit"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 rounded-xl text-[11px] font-bold transition shadow-sm cursor-pointer"
+                                    title="Reintentar síntesis de audio para el capítulo {{ $chapter->chapter_number }}"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Reintentar</span>
+                                </button>
+                            </form>
                         @else
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                                 En espera

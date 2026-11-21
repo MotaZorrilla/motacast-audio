@@ -574,9 +574,10 @@
             selectChapter(firstReady.id, false);
         }
 
-        // Start polling if book is processing
-        if (bookStatus !== 'ready' && bookStatus !== 'failed') {
-            startStatusPolling();
+        // Start polling if book is processing or any individual chapter retry is active
+        const hasActiveChapters = chaptersData.some(c => c.status === 'pending' || c.status === 'synthesizing');
+        if ((bookStatus !== 'ready' && bookStatus !== 'failed') || hasActiveChapters) {
+            startStatusPolling(hasActiveChapters && bookStatus === 'ready');
         }
 
         // Apply reader preferences
@@ -916,7 +917,7 @@
         return phaseLabels[status] || 'Procesando…';
     }
 
-    function startStatusPolling() {
+    function startStatusPolling(chapterOnlyMode = false) {
         let consecutiveErrors = 0;
         const interval = setInterval(() => {
             fetch(statusUrl)
@@ -955,7 +956,15 @@
                         );
                     }
 
-                    if (data.status === 'ready' || data.status === 'failed') {
+                    const stillProcessingChapter = Array.isArray(data.chapters)
+                        && data.chapters.some(c => c.status === 'pending' || c.status === 'synthesizing');
+
+                    if (chapterOnlyMode) {
+                        if (!stillProcessingChapter) {
+                            clearInterval(interval);
+                            location.reload();
+                        }
+                    } else if (data.status === 'ready' || data.status === 'failed') {
                         clearInterval(interval);
                         location.reload();
                     }

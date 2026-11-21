@@ -53,6 +53,7 @@ Route::prefix('books')->name('books.')->group(function () {
 Route::prefix('chapters')->name('chapters.')->group(function () {
     Route::get('/{chapter}/stream', [BookController::class, 'streamChapter'])->name('stream');
     Route::get('/{chapter}/download', [BookController::class, 'downloadChapter'])->name('download');
+    Route::post('/{chapter}/retry', [BookController::class, 'retryChapter'])->name('retry');
 });
 
 // Root Landing: Cacheable HomeController replacing route closure

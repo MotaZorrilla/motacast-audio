@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 
 class AudioSynthesisService
@@ -21,7 +22,7 @@ class AudioSynthesisService
     }
 
     /**
-     * Synthesizes text into an MP3 audio file using edge-tts.
+     * Synthesizes text into an MP3 audio file using edge-tts with automatic retries on transient failures.
      *
      * @throws Exception
      */
@@ -49,47 +50,138 @@ class AudioSynthesisService
         $tempTextFile = tempnam(sys_get_temp_dir(), 'mz_tts_');
         file_put_contents($tempTextFile, $text);
 
+        $maxAttempts = max(1, (int) config('audiolibros.tts.max_attempts', 3));
+        $baseDelayMs = max(0, (int) config('audiolibros.tts.retry_delay_ms', 1500));
+
         try {
-            $process = new Process([
-                $this->pythonBinary,
-                $this->scriptPath,
-                '--text-file',
-                $tempTextFile,
-                '--output',
-                $outputAbsolutePath,
-                '--voice',
-                $voice,
-                '--rate',
-                $rate,
-                '--pitch',
-                $pitch,
-            ]);
+            $lastException = null;
 
-            $process->setTimeout((int) config('audiolibros.timeouts.tts', 600));
-            $process->run();
+            for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+                try {
+                    return $this->attemptSynthesis(
+                        tempTextFile: $tempTextFile,
+                        outputAbsolutePath: $outputAbsolutePath,
+                        voice: $voice,
+                        rate: $rate,
+                        pitch: $pitch
+                    );
+                } catch (Exception $e) {
+                    $lastException = $e;
 
-            if (! $process->isSuccessful()) {
-                throw new Exception('Error en proceso TTS: '.$process->getErrorOutput());
+                    if (file_exists($outputAbsolutePath) && (int) @filesize($outputAbsolutePath) === 0) {
+                        @unlink($outputAbsolutePath);
+                    }
+
+                    if ($attempt < $maxAttempts) {
+                        $delayMs = $baseDelayMs * $attempt;
+                        Log::warning("AudioSynthesisService: intento {$attempt}/{$maxAttempts} fallido ({$e->getMessage()}). Reintentando en {$delayMs}ms.");
+                        if ($delayMs > 0) {
+                            $this->sleepMilliseconds($delayMs);
+                        }
+                    }
+                }
             }
 
-            $output = trim($process->getOutput());
-            $data = json_decode($output, true);
-
-            if (! $data || ! is_array($data)) {
-                throw new Exception('Respuesta inválida de síntesis TTS: '.$output);
-            }
-
-            if (empty($data['success'])) {
-                throw new Exception($data['error'] ?? 'Fallo desconocido en la síntesis de audio.');
-            }
-
-            return $data;
-
+            throw $lastException ?? new Exception('Fallo desconocido en la síntesis de audio.');
         } finally {
             if (file_exists($tempTextFile)) {
                 @unlink($tempTextFile);
             }
         }
+    }
+
+    /**
+     * Executes a single TTS synthesis attempt and parses both stdout JSON errors and stderr.
+     *
+     * @throws Exception
+     */
+    protected function attemptSynthesis(
+        string $tempTextFile,
+        string $outputAbsolutePath,
+        string $voice,
+        string $rate,
+        string $pitch
+    ): array {
+        $result = $this->executeProcess([
+            $this->pythonBinary,
+            $this->scriptPath,
+            '--text-file',
+            $tempTextFile,
+            '--output',
+            $outputAbsolutePath,
+            '--voice',
+            $voice,
+            '--rate',
+            $rate,
+            '--pitch',
+            $pitch,
+        ]);
+
+        $stdout = trim((string) ($result['stdout'] ?? ''));
+        $stderr = trim((string) ($result['stderr'] ?? ''));
+        $decoded = $stdout !== '' ? json_decode($stdout, true) : null;
+
+        if (! ($result['successful'] ?? false)) {
+            $errorDetail = $this->resolveProcessErrorDetail($decoded, $stderr, $stdout, $result['exit_code'] ?? null);
+            throw new Exception('Error en proceso TTS: '.$errorDetail);
+        }
+
+        if (! is_array($decoded)) {
+            throw new Exception('Respuesta inválida de síntesis TTS: '.$stdout);
+        }
+
+        if (empty($decoded['success'])) {
+            throw new Exception((string) ($decoded['error'] ?? 'Fallo desconocido en la síntesis de audio.'));
+        }
+
+        return $decoded;
+    }
+
+    /**
+     * Runs the external Python process. Extracted for deterministic unit testing.
+     *
+     * @param  array<int, string>  $command
+     * @return array{successful: bool, stdout: string, stderr: string, exit_code: int|null}
+     */
+    protected function executeProcess(array $command): array
+    {
+        $process = new Process($command);
+        $process->setTimeout((int) config('audiolibros.timeouts.tts', 600));
+        $process->run();
+
+        return [
+            'successful' => $process->isSuccessful(),
+            'stdout' => $process->getOutput(),
+            'stderr' => $process->getErrorOutput(),
+            'exit_code' => $process->getExitCode(),
+        ];
+    }
+
+    /**
+     * Sleeps between retries. Extracted for instant unit tests.
+     */
+    protected function sleepMilliseconds(int $milliseconds): void
+    {
+        usleep($milliseconds * 1000);
+    }
+
+    /**
+     * Extracts the most informative error message from stdout JSON, stderr, raw stdout, or exit code.
+     */
+    protected function resolveProcessErrorDetail(mixed $decodedStdout, string $stderr, string $stdout, ?int $exitCode): string
+    {
+        if (is_array($decodedStdout) && ! empty($decodedStdout['error'])) {
+            return trim((string) $decodedStdout['error']);
+        }
+
+        $parts = array_values(array_filter([$stderr, $stdout], fn (string $part) => $part !== ''));
+        if (! empty($parts)) {
+            return implode(' | ', $parts);
+        }
+
+        return $exitCode !== null
+            ? "Proceso terminado con código {$exitCode} sin salida de error."
+            : 'Fallo sin detalle de salida.';
     }
 
     /**
