@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BookStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -31,6 +32,7 @@ class Book extends Model
         'total_duration',
         'total_words',
         'error_message',
+        'expires_at',
     ];
 
     protected $casts = [
@@ -40,7 +42,45 @@ class Book extends Model
         'processed_chapters' => 'integer',
         'total_duration' => 'integer',
         'total_words' => 'integer',
+        'expires_at' => 'datetime',
     ];
+
+    public function scopeExpired(Builder $query): Builder
+    {
+        return $query->whereNotNull('expires_at')->where('expires_at', '<=', now());
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    public function expiresSoon(): bool
+    {
+        return $this->expires_at !== null
+            && ! $this->isExpired()
+            && now()->diffInHours($this->expires_at, false) <= 24;
+    }
+
+    public function retentionLabel(): ?string
+    {
+        if ($this->expires_at === null) {
+            return null;
+        }
+
+        if ($this->isExpired()) {
+            return 'Expirado';
+        }
+
+        $hoursRemaining = max(0, (int) now()->diffInHours($this->expires_at, false));
+        if ($hoursRemaining <= 24) {
+            return 'Expira hoy';
+        }
+
+        $daysRemaining = (int) ceil($hoursRemaining / 24);
+
+        return "Expira en {$daysRemaining} ".($daysRemaining === 1 ? 'día' : 'días');
+    }
 
     public function user(): BelongsTo
     {

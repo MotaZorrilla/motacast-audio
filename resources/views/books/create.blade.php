@@ -69,22 +69,34 @@
     <!-- User Quota or Guest Mode Notice (Kairos Clean Banner) -->
     @auth
         @if (!Auth::user()->isAdmin())
-            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#151a1e] border border-slate-200 dark:border-white/[0.08] text-xs flex items-center justify-between gap-3">
-                <div class="flex items-center gap-2.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span class="text-slate-700 dark:text-slate-300">
-                        Cuota Beta: <strong>{{ Auth::user()->books()->count() }}</strong> de {{ Auth::user()->book_limit === -1 ? 'Ilimitados' : Auth::user()->book_limit }} libros utilizados.
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#151a1e] border border-slate-200 dark:border-white/[0.08] text-xs flex flex-wrap items-center justify-between gap-3">
+                @if (Auth::user()->book_limit === -1)
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="text-slate-700 dark:text-slate-300">
+                            <strong class="text-slate-900 dark:text-white">Conversiones ilimitadas</strong> &bull; Retención en nube: <strong>{{ config('audiolibros.retention_days', 7) }} días</strong> (descarga tus MP3/TXT para conservarlos).
+                        </span>
+                    </div>
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400">
+                        Máx. {{ config('audiolibros.max_concurrent_jobs_per_user', 2) }} simultáneos en cola
                     </span>
-                </div>
-                <div class="flex items-center gap-2.5">
-                    @php $remainingBooks = Auth::user()->remainingBooks(); @endphp
-                    <span class="font-bold text-[#5b4f96] dark:text-[#a59be0]">
-                        {{ ($remainingBooks === 'Ilimitado' || $remainingBooks === -1) ? 'Sin límite' : $remainingBooks . ' restantes' }}
-                    </span>
-                    <button type="button" onclick="openSupportModal()" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline">
-                        ¿Necesitas más?
-                    </button>
-                </div>
+                @else
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="text-slate-700 dark:text-slate-300">
+                            Cuota Beta: <strong>{{ Auth::user()->books()->count() }}</strong> de {{ Auth::user()->book_limit }} libros utilizados.
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        @php $remainingBooks = Auth::user()->remainingBooks(); @endphp
+                        <span class="font-bold text-[#5b4f96] dark:text-[#a59be0]">
+                            {{ ($remainingBooks === 'Ilimitado' || $remainingBooks === -1) ? 'Sin límite' : $remainingBooks . ' restantes' }}
+                        </span>
+                        <button type="button" onclick="openSupportModal()" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline">
+                            ¿Necesitas más?
+                        </button>
+                    </div>
+                @endif
             </div>
         @endif
     @else

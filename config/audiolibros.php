@@ -10,6 +10,10 @@ return [
 
     'storage_disk' => env('AUDIOLIBROS_STORAGE_DISK', 'local'),
 
+    'retention_days' => (int) env('AUDIOLIBROS_RETENTION_DAYS', 7),
+
+    'max_concurrent_jobs_per_user' => (int) env('AUDIOLIBROS_MAX_CONCURRENT_JOBS', 2),
+
     'uploads' => [
         'standard_max_kb' => 102400, // 100 MB
         'chunk_max_kb' => 25600,     // 25 MB per chunk

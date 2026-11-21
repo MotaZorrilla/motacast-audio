@@ -166,21 +166,21 @@
                         </span>
                     </div>
                     <p class="text-xs text-slate-700 dark:text-amber-100 leading-relaxed">
-                        <strong>MotaCastAudio</strong> está en fase de pruebas activas. Durante esta etapa pueden ocurrir ajustes técnicos, mejoras o depuración periódica de archivos.
+                        <strong>MotaCastAudio</strong> ofrece <strong>conversiones ilimitadas</strong> de documentos y audios. Para optimizar el almacenamiento en la nube, tus archivos generados permanecerán disponibles durante <strong>7 días</strong> antes de su depuración automática.
                     </p>
                     <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-start gap-2.5">
                         <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                         <p class="text-xs font-semibold text-slate-800 dark:text-amber-200 leading-snug">
-                            <strong>Recomendación:</strong> Te recomendamos descargar tus audios en MP3 a tu dispositivo una vez generados para conservarlos sin conexión.
+                            <strong>Recomendación:</strong> Descarga tus MP3 o transcripciones (.TXT / .MD) antes de que se cumplan los 7 días para conservarlos permanentemente en tu dispositivo.
                         </p>
                     </div>
                     <div class="pt-1">
                         <label class="flex items-start gap-2.5 cursor-pointer">
                             <input type="checkbox" name="beta_disclaimer" value="1" {{ old('beta_disclaimer') ? 'checked' : '' }} required class="mt-0.5 rounded border-amber-400 text-indigo-600 focus:ring-indigo-500">
                             <span class="text-xs font-semibold text-slate-800 dark:text-amber-200">
-                                Entiendo que es una versión Beta experimental y me comprometo a descargar mis audios para conservarlos.
+                                Entiendo la retención de 7 días en la nube y me comprometo a descargar mis archivos para conservarlos.
                             </span>
                         </label>
                     </div>

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\BookStatus;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -61,7 +62,7 @@ class User extends Authenticatable
     protected $attributes = [
         'role' => 'user',
         'status' => 'active',
-        'book_limit' => 3,
+        'book_limit' => -1,
         'preferred_voice' => 'es-ES-AlvaroNeural',
         'preferred_speed' => '+0%',
         'auto_extension_used' => false,
@@ -93,7 +94,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $limit = $this->book_limit ?? 3;
+        $limit = $this->book_limit ?? -1;
 
         if ($this->isAdmin() || $limit === -1) {
             return true;
@@ -102,9 +103,29 @@ class User extends Authenticatable
         return $this->books()->count() < $limit;
     }
 
+    public function activeProcessingBooksCount(): int
+    {
+        return $this->books()->whereIn('status', [
+            BookStatus::Pending->value,
+            BookStatus::Extracting->value,
+            BookStatus::Synthesizing->value,
+        ])->count();
+    }
+
+    public function hasActiveProcessingSlotAvailable(): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $maxConcurrent = (int) config('audiolibros.max_concurrent_jobs_per_user', 2);
+
+        return $this->activeProcessingBooksCount() < $maxConcurrent;
+    }
+
     public function remainingBooks(): int|string
     {
-        $limit = $this->book_limit ?? 3;
+        $limit = $this->book_limit ?? -1;
 
         if ($this->isAdmin() || $limit === -1) {
             return 'Ilimitado';

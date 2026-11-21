@@ -38,5 +38,14 @@ sh -c '
   done
 ' >> /app/storage/logs/queue.log 2>&1 &
 
+# Start immortal background scheduler daemon (handles hourly 7-day retention cleanup)
+sh -c '
+  echo "[Scheduler] Starting Laravel schedule:work daemon at $(date)..."
+  while true; do
+    nice -n 10 php /app/artisan schedule:work >> /app/storage/logs/schedule.log 2>&1 || true
+    sleep 5
+  done
+' &
+
 # Start main PHP server
 exec php artisan serve --host=0.0.0.0 --port=8000

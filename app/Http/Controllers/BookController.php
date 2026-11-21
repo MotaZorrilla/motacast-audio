@@ -264,6 +264,13 @@ class BookController extends Controller
                 ->with('error', 'Has alcanzado el límite de tu cuenta ('.Auth::user()->book_limit.' libros).');
         }
 
+        if (Auth::check() && ! Auth::user()->hasActiveProcessingSlotAvailable()) {
+            $maxConcurrent = (int) config('audiolibros.max_concurrent_jobs_per_user', 2);
+
+            return redirect()->route('books.index')
+                ->with('error', "Ya tienes {$maxConcurrent} conversiones procesándose simultáneamente en cola. Espera a que termine una antes de enviar otra.");
+        }
+
         $ingested = $this->ingestService->ingest($request);
 
         $ownerId = null;

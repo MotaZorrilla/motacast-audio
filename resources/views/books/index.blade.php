@@ -212,6 +212,16 @@
                                     </span>
                                 @endif
 
+                                @if ($book->retentionLabel())
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold {{ $book->expiresSoon() || $book->isExpired() ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}" title="Retención temporal en nube (descarga tus archivos para conservarlos)">
+                                        ⏳ {{ $book->retentionLabel() }}
+                                    </span>
+                                @elseif ($book->user && $book->user->isAdmin())
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                        ♾️ Permanente
+                                    </span>
+                                @endif
+
                                 @if (Auth::user() && Auth::user()->isAdmin())
                                     @if ($book->user)
                                         <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 truncate max-w-[120px]" title="Cargado por {{ $book->user->name }}">

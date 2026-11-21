@@ -96,6 +96,7 @@ class AuthController extends Controller
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
             'role' => 'user',
+            'book_limit' => -1,
             'beta_disclaimer_accepted_at' => now(),
         ]);
 

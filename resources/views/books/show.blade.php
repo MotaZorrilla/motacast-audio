@@ -142,6 +142,16 @@
                     <span class="text-xs text-slate-400 dark:text-slate-500 font-mono truncate max-w-[200px]">
                         {{ $book->original_filename }}
                     </span>
+
+                    @if ($book->retentionLabel())
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold {{ $book->expiresSoon() || $book->isExpired() ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}" title="Descarga tus archivos MP3 o .TXT antes del vencimiento para conservarlos sin límite">
+                            ⏳ {{ $book->retentionLabel() }}
+                        </span>
+                    @elseif ($book->user && $book->user->isAdmin())
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                            ♾️ Permanente
+                        </span>
+                    @endif
                 </div>
 
                 <div class="flex items-center justify-between gap-4">

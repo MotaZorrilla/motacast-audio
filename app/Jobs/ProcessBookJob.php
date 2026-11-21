@@ -114,6 +114,7 @@ class ProcessBookJob implements ShouldQueue
                     'processed_chapters' => $chapters->count(),
                     'status' => BookStatus::Ready->value,
                     'total_duration' => 0,
+                    'expires_at' => $this->resolveRetentionDeadline($book),
                 ]);
             } else {
                 $book->update(['status' => BookStatus::Synthesizing->value]);
@@ -188,6 +189,7 @@ class ProcessBookJob implements ShouldQueue
                 $book->update([
                     'status' => BookStatus::Ready->value,
                     'total_duration' => $totalDuration,
+                    'expires_at' => $this->resolveRetentionDeadline($book),
                 ]);
             }
 
@@ -213,5 +215,29 @@ class ProcessBookJob implements ShouldQueue
         } finally {
             $lock->release();
         }
+    }
+
+    /**
+     * Standard registered user books expire after configured retention days;
+     * Admin and public demo books are preserved permanently (null).
+     */
+    protected function resolveRetentionDeadline(Book $book): mixed
+    {
+        if ($book->expires_at !== null) {
+            return $book->expires_at;
+        }
+
+        if ($book->user_id === null) {
+            return null;
+        }
+
+        $owner = $book->user;
+        if (! $owner || $owner->isAdmin()) {
+            return null;
+        }
+
+        $days = (int) config('audiolibros.retention_days', 7);
+
+        return $days > 0 ? now()->addDays($days) : null;
     }
 }
