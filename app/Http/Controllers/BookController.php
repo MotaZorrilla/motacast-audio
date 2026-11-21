@@ -292,6 +292,8 @@ class BookController extends Controller
 
         $geo = GuestFingerprintService::resolve($request);
 
+        $transcriptionOnly = $request->boolean('transcription_only', false);
+
         $book = Book::create([
             'user_id' => $ownerId,
             'guest_fingerprint' => Auth::check() ? null : $geo['alias'],
@@ -300,18 +302,23 @@ class BookController extends Controller
             'author' => $ingested['author'],
             'original_filename' => $ingested['original_filename'],
             'pdf_path' => $ingested['stored_path'],
-            'voice' => $request->input('voice'),
-            'speed_rate' => $request->input('speed_rate'),
-            'pitch' => $request->input('pitch'),
+            'voice' => $request->input('voice') ?: 'es-VE-SebastianNeural',
+            'speed_rate' => $request->input('speed_rate') ?: '+0%',
+            'pitch' => $request->input('pitch') ?: '+0Hz',
             'keep_original_media' => $request->boolean('keep_original_media', false),
+            'transcription_only' => $transcriptionOnly,
             'status' => 'pending',
         ]);
 
         $this->guestSession->recordTrialUpload($book->id);
         ProcessBookJob::dispatch($book->id);
 
+        $successMessage = $transcriptionOnly
+            ? 'Archivo multimedia recibido. La transcripción ha comenzado en segundo plano y quedará lista para leer y descargar.'
+            : 'Documento recibido exitosamente. La extracción y síntesis ha comenzado en segundo plano.';
+
         return redirect()->route('books.show', $book->id)
-            ->with('success', 'Documento recibido exitosamente. La extracción y síntesis ha comenzado en segundo plano.');
+            ->with('success', $successMessage);
     }
 
     /**

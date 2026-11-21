@@ -206,15 +206,16 @@
                         </div>
                     </label>
 
-                    <!-- Option 3: STT Only -->
+                    <!-- Option 3: STT Only (Background Queue, Text Only) -->
                     <label class="relative flex items-start gap-2.5 sm:gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 cursor-pointer hover:border-indigo-500 transition-all group">
                         <input type="radio" name="modal_strategy_option" value="stt_only" class="mt-1 text-indigo-600 focus:ring-indigo-500 accent-indigo-600">
                         <div class="text-xs space-y-0.5 min-w-0 flex-1">
-                            <strong class="text-slate-900 dark:text-white block font-bold flex items-center gap-1.5">
-                                <span>🎙️ Solo Transcribir a Texto (STT Rápido)</span>
+                            <strong class="text-slate-900 dark:text-white block font-bold flex items-center gap-1.5 flex-wrap">
+                                <span>🎙️ Solo Transcribir a Texto (Guardar en Biblioteca)</span>
+                                <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">Sin Audio TTS / Ideal Grabaciones Largas</span>
                             </strong>
                             <span class="text-[11px] text-slate-600 dark:text-slate-400 block leading-snug">
-                                Extrae y corrige todo el texto de inmediato para lectura, edición o descarga en TXT/Markdown sin generar audio nuevo.
+                                Transcribe toda la conversación en segundo plano (sin cortes por duración ni generar audiolibro) y guarda el texto listo para leer, copiar o descargar en .TXT / .MD.
                             </span>
                         </div>
                     </label>

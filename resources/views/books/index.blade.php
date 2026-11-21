@@ -192,9 +192,9 @@
                     
                     <!-- Card Header & Cover Artwork -->
                     <div class="p-5 pb-3 flex items-start gap-3.5">
-                        <div class="w-14 h-16 sm:w-16 sm:h-20 rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-900 text-white flex flex-col items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition">
-                            <span class="text-2xl">🎧</span>
-                            <span class="text-[8px] font-black font-mono tracking-wider mt-1 uppercase text-indigo-200">EPISODIO</span>
+                        <div class="w-14 h-16 sm:w-16 sm:h-20 rounded-2xl bg-gradient-to-br {{ $book->transcription_only ? 'from-sky-600 via-indigo-600 to-slate-900' : 'from-indigo-600 via-violet-600 to-indigo-900' }} text-white flex flex-col items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition">
+                            <span class="text-2xl">{{ $book->transcription_only ? '📝' : '🎧' }}</span>
+                            <span class="text-[8px] font-black font-mono tracking-wider mt-1 uppercase text-indigo-200">{{ $book->transcription_only ? 'TEXTO' : 'EPISODIO' }}</span>
                         </div>
                         <div class="min-w-0 flex-grow">
                             <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
@@ -237,10 +237,10 @@
                     <!-- Meta Tags: Chapters & Total Audio Duration -->
                     <div class="px-5 py-2.5 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 border-t border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/50">
                         <span class="font-bold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                            <span>{{ $book->chapters_count }} Capítulos</span>
+                            <span class="w-1.5 h-1.5 rounded-full {{ $book->transcription_only ? 'bg-sky-500' : 'bg-indigo-500' }}"></span>
+                            <span>{{ $book->chapters_count }} {{ $book->transcription_only ? 'Secciones' : 'Capítulos' }}</span>
                         </span>
-                        <span class="font-mono font-bold text-slate-900 dark:text-white">{{ $book->formatted_duration }}</span>
+                        <span class="font-mono font-bold text-slate-900 dark:text-white">{{ $book->transcription_only ? 'Solo Transcripción' : $book->formatted_duration }}</span>
                     </div>
 
                     <!-- Executive Summary Excerpt -->
@@ -290,7 +290,7 @@
                             <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                             </svg>
-                            <span>{{ $book->status === 'ready' ? 'Escuchar' : 'Ver Progreso' }}</span>
+                            <span>{{ $book->status === 'ready' ? ($book->transcription_only ? 'Leer Transcripción' : 'Escuchar') : 'Ver Progreso' }}</span>
                         </a>
 
                         <!-- In-App Book Reader Quick Launch Link -->

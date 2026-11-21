@@ -37,10 +37,11 @@ class StoreBookRequest extends FormRequest
             'chunked_filename' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
             'author' => 'nullable|string|max:255',
-            'voice' => 'required|string',
-            'speed_rate' => 'required|string',
-            'pitch' => 'required|string',
+            'voice' => 'required_unless:transcription_only,1|nullable|string',
+            'speed_rate' => 'required_unless:transcription_only,1|nullable|string',
+            'pitch' => 'required_unless:transcription_only,1|nullable|string',
             'keep_original_media' => 'nullable|boolean',
+            'transcription_only' => 'nullable|boolean',
             'assigned_user_id' => 'nullable|exists:users,id',
         ];
     }

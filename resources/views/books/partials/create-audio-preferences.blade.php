@@ -23,14 +23,15 @@
                 </div>
             </div>
 
-            <!-- Instant STT Action Button -->
+            <!-- Instant STT Action Button (for quick short voice notes) -->
             <button 
                 type="button" 
                 id="btnTranscribeAudioNow"
                 onclick="triggerDirectSttFromSelectedAudio()"
-                class="px-4 py-2.5 rounded-xl text-xs font-bold btn-kairos-primary flex items-center justify-center gap-1.5 shrink-0"
+                class="px-3.5 py-2 rounded-xl text-[11px] font-bold bg-slate-200/80 dark:bg-slate-800 hover:bg-[#5b4f96]/15 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-1.5 shrink-0 transition"
+                title="Para audios cortos (< 5 min): transcribe directo en el editor sin guardar todavía"
             >
-                <span>🎙️ Transcribir a Texto Ahora</span>
+                <span>⚡ Vista Previa Rápida</span>
             </button>
         </div>
 
@@ -52,14 +53,14 @@
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             <label class="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#151a1e] cursor-pointer hover:border-[#5b4f96] transition">
-                <input type="radio" name="audio_action_mode" value="stt_only" checked onchange="onAudioActionModeChanged(this.value)" class="mt-0.5 text-[#5b4f96] focus:ring-[#5b4f96]">
+                <input type="radio" name="audio_action_mode" id="radioAudioSttOnly" value="stt_only" checked onchange="onAudioActionModeChanged(this.value)" class="mt-0.5 text-[#5b4f96] focus:ring-[#5b4f96]">
                 <div>
-                    <strong class="text-slate-900 dark:text-white block text-xs font-bold">Solo Transcribir a Texto (STT)</strong>
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400 block leading-tight mt-0.5">Obtén el texto transcrito de inmediato para leer, editar o exportar en TXT/Markdown.</span>
+                    <strong class="text-slate-900 dark:text-white block text-xs font-bold">Solo Transcribir a Texto (Sin Audio)</strong>
+                    <span class="text-[11px] text-slate-500 dark:text-slate-400 block leading-tight mt-0.5">Procesa toda la grabación en cola (sin cortes por duración) y guarda el texto listo para copiar o descargar en .TXT / .MD.</span>
                 </div>
             </label>
             <label class="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#151a1e] cursor-pointer hover:border-[#5b4f96] transition">
-                <input type="radio" name="audio_action_mode" value="stt_and_tts" onchange="onAudioActionModeChanged(this.value)" class="mt-0.5 text-[#5b4f96] focus:ring-[#5b4f96]">
+                <input type="radio" name="audio_action_mode" id="radioAudioSttAndTts" value="stt_and_tts" onchange="onAudioActionModeChanged(this.value)" class="mt-0.5 text-[#5b4f96] focus:ring-[#5b4f96]">
                 <div>
                     <strong class="text-slate-900 dark:text-white block text-xs font-bold">Transcribir y Crear Audiolibro</strong>
                     <span class="text-[11px] text-slate-500 dark:text-slate-400 block leading-tight mt-0.5">Sintetiza la transcripción con una nueva voz neuronal y genera capítulos estructurados.</span>

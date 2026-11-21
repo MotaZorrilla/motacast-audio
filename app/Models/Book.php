@@ -24,6 +24,7 @@ class Book extends Model
         'speed_rate',
         'pitch',
         'keep_original_media',
+        'transcription_only',
         'status',
         'total_chapters',
         'processed_chapters',
@@ -34,6 +35,7 @@ class Book extends Model
 
     protected $casts = [
         'keep_original_media' => 'boolean',
+        'transcription_only' => 'boolean',
         'total_chapters' => 'integer',
         'processed_chapters' => 'integer',
         'total_duration' => 'integer',

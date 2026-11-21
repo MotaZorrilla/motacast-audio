@@ -215,6 +215,14 @@
         rawTextInput.focus();
     }
 
+    const transcriptionOnlyHidden = document.getElementById('transcriptionOnlyHidden');
+
+    function syncTranscriptionOnlyFlag() {
+        if (!transcriptionOnlyHidden) return;
+        const isSttOnly = (currentInputMode === 'file' && currentDetectedType === 'audio' && currentAudioActionMode === 'stt_only');
+        transcriptionOnlyHidden.value = isSttOnly ? '1' : '0';
+    }
+
     function switchInputMode(mode) {
         currentInputMode = mode;
         if (inputModeHidden) inputModeHidden.value = mode;
@@ -260,6 +268,8 @@
                 updateTextCounters();
             }
         }
+
+        syncTranscriptionOnlyFlag();
     }
 
     function updateTextCounters() {
@@ -545,12 +555,16 @@
 
         if (strategy === 'stt_tts') {
             currentAudioActionMode = 'stt_and_tts';
+            const rTts = document.getElementById('radioAudioSttAndTts');
+            if (rTts) rTts.checked = true;
             if (stepVoiceSection) stepVoiceSection.classList.remove('hidden');
             if (stepAudioSection) stepAudioSection.classList.add('hidden');
             if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
             if (submitBtnText) submitBtnText.textContent = '✨ Transcribir y Crear Audiolibro Neuronal';
         } else {
             currentAudioActionMode = 'stt_only';
+            const rOnly = document.getElementById('radioAudioSttOnly');
+            if (rOnly) rOnly.checked = true;
             if (stepVoiceSection) stepVoiceSection.classList.add('hidden');
             if (stepAudioSection) stepAudioSection.classList.remove('hidden');
             if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
@@ -561,6 +575,7 @@
             }
         }
 
+        syncTranscriptionOnlyFlag();
         closeMediaStrategyModal();
     }
 
@@ -594,8 +609,8 @@
                 if (stepSubmitSection) stepSubmitSection.classList.remove('hidden');
                 if (submitBtnText) {
                     submitBtnText.textContent = (mediaKind === 'video')
-                        ? '🎬 Transcribir Video a Texto (STT)'
-                        : '🎙️ Transcribir Audio a Texto (STT)';
+                        ? '🎬 Transcribir Video y Guardar Texto (Sin Audio)'
+                        : '🎙️ Transcribir Audio y Guardar Texto (Sin Audio)';
                 }
             }
         } else if (file) {
@@ -612,6 +627,8 @@
             if (stepAudioSection) stepAudioSection.classList.add('hidden');
             if (stepSubmitSection) stepSubmitSection.classList.add('hidden');
         }
+
+        syncTranscriptionOnlyFlag();
     }
 
     function onAudioActionModeChanged(mode) {
@@ -624,8 +641,14 @@
             if (submitBtnText) submitBtnText.textContent = '⚡ Transcribir y Sintetizar Audiolibro';
         } else {
             if (voiceContainer) voiceContainer.classList.add('hidden');
-            if (submitBtnText) submitBtnText.textContent = '🎙️ Transcribir Audio a Texto (STT)';
+            if (submitBtnText) {
+                submitBtnText.textContent = (currentMediaKind === 'video')
+                    ? '🎬 Transcribir Video a Texto (STT)'
+                    : '🎙️ Transcribir Audio a Texto (STT)';
+            }
         }
+
+        syncTranscriptionOnlyFlag();
     }
 
     function syncAudioVoice(val) {
@@ -955,12 +978,7 @@
                 return false;
             }
 
-            // If audio file and mode is STT only, trigger direct STT without full page reload
-            if (currentDetectedType === 'audio' && currentAudioActionMode === 'stt_only') {
-                e.preventDefault();
-                triggerDirectSttFromSelectedAudio();
-                return false;
-            }
+            syncTranscriptionOnlyFlag();
 
             // Admin heavy files (> 80MB): upload via 20MB chunks so Cloudflare/proxies never block with 413
             if (!hasChunkedUpload && IS_ADMIN_USER && fileInput.files[0].size > CHUNK_UPLOAD_THRESHOLD_BYTES) {

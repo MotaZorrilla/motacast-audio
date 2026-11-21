@@ -89,83 +89,99 @@ class ProcessBookJob implements ShouldQueue
                 ]);
             }
 
-            // Step 3: Synthesis
-            $book->update(['status' => BookStatus::Synthesizing->value]);
-
-            // Synthesize Executive Summary Audio if summary is available
-            if (! empty($book->summary) && mb_strlen($book->summary) >= 30) {
-                $relativeSummaryPath = "audiobooks/{$book->id}/summary.mp3";
-                $absoluteSummaryPath = Storage::disk('public')->path($relativeSummaryPath);
-                try {
-                    $synthesizer->synthesize(
-                        text: $book->summary,
-                        outputAbsolutePath: $absoluteSummaryPath,
-                        voice: $book->voice,
-                        rate: $book->speed_rate,
-                        pitch: $book->pitch
-                    );
-                    $book->summary_audio_path = $relativeSummaryPath;
-                    $book->save();
-                } catch (Throwable $summaryErr) {
-                    Log::warning("Error sintetizando resumen del libro {$book->id}: ".$summaryErr->getMessage());
-                }
-            }
-
+            // Step 3: Synthesis (skip TTS completely when user requested transcription-only)
             $chapters = $book->chapters()->orderBy('chapter_number')->get();
             $totalDuration = 0;
-            $processedCount = 0;
 
-            foreach ($chapters as $chapter) {
-                $chapter->update(['status' => ChapterStatus::Synthesizing->value]);
+            if ($book->transcription_only) {
+                $book->chapters()->update([
+                    'audio_path' => null,
+                    'duration_seconds' => 0,
+                    'status' => ChapterStatus::Ready->value,
+                    'error_message' => null,
+                ]);
 
-                $relativeAudioPath = "audiobooks/{$book->id}/chapter_{$chapter->chapter_number}.mp3";
-                $absoluteAudioPath = Storage::disk('public')->path($relativeAudioPath);
+                $book->update([
+                    'processed_chapters' => $chapters->count(),
+                    'status' => BookStatus::Ready->value,
+                    'total_duration' => 0,
+                ]);
+            } else {
+                $book->update(['status' => BookStatus::Synthesizing->value]);
 
-                try {
-                    $ttsResult = $synthesizer->synthesize(
-                        text: $chapter->content_text,
-                        outputAbsolutePath: $absoluteAudioPath,
-                        voice: $book->voice,
-                        rate: $book->speed_rate,
-                        pitch: $book->pitch
-                    );
-
-                    $duration = $ttsResult['duration_seconds'] ?? 0;
-                    $totalDuration += $duration;
-                    $processedCount++;
-
-                    $chapter->update([
-                        'audio_path' => $relativeAudioPath,
-                        'duration_seconds' => $duration,
-                        'status' => ChapterStatus::Ready->value,
-                        'error_message' => null,
-                    ]);
-
-                    // Optimización Clean: Actualización consolidada en base de datos en una sola llamada
-                    $book->update([
-                        'processed_chapters' => $processedCount,
-                        'total_duration' => $totalDuration,
-                    ]);
-
-                } catch (Throwable $chError) {
-                    Log::error("Error sintetizando capítulo {$chapter->id}: ".$chError->getMessage());
-                    $chapter->update([
-                        'status' => ChapterStatus::Failed->value,
-                        'error_message' => $chError->getMessage(),
-                    ]);
+                // Synthesize Executive Summary Audio if summary is available
+                if (! empty($book->summary) && mb_strlen($book->summary) >= 30) {
+                    $relativeSummaryPath = "audiobooks/{$book->id}/summary.mp3";
+                    $absoluteSummaryPath = Storage::disk('public')->path($relativeSummaryPath);
+                    try {
+                        $synthesizer->synthesize(
+                            text: $book->summary,
+                            outputAbsolutePath: $absoluteSummaryPath,
+                            voice: $book->voice,
+                            rate: $book->speed_rate,
+                            pitch: $book->pitch
+                        );
+                        $book->summary_audio_path = $relativeSummaryPath;
+                        $book->save();
+                    } catch (Throwable $summaryErr) {
+                        Log::warning("Error sintetizando resumen del libro {$book->id}: ".$summaryErr->getMessage());
+                    }
                 }
-            }
 
-            // Step 4: Mark book as ready
-            $book->update([
-                'status' => BookStatus::Ready->value,
-                'total_duration' => $totalDuration,
-            ]);
+                $processedCount = 0;
+
+                foreach ($chapters as $chapter) {
+                    $chapter->update(['status' => ChapterStatus::Synthesizing->value]);
+
+                    $relativeAudioPath = "audiobooks/{$book->id}/chapter_{$chapter->chapter_number}.mp3";
+                    $absoluteAudioPath = Storage::disk('public')->path($relativeAudioPath);
+
+                    try {
+                        $ttsResult = $synthesizer->synthesize(
+                            text: $chapter->content_text,
+                            outputAbsolutePath: $absoluteAudioPath,
+                            voice: $book->voice,
+                            rate: $book->speed_rate,
+                            pitch: $book->pitch
+                        );
+
+                        $duration = $ttsResult['duration_seconds'] ?? 0;
+                        $totalDuration += $duration;
+                        $processedCount++;
+
+                        $chapter->update([
+                            'audio_path' => $relativeAudioPath,
+                            'duration_seconds' => $duration,
+                            'status' => ChapterStatus::Ready->value,
+                            'error_message' => null,
+                        ]);
+
+                        // Optimización Clean: Actualización consolidada en base de datos en una sola llamada
+                        $book->update([
+                            'processed_chapters' => $processedCount,
+                            'total_duration' => $totalDuration,
+                        ]);
+
+                    } catch (Throwable $chError) {
+                        Log::error("Error sintetizando capítulo {$chapter->id}: ".$chError->getMessage());
+                        $chapter->update([
+                            'status' => ChapterStatus::Failed->value,
+                            'error_message' => $chError->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Step 4: Mark book as ready
+                $book->update([
+                    'status' => BookStatus::Ready->value,
+                    'total_duration' => $totalDuration,
+                ]);
+            }
 
             // If the source was an audio or video file and user chose not to keep it,
             // delete the heavy source file to optimize server storage.
             $ext = strtolower(pathinfo($book->pdf_path, PATHINFO_EXTENSION));
-            $mediaExts = ['mp3', 'wav', 'm4a', 'ogg', 'aac', 'flac', 'mp4', 'mkv', 'mov', 'avi', 'webm'];
+            $mediaExts = ['mp3', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'flac', 'mp4', 'mkv', 'mov', 'avi', 'webm'];
             if (! $book->keep_original_media && in_array($ext, $mediaExts)) {
                 if (Storage::disk('public')->exists($book->pdf_path)) {
                     Storage::disk('public')->delete($book->pdf_path);

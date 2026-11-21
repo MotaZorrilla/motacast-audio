@@ -24,7 +24,7 @@
 @section('og_image_alt', 'Audiolibro: ' . $book->title)
 
 @section('content')
-<div class="space-y-5 pb-36 sm:pb-32">
+<div class="space-y-5 {{ $book->transcription_only ? 'pb-12' : 'pb-36 sm:pb-32' }}">
 
     <!-- Top Navigation Breadcrumbs & Top Quick Actions -->
     <div class="flex items-center justify-between">
@@ -75,15 +75,15 @@
     <div class="block sm:hidden card-tactile rounded-2xl p-3.5">
         <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center flex-shrink-0 shadow-md text-lg">
-                    🎧
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr {{ $book->transcription_only ? 'from-sky-600 to-indigo-600' : 'from-indigo-600 to-violet-500' }} text-white flex items-center justify-center flex-shrink-0 shadow-md text-lg">
+                    {{ $book->transcription_only ? '📝' : '🎧' }}
                 </div>
                 <div class="min-w-0">
                     <h1 class="text-xs font-black text-slate-900 dark:text-white truncate leading-tight">{{ $book->title }}</h1>
                     <div class="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
                         <span class="truncate max-w-[110px]">{{ $book->author ?: 'Documento' }}</span>
                         <span>&bull;</span>
-                        <span class="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{{ $book->formatted_duration }}</span>
+                        <span class="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{{ $book->transcription_only ? 'Solo Texto' : $book->formatted_duration }}</span>
                     </div>
                 </div>
             </div>
@@ -112,9 +112,9 @@
 
         <div class="flex items-center gap-6 relative z-10">
             <!-- Podcast Cover Artwork Avatar -->
-            <div class="w-20 h-24 rounded-2xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg flex-shrink-0 border border-white/20">
-                <span class="text-3xl">🎧</span>
-                <span class="text-[9px] font-black font-mono tracking-wider mt-1 uppercase text-indigo-200">PODCAST</span>
+            <div class="w-20 h-24 rounded-2xl bg-gradient-to-tr {{ $book->transcription_only ? 'from-sky-600 via-indigo-600 to-slate-900' : 'from-indigo-600 via-violet-600 to-indigo-900' }} text-white flex flex-col items-center justify-center shadow-lg flex-shrink-0 border border-white/20">
+                <span class="text-3xl">{{ $book->transcription_only ? '📝' : '🎧' }}</span>
+                <span class="text-[9px] font-black font-mono tracking-wider mt-1 uppercase text-indigo-200">{{ $book->transcription_only ? 'TEXTO' : 'PODCAST' }}</span>
             </div>
 
             <!-- Title & Metadata -->
@@ -123,8 +123,8 @@
                     <span id="bookStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold {{ $book->status === 'ready' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : ($book->hasFailed() ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800' : 'bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse') }}">
                         <span class="w-1.5 h-1.5 rounded-full {{ $book->status === 'ready' ? 'bg-emerald-500' : ($book->hasFailed() ? 'bg-rose-500' : 'bg-amber-500 animate-ping') }}"></span>
                         <span id="bookStatusText">
-                            @if ($book->status === 'ready') Listo para Escuchar
-                            @elseif ($book->status === 'extracting') Extrayendo texto...
+                            @if ($book->status === 'ready') {{ $book->transcription_only ? 'Transcripción Lista' : 'Listo para Escuchar' }}
+                            @elseif ($book->status === 'extracting') {{ $book->transcription_only ? 'Transcribiendo audio...' : 'Extrayendo texto...' }}
                             @elseif ($book->status === 'synthesizing') Generando audio...
                             @elseif ($book->status === 'failed') Inconveniente en procesamiento
                             @else En Cola
@@ -136,7 +136,7 @@
                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
                         </svg>
-                        <span>{{ $book->voice }}</span>
+                        <span>{{ $book->transcription_only ? 'Solo Transcripción (STT)' : $book->voice }}</span>
                     </span>
 
                     <span class="text-xs text-slate-400 dark:text-slate-500 font-mono truncate max-w-[200px]">
@@ -160,6 +160,16 @@
                             </svg>
                             <span>Leer Texto</span>
                         </button>
+                        @if ($book->transcription_only)
+                            <button
+                                type="button"
+                                onclick="copyReaderFullText(); this.textContent='✅ ¡Copiado!'; setTimeout(() => this.textContent='📋 Copiar Todo', 2000);"
+                                class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition shadow-sm"
+                                title="Copiar toda la transcripción al portapapeles"
+                            >
+                                📋 Copiar Todo
+                            </button>
+                        @endif
                         <a 
                             href="{{ route('books.transcription.download', ['book' => $book->id, 'format' => 'txt']) }}" 
                             download
@@ -171,6 +181,16 @@
                             </svg>
                             <span>Texto (.TXT)</span>
                         </a>
+                        @if ($book->transcription_only)
+                            <a 
+                                href="{{ route('books.transcription.download', ['book' => $book->id, 'format' => 'md']) }}" 
+                                download
+                                class="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition shadow-sm"
+                                title="Descargar transcripción completa en Markdown (.MD)"
+                            >
+                                <span>Markdown (.MD)</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
 
@@ -211,6 +231,7 @@
     @include('books.partials.summary-card')
 
     <!-- Recommendations Banner -->
+    @if (! $book->transcription_only)
     <div class="p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-slate-900/60 border border-indigo-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs shadow-sm">
         <div class="flex items-center gap-2">
             <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex-shrink-0">
@@ -224,6 +245,7 @@
             ¿Sugerencias para la Beta? &rarr;
         </button>
     </div>
+    @endif
 
     <!-- Chapter / Episode Playlist Section (Pocket Casts / Spotify style) -->
     <div class="card-tactile rounded-3xl overflow-hidden shadow-sm">
@@ -232,7 +254,7 @@
                 <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                 </svg>
-                <h2 class="text-sm sm:text-base font-black text-slate-900 dark:text-white">Capítulos del Podcast</h2>
+                <h2 class="text-sm sm:text-base font-black text-slate-900 dark:text-white">{{ $book->transcription_only ? 'Secciones de la Transcripción' : 'Capítulos del Podcast' }}</h2>
             </div>
             <span class="text-xs font-bold text-slate-500 dark:text-slate-400 font-mono" id="playlistCount">
                 {{ $book->chapters->where('status', 'ready')->count() }} de {{ $book->chapters->count() }} listos
@@ -257,12 +279,16 @@
                         <!-- Play / Chapter Number Badge -->
                         <div class="chapter-play-btn w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center flex-shrink-0 transition shadow-sm font-bold" id="btnPlayChapter-{{ $chapter->id }}">
                             @if ($chapter->status === 'ready')
-                                <svg class="w-4 h-4 ml-0.5 icon-play" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-                                </svg>
-                                <svg class="w-4 h-4 icon-pause hidden" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
+                                @if ($book->transcription_only || empty($chapter->audio_path))
+                                    <span class="text-xs font-mono font-bold">{{ $chapter->chapter_number }}</span>
+                                @else
+                                    <svg class="w-4 h-4 ml-0.5 icon-play" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                                    </svg>
+                                    <svg class="w-4 h-4 icon-pause hidden" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                @endif
                             @elseif ($chapter->status === 'synthesizing')
                                 <svg class="w-4 h-4 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -289,20 +315,26 @@
                         </div>
                     </div>
 
-                    <!-- Right Controls (Download MP3) -->
+                    <!-- Right Controls (Download MP3 or Read Section) -->
                     <div class="flex items-center gap-2 flex-shrink-0">
                         @if ($chapter->status === 'ready')
-                            <a 
-                                href="{{ $chapter->audio_download_url }}" 
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 rounded-xl text-[11px] font-bold transition shadow-sm"
-                                title="Descargar MP3"
-                                onclick="event.stopPropagation();"
-                            >
-                                <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                <span>MP3</span>
-                            </a>
+                            @if ($book->transcription_only || empty($chapter->audio_path))
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-[11px] font-bold">
+                                    Leer &rarr;
+                                </span>
+                            @else
+                                <a 
+                                    href="{{ $chapter->audio_download_url }}" 
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 rounded-xl text-[11px] font-bold transition shadow-sm"
+                                    title="Descargar MP3"
+                                    onclick="event.stopPropagation();"
+                                >
+                                    <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    <span>MP3</span>
+                                </a>
+                            @endif
                         @elseif ($chapter->status === 'synthesizing')
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                 Generando...
@@ -324,6 +356,7 @@
 
 </div>
 
+@if (! $book->transcription_only)
 <!-- Sticky Floating Podcast Player Bar (Mobile Ergonomic Dock) -->
 <div id="stickyPlayerBar" class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-850 shadow-2xl py-2.5 px-3 sm:px-8 z-40 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 sm:gap-4">
@@ -452,6 +485,7 @@
 
     </div>
 </div>
+@endif
 
 {{-- Universal In-App Document Reader Modal (Modular Partial) --}}
 @include('books.partials.reader-modal')

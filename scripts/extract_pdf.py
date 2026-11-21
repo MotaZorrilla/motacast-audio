@@ -617,6 +617,8 @@ class AudioTranscriptionExtractor(BaseExtractor):
 
     def extract(self, file_path: str) -> ExtractionResult:
         import subprocess
+        import time
+        from concurrent.futures import ThreadPoolExecutor
         try:
             import speech_recognition as sr
         except ImportError:
@@ -629,7 +631,7 @@ class AudioTranscriptionExtractor(BaseExtractor):
             raise Exception("ffmpeg no está disponible en el sistema para procesar el archivo de audio.")
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            chunk_template = os.path.join(tmpdir, "chunk_%03d.wav")
+            chunk_template = os.path.join(tmpdir, "chunk_%05d.wav")
             cmd = [
                 ffmpeg_bin, "-y",
                 "-i", file_path,
@@ -650,24 +652,33 @@ class AudioTranscriptionExtractor(BaseExtractor):
             if not chunk_files:
                 raise Exception("No se pudieron generar segmentos de audio para transcribir.")
 
-            recognizer = sr.Recognizer()
-            transcribed_chunks = []
+            def transcribe_single(args: Tuple[int, str]) -> Tuple[int, str]:
+                idx, chunk_file = args
+                local_rec = sr.Recognizer()
+                for attempt in range(3):
+                    try:
+                        with sr.AudioFile(chunk_file) as source:
+                            audio_data = local_rec.record(source)
+                        text = local_rec.recognize_google(audio_data, language="es-ES").strip()
+                        return idx, text
+                    except sr.UnknownValueError:
+                        return idx, ""
+                    except sr.RequestError as e:
+                        if attempt < 2:
+                            time.sleep(0.75 * (attempt + 1))
+                            continue
+                        sys.stderr.write(f"[STT Error] API error en segmento {idx+1}: {e}\n")
+                        return idx, ""
+                    except Exception as e:
+                        sys.stderr.write(f"[STT Error] Fallo en segmento {idx+1}: {e}\n")
+                        return idx, ""
+                return idx, ""
 
-            for idx, chunk_file in enumerate(chunk_files):
-                try:
-                    with sr.AudioFile(chunk_file) as source:
-                        audio_data = recognizer.record(source)
-                    text = recognizer.recognize_google(audio_data, language="es-ES").strip()
-                    if text:
-                        transcribed_chunks.append(text)
-                except sr.UnknownValueError:
-                    continue
-                except sr.RequestError as e:
-                    sys.stderr.write(f"[STT Error] API error en segmento {idx+1}: {e}\n")
-                    continue
-                except Exception as e:
-                    sys.stderr.write(f"[STT Error] Fallo en segmento {idx+1}: {e}\n")
-                    continue
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                results = list(executor.map(transcribe_single, enumerate(chunk_files)))
+
+            results.sort(key=lambda item: item[0])
+            transcribed_chunks = [text for _, text in results if text]
 
             if not transcribed_chunks:
                 raise Exception("No se detectó voz o habla comprensible en el archivo de audio.")
@@ -859,6 +870,7 @@ class UniversalExtractionEngine:
         '.wav': AudioTranscriptionExtractor,
         '.m4a': AudioTranscriptionExtractor,
         '.ogg': AudioTranscriptionExtractor,
+        '.opus': AudioTranscriptionExtractor,
         '.aac': AudioTranscriptionExtractor,
         '.flac': AudioTranscriptionExtractor,
         '.mp4': AudioTranscriptionExtractor,

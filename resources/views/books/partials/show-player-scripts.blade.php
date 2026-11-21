@@ -656,6 +656,14 @@
         const chapter = chaptersData.find(c => c.id === chapterId);
         if (!chapter || chapter.status !== 'ready') return;
 
+        if (!chapter.audio_path) {
+            if (typeof openPdfModal === 'function') {
+                openPdfModal();
+                setTimeout(() => jumpToReaderChapter(chapter.chapter_number), 150);
+            }
+            return;
+        }
+
         if (currentChapterId === chapter.id) {
             togglePlay();
         } else {
@@ -883,6 +891,7 @@
     // Spacebar to play/pause
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            if (!document.getElementById('stickyPlayerBar')) return;
             e.preventDefault();
             togglePlay();
         }

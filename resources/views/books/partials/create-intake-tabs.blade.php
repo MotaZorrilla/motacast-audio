@@ -28,6 +28,7 @@
     </div>
     <input type="hidden" name="input_mode" id="inputModeHidden" value="file">
     <input type="hidden" name="keep_original_media" id="keepOriginalMediaHidden" value="0">
+    <input type="hidden" name="transcription_only" id="transcriptionOnlyHidden" value="0">
     <input type="hidden" name="chunked_upload_id" id="chunkedUploadIdHidden" value="">
     <input type="hidden" name="chunked_filename" id="chunkedFilenameHidden" value="">
 </div>
