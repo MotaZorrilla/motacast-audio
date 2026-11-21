@@ -6,12 +6,11 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ChunkedUploadController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\VoicePreviewController;
-use App\Models\Book;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Guest Auth Routes
@@ -31,15 +30,15 @@ Route::middleware('guest')->group(function () {
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// Public / Guest Trial Creation & Reset Routes (Allowed for test conversions)
+// Public / Guest Trial Creation & Reset Routes (Allowed for test conversions, rate-limited against abuse)
 Route::match(['get', 'post'], '/guest/reset', [BookController::class, 'resetGuest'])->name('guest.reset');
-Route::post('/books/ocr-preview', [BookController::class, 'ocrPreview'])->name('books.ocr.preview');
-Route::post('/books/stt-preview', [BookController::class, 'sttPreview'])->name('books.stt.preview');
+Route::post('/books/ocr-preview', [BookController::class, 'ocrPreview'])->middleware('throttle:heavy-preview')->name('books.ocr.preview');
+Route::post('/books/stt-preview', [BookController::class, 'sttPreview'])->middleware('throttle:heavy-preview')->name('books.stt.preview');
 Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
-Route::post('/books', [BookController::class, 'store'])->name('books.store');
-Route::get('/voices/preview', [VoicePreviewController::class, 'preview'])->name('voices.preview');
+Route::post('/books', [BookController::class, 'store'])->middleware('throttle:heavy-preview')->name('books.store');
+Route::get('/voices/preview', [VoicePreviewController::class, 'preview'])->middleware('throttle:heavy-preview')->name('voices.preview');
 
-// Player, Status & PDF Streaming Routes (Permission checked in Controller for User and Guest Trial)
+// Player, Status & PDF Streaming Routes (Permission checked in Controller via BookPolicy)
 Route::prefix('books')->name('books.')->group(function () {
     Route::get('/{book}', [BookController::class, 'show'])->name('show');
     Route::get('/{book}/pdf', [BookController::class, 'pdfStream'])->name('pdf');
@@ -56,44 +55,18 @@ Route::prefix('chapters')->name('chapters.')->group(function () {
     Route::get('/{chapter}/download', [BookController::class, 'downloadChapter'])->name('download');
 });
 
-// Root Landing: First-time guests land on conversion trial, guests with loaded book view their book, logged-in users access library
-Route::get('/', function (Request $request) {
-    if (Auth::check()) {
-        return app(BookController::class)->index($request);
-    }
-
-    // Optional reset switch for guests (?reset=1 or ?new=1 or ?reset_trial=1)
-    if ($request->has('reset') || $request->has('new') || $request->has('reset_trial')) {
-        session()->forget(['guest_book_id', 'guest_upload_count']);
-        session()->save();
-
-        return app(BookController::class)->create($request);
-    }
-
-    if (session()->has('guest_book_id')) {
-        $guestBook = Book::find(session('guest_book_id'));
-        if ($guestBook) {
-            return redirect()->route('books.show', $guestBook->id);
-        }
-        // Stale guest book was deleted: clear session so guest can use trial again
-        session()->forget(['guest_book_id', 'guest_upload_count']);
-    }
-
-    if (session('guest_upload_count', 0) >= 1) {
-        return redirect()->route('login')
-            ->with('info', 'Has utilizado tu conversión de prueba gratuita. Inicia sesión o regístrate para acceder a tu biblioteca.');
-    }
-
-    return view('landing');
-})->name('home');
+// Root Landing: Cacheable HomeController replacing route closure
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Support & Feedback Routes (Tickets & Quota Extensions)
-Route::post('/support/tickets', [SupportTicketController::class, 'store'])->name('tickets.store');
+Route::post('/support/tickets', [SupportTicketController::class, 'store'])->middleware('throttle:heavy-preview')->name('tickets.store');
 Route::post('/support/request-extension', [SupportTicketController::class, 'requestExtension'])->name('tickets.request-extension')->middleware('auth');
 
 // Authenticated Main Library
 Route::middleware('auth')->group(function () {
-    Route::post('/uploads/chunk', [ChunkedUploadController::class, 'store'])->name('uploads.chunk');
+    Route::post('/uploads/chunk', [ChunkedUploadController::class, 'store'])
+        ->middleware(['admin', 'throttle:uploads'])
+        ->name('uploads.chunk');
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
 
     // Profile & Account Settings
@@ -102,7 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Admin Control Center: User Management, Telemetry & Support Tickets
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->middleware('admin')->name('admin.')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');

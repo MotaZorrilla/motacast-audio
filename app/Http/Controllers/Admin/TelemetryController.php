@@ -9,39 +9,38 @@ use App\Models\SupportTicket;
 use App\Models\TrafficLog;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
+use SplFileObject;
 
 class TelemetryController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorizeAdmin();
+        // 1. Storage & Disk Metrics (Cached 5 min to prevent heavy directory traversal per hit)
+        $storageMetrics = Cache::remember('telemetry_storage_metrics', 300, function () {
+            $audiobooksDir = storage_path('app/public/audiobooks');
+            $pdfsDir = storage_path('app/public/pdfs');
 
-        // 1. Storage & Disk Metrics
-        $publicDisk = Storage::disk('public');
-        $audiobooksDir = storage_path('app/public/audiobooks');
-        $pdfsDir = storage_path('app/public/pdfs');
+            $audiobooksBytes = $this->calculateDirectorySize($audiobooksDir);
+            $pdfsBytes = $this->calculateDirectorySize($pdfsDir);
+            $totalStorageBytes = $audiobooksBytes + $pdfsBytes;
 
-        $audiobooksBytes = $this->calculateDirectorySize($audiobooksDir);
-        $pdfsBytes = $this->calculateDirectorySize($pdfsDir);
-        $totalStorageBytes = $audiobooksBytes + $pdfsBytes;
+            $freeDiskBytes = @disk_free_space(base_path()) ?: 0;
+            $totalDiskBytes = @disk_total_space(base_path()) ?: 0;
+            $usedDiskPercentage = $totalDiskBytes > 0 ? round((($totalDiskBytes - $freeDiskBytes) / $totalDiskBytes) * 100, 1) : 0;
 
-        $freeDiskBytes = @disk_free_space(base_path()) ?: 0;
-        $totalDiskBytes = @disk_total_space(base_path()) ?: 0;
-        $usedDiskPercentage = $totalDiskBytes > 0 ? round((($totalDiskBytes - $freeDiskBytes) / $totalDiskBytes) * 100, 1) : 0;
-
-        $storageMetrics = [
-            'audiobooks_size' => $this->formatBytes($audiobooksBytes),
-            'pdfs_size' => $this->formatBytes($pdfsBytes),
-            'total_app_storage' => $this->formatBytes($totalStorageBytes),
-            'free_disk' => $this->formatBytes($freeDiskBytes),
-            'total_disk' => $this->formatBytes($totalDiskBytes),
-            'disk_usage_percent' => $usedDiskPercentage,
-            'audio_files_count' => $this->countFilesInDir($audiobooksDir, ['mp3', 'wav']),
-            'pdf_files_count' => $this->countFilesInDir($pdfsDir, ['pdf', 'docx', 'txt', 'png', 'jpg']),
-        ];
+            return [
+                'audiobooks_size' => $this->formatBytes($audiobooksBytes),
+                'pdfs_size' => $this->formatBytes($pdfsBytes),
+                'total_app_storage' => $this->formatBytes($totalStorageBytes),
+                'free_disk' => $this->formatBytes($freeDiskBytes),
+                'total_disk' => $this->formatBytes($totalDiskBytes),
+                'disk_usage_percent' => $usedDiskPercentage,
+                'audio_files_count' => $this->countFilesInDir($audiobooksDir, ['mp3', 'wav']),
+                'pdf_files_count' => $this->countFilesInDir($pdfsDir, ['pdf', 'docx', 'txt', 'png', 'jpg']),
+            ];
+        });
 
         // 2. Conversion & Audio Synthesis Metrics
         $totalBooks = Book::count();
@@ -99,9 +98,10 @@ class TelemetryController extends Controller
         ];
 
         // 5. Traffic, Visitors & Connections Telemetry
+        $todayRange = [today()->startOfDay(), today()->endOfDay()];
         $totalHits = TrafficLog::count();
-        $todayHits = TrafficLog::whereDate('created_at', today())->count();
-        $uniqueVisitorsToday = TrafficLog::whereDate('created_at', today())->distinct('ip_hash')->count('ip_hash');
+        $todayHits = TrafficLog::whereBetween('created_at', $todayRange)->count();
+        $uniqueVisitorsToday = TrafficLog::whereBetween('created_at', $todayRange)->distinct('ip_hash')->count('ip_hash');
         $uniqueVisitorsTotal = TrafficLog::distinct('ip_hash')->count('ip_hash');
         $guestHits = TrafficLog::whereNull('user_id')->where('is_crawler', false)->count();
         $authHits = TrafficLog::whereNotNull('user_id')->count();
@@ -161,8 +161,6 @@ class TelemetryController extends Controller
 
     public function clearLogs(Request $request)
     {
-        $this->authorizeAdmin();
-
         $logFile = storage_path('logs/laravel.log');
         if (File::exists($logFile)) {
             File::put($logFile, '');
@@ -170,13 +168,6 @@ class TelemetryController extends Controller
 
         return redirect()->route('admin.telemetry.index')
             ->with('success', 'Registro de logs del servidor reiniciado correctamente.');
-    }
-
-    protected function authorizeAdmin(): void
-    {
-        if (! Auth::check() || ! Auth::user()->isAdmin()) {
-            abort(403, 'Acceso denegado: Se requieren privilegios de Administrador.');
-        }
     }
 
     private function calculateDirectorySize(string $path): int
@@ -232,13 +223,20 @@ class TelemetryController extends Controller
             return ['No hay archivo de registro laravel.log generado aún.'];
         }
 
-        $content = File::get($logFile);
-        $allLines = explode("\n", trim($content));
-        $slice = array_slice($allLines, -$lines);
+        $file = new SplFileObject($logFile, 'r');
+        $file->seek(PHP_INT_MAX);
+        $lastLine = $file->key();
+        $startLine = max(0, $lastLine - $lines + 1);
 
-        // Sanitize sensitive tokens or passwords if any
-        return array_map(function ($line) {
-            return preg_replace('/(password|token|secret|key)=[^&\s]+/i', '$1=***REDACTED***', $line);
-        }, $slice);
+        $slice = [];
+        $file->seek($startLine);
+        while (! $file->eof()) {
+            $line = rtrim((string) $file->fgets(), "\r\n");
+            if ($line !== '') {
+                $slice[] = preg_replace('/(password|token|secret|key)=[^&\s]+/i', '$1=***REDACTED***', $line);
+            }
+        }
+
+        return $slice;
     }
 }

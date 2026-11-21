@@ -11,10 +11,13 @@ class AudioSynthesisService
 
     protected string $scriptPath;
 
-    public function __construct()
+    protected TtsTextNormalizerService $normalizer;
+
+    public function __construct(?TtsTextNormalizerService $normalizer = null)
     {
-        $this->pythonBinary = PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3';
+        $this->pythonBinary = (string) config('audiolibros.python_binary', PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3');
         $this->scriptPath = base_path('scripts/synthesize_tts.py');
+        $this->normalizer = $normalizer ?? new TtsTextNormalizerService;
     }
 
     /**
@@ -40,7 +43,7 @@ class AudioSynthesisService
         }
 
         // Normalize text with NLP sentence bridging to ensure natural pauses only at punctuation
-        $text = self::normalizeText($text);
+        $text = $this->normalizer->normalize($text);
 
         // Write text to a temporary file to avoid shell length constraints
         $tempTextFile = tempnam(sys_get_temp_dir(), 'mz_tts_');
@@ -62,7 +65,7 @@ class AudioSynthesisService
                 $pitch,
             ]);
 
-            $process->setTimeout(600); // 10 minutes max for long chapters
+            $process->setTimeout((int) config('audiolibros.timeouts.tts', 600));
             $process->run();
 
             if (! $process->isSuccessful()) {
@@ -94,64 +97,7 @@ class AudioSynthesisService
      */
     public static function getAvailableVoices(): array
     {
-        return [
-            [
-                'id' => 'es-VE-SebastianNeural',
-                'name' => 'Sebastián (Venezuela - Masculina)',
-                'locale' => 'es-VE',
-                'gender' => 'Male',
-                'recommended' => true,
-            ],
-            [
-                'id' => 'es-VE-PaolaNeural',
-                'name' => 'Paola (Venezuela - Femenina)',
-                'locale' => 'es-VE',
-                'gender' => 'Female',
-                'recommended' => false,
-            ],
-            [
-                'id' => 'es-MX-DaliaNeural',
-                'name' => 'Dalia (México - Femenina)',
-                'locale' => 'es-MX',
-                'gender' => 'Female',
-                'recommended' => false,
-            ],
-            [
-                'id' => 'es-MX-JorgeNeural',
-                'name' => 'Jorge (México - Masculina)',
-                'locale' => 'es-MX',
-                'gender' => 'Male',
-                'recommended' => false,
-            ],
-            [
-                'id' => 'es-ES-AlvaroNeural',
-                'name' => 'Álvaro (España - Masculina)',
-                'locale' => 'es-ES',
-                'gender' => 'Male',
-                'recommended' => false,
-            ],
-            [
-                'id' => 'es-ES-ElviraNeural',
-                'name' => 'Elvira (España - Femenina)',
-                'locale' => 'es-ES',
-                'gender' => 'Female',
-                'recommended' => false,
-            ],
-            [
-                'id' => 'es-AR-TomasNeural',
-                'name' => 'Tomás (Argentina - Masculina)',
-                'locale' => 'es-AR',
-                'gender' => 'Male',
-                'recommended' => false,
-            ],
-            [
-                'id' => 'es-CO-GonzaloNeural',
-                'name' => 'Gonzalo (Colombia - Masculina)',
-                'locale' => 'es-CO',
-                'gender' => 'Male',
-                'recommended' => false,
-            ],
-        ];
+        return (array) config('audiolibros.voices', []);
     }
 
     /**
@@ -159,6 +105,6 @@ class AudioSynthesisService
      */
     public static function normalizeText(string $text, ?bool $forceMasonic = null): string
     {
-        return app(TtsTextNormalizerService::class)->normalize($text, $forceMasonic);
+        return (new TtsTextNormalizerService)->normalize($text, $forceMasonic);
     }
 }

@@ -77,8 +77,9 @@
                     </span>
                 </div>
                 <div class="flex items-center gap-2.5">
+                    @php $remainingBooks = Auth::user()->remainingBooks(); @endphp
                     <span class="font-bold text-[#5b4f96] dark:text-[#a59be0]">
-                        {{ Auth::user()->remainingBooks() === -1 ? 'Sin límite' : Auth::user()->remainingBooks() . ' restantes' }}
+                        {{ ($remainingBooks === 'Ilimitado' || $remainingBooks === -1) ? 'Sin límite' : $remainingBooks . ' restantes' }}
                     </span>
                     <button type="button" onclick="openSupportModal()" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline">
                         ¿Necesitas más?

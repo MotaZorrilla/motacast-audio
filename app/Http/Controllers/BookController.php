@@ -151,15 +151,7 @@ class BookController extends Controller
 
         try {
             $extraction = $extractor->extract($tempPath);
-            $fullText = '';
-            if (! empty($extraction['chapters'])) {
-                foreach ($extraction['chapters'] as $ch) {
-                    $fullText .= ($fullText ? "\n\n" : '').$ch['text'];
-                }
-            }
-            if (empty($fullText) && ! empty($extraction['summary'])) {
-                $fullText = $extraction['summary'];
-            }
+            $fullText = $this->extractPreviewText($extraction);
 
             return response()->json([
                 'success' => true,
@@ -214,15 +206,7 @@ class BookController extends Controller
 
         try {
             $extraction = $extractor->extract($tempPath);
-            $fullText = '';
-            if (! empty($extraction['chapters'])) {
-                foreach ($extraction['chapters'] as $ch) {
-                    $fullText .= ($fullText ? "\n\n" : '').$ch['text'];
-                }
-            }
-            if (empty($fullText) && ! empty($extraction['summary'])) {
-                $fullText = $extraction['summary'];
-            }
+            $fullText = $this->extractPreviewText($extraction);
 
             $title = $extraction['title'] ?? 'Transcripción de Audio (STT)';
             if ($originalFilename && str_starts_with($title, 'Stt Preview')) {
@@ -339,17 +323,17 @@ class BookController extends Controller
     {
         $this->authorizeBookAccess($book);
 
-        $path = Storage::disk('public')->path($book->pdf_path);
-        if (! file_exists($path)) {
-            $fallback = Storage::disk('public')->path('pdfs/manifiesto_homelab.pdf');
-            $path = file_exists($fallback) ? $fallback : abort(404, 'Archivo no encontrado en el almacenamiento.');
+        if (! $book->pdf_path || ! Storage::disk('public')->exists($book->pdf_path)) {
+            abort(404, 'Archivo no encontrado en el almacenamiento.');
         }
 
+        $path = Storage::disk('public')->path($book->pdf_path);
         $mimeType = MimeTypeResolver::resolve($book->original_filename ?? $book->pdf_path);
+        $safeFilename = str_replace(['"', "\r", "\n"], '', basename((string) ($book->original_filename ?: $book->pdf_path)));
 
         return response()->file($path, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="'.basename($book->original_filename).'"',
+            'Content-Disposition' => 'inline; filename="'.$safeFilename.'"',
         ]);
     }
 
@@ -463,7 +447,7 @@ class BookController extends Controller
      */
     public function retry(Book $book): RedirectResponse
     {
-        $this->authorizeBookAccess($book);
+        $this->authorizeBookAccess($book, 'retry');
 
         $book->update([
             'status' => 'pending',
@@ -482,19 +466,9 @@ class BookController extends Controller
      */
     public function streamChapter(Request $request, Chapter $chapter): StreamedResponse
     {
-        $this->authorizeBookAccess($chapter->book);
+        $this->authorizeBookAccess($chapter->book, 'stream');
 
-        // Self-healing: verify audio_path existence on disk; if missing check standard book chapter path
-        if (! $chapter->audio_path || ! Storage::disk('public')->exists($chapter->audio_path)) {
-            $candidate = "audiobooks/{$chapter->book_id}/chapter_{$chapter->chapter_number}.mp3";
-            if (Storage::disk('public')->exists($candidate)) {
-                $chapter->update(['audio_path' => $candidate]);
-            } else {
-                abort(404, 'Audio aún no disponible para este capítulo.');
-            }
-        }
-
-        $fullPath = Storage::disk('public')->path($chapter->audio_path);
+        $fullPath = $this->resolveChapterAudioPath($chapter);
 
         return $this->streamingService->stream($fullPath, $request);
     }
@@ -502,9 +476,9 @@ class BookController extends Controller
     /**
      * Stream executive summary audio.
      */
-    public function streamSummary(Book $book): StreamedResponse
+    public function streamSummary(Request $request, Book $book): StreamedResponse
     {
-        $this->authorizeBookAccess($book);
+        $this->authorizeBookAccess($book, 'stream');
 
         if (! $book->summary_audio_path || ! Storage::disk('public')->exists($book->summary_audio_path)) {
             abort(404, 'Audio del resumen no disponible.');
@@ -512,7 +486,7 @@ class BookController extends Controller
 
         $fullPath = Storage::disk('public')->path($book->summary_audio_path);
 
-        return $this->streamingService->stream($fullPath, request(), [
+        return $this->streamingService->stream($fullPath, $request, [
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
         ]);
     }
@@ -522,16 +496,9 @@ class BookController extends Controller
      */
     public function downloadChapter(Chapter $chapter): StreamedResponse
     {
-        $this->authorizeBookAccess($chapter->book);
+        $this->authorizeBookAccess($chapter->book, 'stream');
 
-        if (! $chapter->audio_path || ! Storage::disk('public')->exists($chapter->audio_path)) {
-            $candidate = "audiobooks/{$chapter->book_id}/chapter_{$chapter->chapter_number}.mp3";
-            if (Storage::disk('public')->exists($candidate)) {
-                $chapter->update(['audio_path' => $candidate]);
-            } else {
-                abort(404, 'Audio no generado.');
-            }
-        }
+        $this->resolveChapterAudioPath($chapter, 'Audio no generado.');
 
         $safeName = sprintf(
             '%s_Capitulo_%02d.mp3',
@@ -547,28 +514,56 @@ class BookController extends Controller
      */
     public function destroy(Book $book, DeleteBookAction $deleteBookAction): RedirectResponse
     {
-        $this->authorizeBookAccess($book);
+        $this->authorizeBookAccess($book, 'delete');
 
-        $deleteBookAction->execute($book);
+        $deleteBookAction->handle($book);
 
         return redirect()->route('books.index')
             ->with('success', 'Documento y pistas de audio eliminados correctamente.');
     }
 
     /**
-     * Verify whether the authenticated user, guest, or social media crawler is authorized to access the book.
+     * Verify whether the authenticated user or active guest session is authorized for the given book ability.
      */
-    protected function authorizeBookAccess(Book $book): void
+    protected function authorizeBookAccess(Book $book, string $ability = 'view'): void
     {
-        // 1. If unauthenticated guest attempts to access a protected private book, redirect to login
-        if (! Auth::check() && ! Gate::allows('view', $book)) {
+        if (! Auth::check() && ! Gate::allows($ability, $book)) {
             throw new HttpResponseException(
                 redirect()->route('login')
                     ->with('info', 'Debes iniciar sesión para acceder a este audiolibro.')
             );
         }
 
-        // 2. Delegate authorization evaluation directly to BookPolicy
-        Gate::authorize('view', $book);
+        Gate::authorize($ability, $book);
+    }
+
+    protected function resolveChapterAudioPath(Chapter $chapter, string $notFoundMessage = 'Audio aún no disponible para este capítulo.'): string
+    {
+        if (! $chapter->audio_path || ! Storage::disk('public')->exists($chapter->audio_path)) {
+            $candidate = "audiobooks/{$chapter->book_id}/chapter_{$chapter->chapter_number}.mp3";
+            if (Storage::disk('public')->exists($candidate)) {
+                $chapter->update(['audio_path' => $candidate]);
+            } else {
+                abort(404, $notFoundMessage);
+            }
+        }
+
+        return Storage::disk('public')->path($chapter->audio_path);
+    }
+
+    protected function extractPreviewText(array $extraction): string
+    {
+        $fullText = '';
+        if (! empty($extraction['chapters'])) {
+            foreach ($extraction['chapters'] as $ch) {
+                $fullText .= ($fullText ? "\n\n" : '').$ch['text'];
+            }
+        }
+
+        if (empty($fullText) && ! empty($extraction['summary'])) {
+            $fullText = $extraction['summary'];
+        }
+
+        return $fullText;
     }
 }

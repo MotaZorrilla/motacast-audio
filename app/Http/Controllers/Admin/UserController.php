@@ -2,20 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Book\DeleteBookAction;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorizeAdmin();
-
         $query = User::withCount('books');
 
         if ($request->filled('search')) {
@@ -48,8 +46,6 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorizeAdmin();
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
@@ -69,8 +65,6 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $this->authorizeAdmin();
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -104,8 +98,6 @@ class UserController extends Controller
 
     public function toggleStatus(User $user)
     {
-        $this->authorizeAdmin();
-
         if ($user->id === Auth::id()) {
             return back()->with('error', 'No puedes suspender tu propia cuenta.');
         }
@@ -122,8 +114,6 @@ class UserController extends Controller
 
     public function adjustLimit(Request $request, User $user)
     {
-        $this->authorizeAdmin();
-
         $request->validate([
             'action' => 'required|in:plus1,plus5,unlimited,reset',
         ]);
@@ -148,36 +138,22 @@ class UserController extends Controller
         return back()->with('success', "Cuota de '{$user->name}' actualizada a: ".($user->book_limit === -1 ? 'Ilimitado' : "{$user->book_limit} libros").'.');
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user, DeleteBookAction $deleteBookAction)
     {
-        $this->authorizeAdmin();
-
         if ($user->id === Auth::id()) {
             return back()->with('error', 'No puedes eliminar tu propia cuenta de Administrador.');
         }
 
         $userName = $user->name;
 
-        // Cascade delete all book files for this user to free disk space
+        // Cascade delete all books via DeleteBookAction
         foreach ($user->books as $book) {
-            if ($book->pdf_path && Storage::disk('public')->exists($book->pdf_path)) {
-                Storage::disk('public')->delete($book->pdf_path);
-            }
-            Storage::disk('public')->deleteDirectory("audiobooks/{$book->id}");
-            $book->chapters()->delete();
-            $book->delete();
+            $deleteBookAction->handle($book);
         }
 
         $user->delete();
 
         return redirect()->route('admin.users.index')
             ->with('success', "Usuario '{$userName}' y todos sus audiolibros asociados eliminados correctamente.");
-    }
-
-    protected function authorizeAdmin(): void
-    {
-        if (! Auth::check() || ! Auth::user()->isAdmin()) {
-            abort(403, 'Acceso denegado: Se requieren privilegios de Administrador.');
-        }
     }
 }

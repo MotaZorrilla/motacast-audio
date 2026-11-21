@@ -43,6 +43,15 @@ class AudioStreamingService
             if (! empty($matches[2])) {
                 $end = intval($matches[2]);
             }
+
+            $end = min($end, max(0, $size - 1));
+            if ($size === 0 || $start > $end || $start >= $size) {
+                fclose($file);
+                abort(416, 'Rango solicitado no satisfacible.', [
+                    'Content-Range' => "bytes */{$size}",
+                ]);
+            }
+
             $status = 206;
             $headers['Content-Range'] = sprintf('bytes %d-%d/%d', $start, $end, $size);
         }

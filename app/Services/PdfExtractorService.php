@@ -13,7 +13,7 @@ class PdfExtractorService
 
     public function __construct()
     {
-        $this->pythonBinary = PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3';
+        $this->pythonBinary = (string) config('audiolibros.python_binary', PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3');
         $this->scriptPath = base_path('scripts/extract_pdf.py');
     }
 
@@ -34,7 +34,7 @@ class PdfExtractorService
             $pdfAbsolutePath,
         ]);
 
-        $process->setTimeout(1800); // 30 minutes max for huge PDFs or long admin audio/video files
+        $process->setTimeout((int) config('audiolibros.timeouts.extraction', 1800));
         $process->run();
 
         if (! $process->isSuccessful()) {

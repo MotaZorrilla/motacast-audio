@@ -29,11 +29,11 @@ php artisan migrate --force
 # Seed admin user if not exists
 php artisan db:seed --class=AdminUserSeeder --force || true
 
-# Start immortal background queue worker daemon
+# Start immortal background queue worker daemon (low CPU priority to protect web latency)
 sh -c '
   echo "[Queue Supervisor] Starting queue worker daemon at $(date)..."
   while true; do
-    php /app/artisan queue:work --tries=3 --timeout=1800 --sleep=2 || true
+    nice -n 10 php /app/artisan queue:work --tries=3 --timeout=1800 --sleep=2 || true
     sleep 3
   done
 ' >> /app/storage/logs/queue.log 2>&1 &

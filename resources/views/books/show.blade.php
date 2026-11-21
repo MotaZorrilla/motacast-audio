@@ -8,7 +8,7 @@
 
     $ext = strtolower(pathinfo($book->original_filename ?? $book->pdf_path, PATHINFO_EXTENSION));
     $isImageUpload = in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'bmp']);
-    $ogImage = ($isImageUpload && \Illuminate\Support\Facades\Storage::disk('public')->exists($book->pdf_path))
+    $ogImage = (is_null($book->user_id) && $isImageUpload && is_file(public_path('storage/' . $book->pdf_path)))
         ? asset('storage/' . $book->pdf_path)
         : asset('images/motacast-og-banner.jpg');
 @endphp

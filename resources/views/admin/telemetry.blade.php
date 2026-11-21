@@ -46,7 +46,7 @@
                 </div>
                 <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">Observabilidad en Tiempo Real</h1>
                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-300 mt-0.5">
-                    Monitorea almacenamiento de audios, cuotas de usuarios, desempeño del motor Piper TTS y registros del servidor.
+                    Monitorea almacenamiento de audios, cuotas de usuarios, desempeño del motor Edge TTS / STT y registros del servidor.
                 </p>
             </div>
 

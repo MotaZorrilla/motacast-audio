@@ -97,8 +97,12 @@ class RecordWebTraffic
             return true;
         }
 
-        // Avoid flooding table with repetitive byte-range audio chunk requests
+        // Avoid flooding table with repetitive polling, uploads, or byte-range audio chunk requests
         if (str_contains($path, '/stream') && $request->headers->has('Range')) {
+            return true;
+        }
+
+        if (preg_match('#^books/\d+/status$#', $path) || str_starts_with($path, 'uploads/chunk')) {
             return true;
         }
 
@@ -144,7 +148,7 @@ class RecordWebTraffic
     /**
      * Categorize device type into mobile, tablet, or desktop.
      */
-    protected function detectDevice(string $ua): bool
+    protected function detectDevice(string $ua): string
     {
         if (empty($ua)) {
             return 'desktop';

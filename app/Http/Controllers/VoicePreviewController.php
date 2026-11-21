@@ -31,8 +31,8 @@ class VoicePreviewController extends Controller
         $speedRate = (string) $request->query('speed_rate', '+0%');
         $pitch = (string) $request->query('pitch', '+0Hz');
 
-        $allowedRates = ['-20%', '-10%', '+0%', '+10%', '+20%', '+30%'];
-        $allowedPitches = ['-20Hz', '-10Hz', '+0Hz', '+10Hz', '+20Hz'];
+        $allowedRates = (array) config('audiolibros.speed_rates', ['-20%', '-10%', '+0%', '+10%', '+20%', '+30%']);
+        $allowedPitches = (array) config('audiolibros.pitches', ['-20Hz', '-10Hz', '+0Hz', '+10Hz', '+20Hz']);
 
         if (! in_array($speedRate, $allowedRates, true)) {
             $speedRate = '+0%';

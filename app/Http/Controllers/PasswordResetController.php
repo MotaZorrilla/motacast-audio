@@ -67,16 +67,7 @@ class PasswordResetController extends Controller
         $token = Password::broker()->createToken($user);
         $user->sendPasswordResetNotification($token);
 
-        $resetUrl = route('password.reset', [
-            'token' => $token,
-            'email' => $user->email,
-        ]);
-
-        // In Early Access / Homelab (or local testing where mailer may be log),
-        // flash the direct link to the session so the user is never stranded
-        session()->flash('beta_reset_url', $resetUrl);
-
-        return back()->with('status', 'Hemos generado el enlace de restablecimiento para tu cuenta. Revisa tu buzón de correo o utiliza el acceso directo a continuación.');
+        return back()->with('status', 'Hemos generado el enlace de restablecimiento para tu cuenta. Revisa tu buzón de correo electrónico o contacta soporte si el servicio SMTP está en mantenimiento.');
     }
 
     /**
@@ -123,12 +114,18 @@ class PasswordResetController extends Controller
             ])->onlyInput('email');
         }
 
+        $existingUser = User::where('email', $email)->first();
+        if ($existingUser && $existingUser->isSuspended()) {
+            return back()->withErrors([
+                'email' => 'Esta cuenta se encuentra suspendida y no puede restablecer su acceso.',
+            ])->onlyInput('email');
+        }
+
         $status = Password::broker()->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([
                     'password' => Hash::make($password),
-                    'status' => 'active',
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
@@ -140,7 +137,7 @@ class PasswordResetController extends Controller
 
             $user = User::where('email', $email)->first();
 
-            if ($user) {
+            if ($user && ! $user->isSuspended()) {
                 Auth::login($user);
                 $request->session()->regenerate();
 

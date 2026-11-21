@@ -29,27 +29,6 @@
         <!-- Glassmorphism Tactile Recovery Card -->
         <div class="card-tactile rounded-3xl p-6 sm:p-8 space-y-6 bg-white/95 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-xl shadow-black/30 backdrop-blur-xl">
 
-            <!-- Early Access Instant Recovery Banner (Zero-Delay Self-Service) -->
-            @if (session('beta_reset_url'))
-                <div class="p-4 rounded-2xl bg-indigo-500/10 dark:bg-indigo-950/50 border border-indigo-500/40 text-center space-y-3 shadow-lg shadow-indigo-500/10">
-                    <div class="flex items-center justify-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider">
-                        <svg class="w-4 h-4 animate-bounce text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <span>Enlace de Recuperación Generado</span>
-                    </div>
-                    <p class="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                        En esta fase de servicio puedes ingresar directamente mediante este acceso seguro de un solo uso:
-                    </p>
-                    <a href="{{ session('beta_reset_url') }}" class="btn-primary-tactile w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-white transition transform active:scale-95 shadow-md">
-                        <span>Restablecer Mi Contraseña Ahora</span>
-                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
-            @endif
-
             <form action="{{ route('password.email') }}" method="POST" class="space-y-4">
                 @csrf
 

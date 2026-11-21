@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SupportTicket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SupportTicketController extends Controller
 {
@@ -51,20 +52,22 @@ class SupportTicketController extends Controller
 
         // Branch 1: Automatic 1-time courtesy bump (+1 book)
         if ($user->canRequestAutoExtension()) {
-            $user->grantCourtesyExtension(1);
+            DB::transaction(function () use ($user) {
+                $user->grantCourtesyExtension(1);
 
-            SupportTicket::create([
-                'user_id' => $user->id,
-                'type' => 'extension_limite',
-                'subject' => 'Extensión automática de cortesía (+1 audiolibro)',
-                'message' => 'El usuario solicitó una extensión y el sistema Beta le otorgó +1 libro de cortesía automáticamente.',
-                'status' => 'resuelto',
-                'requested_books' => 1,
-                'admin_reply' => 'Concedida automáticamente por el protocolo de Early Access.',
-                'resolved_at' => now(),
-            ]);
+                SupportTicket::create([
+                    'user_id' => $user->id,
+                    'type' => 'extension_limite',
+                    'subject' => 'Extensión automática de cortesía (+1 audiolibro)',
+                    'message' => 'El usuario solicitó una extensión y el sistema Beta le otorgó +1 libro de cortesía automáticamente.',
+                    'status' => 'resuelto',
+                    'requested_books' => 1,
+                    'admin_reply' => 'Concedida automáticamente por el protocolo de Early Access.',
+                    'resolved_at' => now(),
+                ]);
+            });
 
-            return back()->with('success', "¡Extensión de cortesía aprobada al instante! Ahora puedes cargar hasta {$user->book_limit} libros en tu cuenta.");
+            return back()->with('success', "¡Extensión de cortesía aprobada al instante! Ahora puedes cargar hasta {$user->fresh()->book_limit} libros en tu cuenta.");
         }
 
         // Branch 2: User already used courtesy bump, check for pending request
@@ -77,9 +80,14 @@ class SupportTicketController extends Controller
             return back()->with('info', 'Ya tienes una solicitud de ampliación pendiente en la bandeja del Administrador.');
         }
 
+        $validated = $request->validate([
+            'requested_books' => 'nullable|integer|min:1|max:20',
+            'reason' => 'nullable|string|max:500',
+        ]);
+
         // Branch 3: Register ticket for admin 1-click review
-        $reason = $request->input('reason', 'Solicitud de ampliación de cuota tras agotar la cortesía inicial de fase Beta.');
-        $requestedBooks = (int) $request->input('requested_books', 2);
+        $reason = $validated['reason'] ?? 'Solicitud de ampliación de cuota tras agotar la cortesía inicial de fase Beta.';
+        $requestedBooks = (int) ($validated['requested_books'] ?? 2);
 
         SupportTicket::create([
             'user_id' => $user->id,

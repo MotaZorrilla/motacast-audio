@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreBookRequest extends FormRequest
 {
@@ -30,6 +31,9 @@ class StoreBookRequest extends FormRequest
             ? 'required_without_all:pdf_file,chunked_upload_id|nullable|string|min:10|max:50000'
             : 'required_without:pdf_file|nullable|string|min:10|max:50000';
 
+        $speedRates = (array) config('audiolibros.speed_rates', ['-20%', '-15%', '-10%', '+0%', '+10%', '+15%', '+20%', '+25%', '+30%', '+35%']);
+        $pitches = (array) config('audiolibros.pitches', ['-20Hz', '-10Hz', '+0Hz', '+10Hz', '+20Hz']);
+
         return [
             'pdf_file' => $fileRule,
             'raw_text' => $rawTextRule,
@@ -37,9 +41,9 @@ class StoreBookRequest extends FormRequest
             'chunked_filename' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
             'author' => 'nullable|string|max:255',
-            'voice' => 'required_unless:transcription_only,1|nullable|string',
-            'speed_rate' => 'required_unless:transcription_only,1|nullable|string',
-            'pitch' => 'required_unless:transcription_only,1|nullable|string',
+            'voice' => ['required_unless:transcription_only,1', 'nullable', 'string', 'max:80', 'regex:/^[A-Za-z0-9_-]+$/'],
+            'speed_rate' => ['required_unless:transcription_only,1', 'nullable', 'string', Rule::in($speedRates)],
+            'pitch' => ['required_unless:transcription_only,1', 'nullable', 'string', Rule::in($pitches)],
             'keep_original_media' => 'nullable|boolean',
             'transcription_only' => 'nullable|boolean',
             'assigned_user_id' => 'nullable|exists:users,id',

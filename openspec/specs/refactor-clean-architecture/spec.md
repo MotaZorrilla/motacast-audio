@@ -139,3 +139,26 @@ Para promover las refactorizaciones de esta especificación hacia el servidor de
 2. **Estilo de Código:** `vendor/bin/pint --dirty` con 0 advertencias de estilo PSR-12.
 3. **Validación de Especificaciones:** Validación de escenarios BDD cumplidos.
 4. **Verificación en Vivo:** Inspección de 0 errores en consola vía Chrome DevTools MCP en `https://lab.motazorrilla.com/audiolibros/`.
+
+---
+
+## 5. Actualización Evolutiva (`SPEC-MCA-002` — Noviembre 2026: Seguridad, Concurrencia & SOLID Calibrado)
+
+Tras la Auditoría Integral P2 y el panel **Elephant-Goldfish** del 2026-11-20, se incorporan los siguientes requisitos normativos preservando la trazabilidad histórica de `SPEC-MCA-001`:
+
+### REQ-SEC-01: Cierre de Bypass por `User-Agent` y Autorización Granular por Habilidad
+- **Declaración (Enmienda a Escenario 2 de `SPEC-MCA-001`):** `BookPolicy::view()` **SHALL NOT** conceder acceso a libros privados (`user_id !== null`) en función de la cabecera HTTP `User-Agent`.
+- **Obligación:** Cada endpoint en `BookController` **MUST** validar la habilidad específica (`view`, `stream`, `retry`, `delete`) en `BookPolicy`, y `books.show` **MUST** proteger los libros privados exigiendo autenticación o sesión de prueba propietaria.
+
+### REQ-SEC-02: Protección en Recuperación de Contraseña, Proxies y Rate-Limiting
+- **Declaración:** `PasswordResetController` **SHALL NOT** exponer enlaces ni tokens de restablecimiento (`beta_reset_url`) en la respuesta HTTP/HTML ni reactivar cuentas suspendidas al ejecutar `reset()`.
+- **Obligación:** El sistema **MUST** configurar `trustProxies` para la red privada Docker/Nginx, aplicar `throttle:heavy-preview` a endpoints anónimos costosos (`ocr-preview`, `stt-preview`, `books.store`, `voices.preview`, `tickets.store`) y `throttle:uploads` a fragmentos administrativos (`/uploads/chunk`).
+
+### REQ-ARCH-08: Configuración Centralizada, Middleware Admin, Colas y Streaming Seguro
+- **Obligación:**
+  1. Voces neurales, velocidades, tonos, rutas Python y timeouts **MUST** residir en `config/audiolibros.php` (eliminando duplicación entre `AudioSynthesisService`, `VoicePreviewController`, `ProfileController` y `StoreBookRequest`).
+  2. El grupo `/admin/*` y `/uploads/chunk` **MUST** protegerse mediante el middleware centralizado `EnsureUserIsAdmin` (`admin`).
+  3. `config/queue.php` **MUST** establecer `DB_QUEUE_RETRY_AFTER >= 1900` (superior al timeout de `1800s`) y `ProcessBookJob` **MUST** proteger cada libro con `Cache::lock` y no marcar `BookStatus::Ready` si fallan todas las pistas TTS.
+  4. `RecordWebTraffic::detectDevice()` **MUST** retornar `string` (`mobile|tablet|desktop`) y las consultas diarias en `TelemetryController` **MUST** usar rangos `whereBetween` aprovechando el índice `(created_at, ip_hash)`.
+  5. `AudioStreamingService` **MUST** validar rangos byte-range y responder HTTP `416` ante rangos inválidos.
+

@@ -142,7 +142,7 @@
                 btnText.className = "px-2 py-0.5 text-[10px] font-bold rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm";
             }
             if (drawerTitle) drawerTitle.innerHTML = '<svg class="w-4 h-4 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg><span>Índice de Capítulos</span>';
-            if (drawerToggleText) drawerToggleText.textContent = 'CapÃ­tulos';
+            if (drawerToggleText) drawerToggleText.textContent = 'Capítulos';
 
             populateChapterDrawer();
             applyReaderFontSize();
@@ -745,7 +745,7 @@
         currentChapterId = 'summary';
         audioEngine.src = streamUrl;
 
-        const titleText = "Resumen Ejecutivo â€” {{ addslashes($book->title) }}";
+        const titleText = "Resumen Ejecutivo — {{ addslashes($book->title) }}";
         if (playerChapterTitle) playerChapterTitle.textContent = titleText;
         if (modalChapterTitle) modalChapterTitle.textContent = titleText;
 
@@ -898,22 +898,22 @@
     });
 
     // Polling function for background synthesis
-    // â”€â”€ Phase label map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Phase label map ───────────────────────────────────────────────
     const phaseLabels = {
-        pending:      'En cola â€” esperando procesamientoâ€¦',
-        extracting:   'Extrayendo texto del documentoâ€¦',
-        extracting_ocr: 'Extrayendo texto con OCR (Tesseract)â€¦',
+        pending:      'En cola — esperando procesamiento…',
+        extracting:   'Extrayendo texto del documento…',
+        extracting_ocr: 'Extrayendo texto con OCR (Tesseract)…',
         synthesizing: (done, total) => total
-            ? `Sintetizando pista ${done} de ${total} con voz AIâ€¦`
-            : 'Sintetizando audio con voz AIâ€¦',
-        ready:        'Â¡Listo para escuchar! ðŸŽ§',
+            ? `Sintetizando pista ${done} de ${total} con voz AI…`
+            : 'Sintetizando audio con voz AI…',
+        ready:        '¡Listo para escuchar! 🎧',
         failed:       'Error en el procesamiento.',
     };
 
     function getPhaseLabel(status, processed, total, ocrUsed) {
         if (status === 'extracting' && ocrUsed) return phaseLabels.extracting_ocr;
         if (status === 'synthesizing') return phaseLabels.synthesizing(processed, total);
-        return phaseLabels[status] || 'Procesandoâ€¦';
+        return phaseLabels[status] || 'Procesando…';
     }
 
     function startStatusPolling() {
@@ -936,9 +936,9 @@
                     if (progressBar) progressBar.style.width = `${data.progress}%`;
                     if (progressPct) progressPct.textContent  = `${data.progress}%`;
                     if (chDone)      chDone.textContent        = data.processed_chapters ?? '0';
-                    if (chTotal)     chTotal.textContent       = data.total_chapters     ?? 'â€”';
+                    if (chTotal)     chTotal.textContent       = data.total_chapters     ?? '—';
 
-                    // OCR badge â€” show if server reported ocr_used (future field) or status says so
+                    // OCR badge — show if server reported ocr_used (future field) or status says so
                     const ocrActive = data.ocr_used || data.status === 'extracting_ocr';
                     if (ocrBadge) {
                         ocrBadge.classList.toggle('hidden',  !ocrActive);

@@ -25,6 +25,7 @@ class MimeTypeResolver
         'wav' => 'audio/wav',
         'm4a' => 'audio/mp4',
         'ogg' => 'audio/ogg',
+        'opus' => 'audio/opus',
         'flac' => 'audio/flac',
         'aac' => 'audio/aac',
         'mp4' => 'video/mp4',

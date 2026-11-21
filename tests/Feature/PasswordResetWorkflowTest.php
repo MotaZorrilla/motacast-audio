@@ -57,13 +57,35 @@ class PasswordResetWorkflowTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('status');
-        $response->assertSessionHas('beta_reset_url');
+        $response->assertSessionMissing('beta_reset_url');
 
         Notification::assertSentTo($user, ResetPasswordNotification::class);
 
         $this->assertDatabaseHas('password_reset_tokens', [
             'email' => 'francisco@test.com',
         ]);
+    }
+
+    public function test_suspended_user_cannot_reset_or_reactivate_account(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'suspendido@test.com',
+            'status' => 'suspended',
+            'password' => Hash::make('OldPassword123!'),
+        ]);
+
+        $token = Password::broker()->createToken($user);
+
+        $response = $this->post(route('password.update'), [
+            'token' => $token,
+            'email' => 'suspendido@test.com',
+            'password' => 'NewPassword2026!',
+            'password_confirmation' => 'NewPassword2026!',
+        ]);
+
+        $response->assertSessionHasErrors(['email']);
+        $this->assertGuest();
+        $this->assertSame('suspended', $user->fresh()->status);
     }
 
     public function test_non_existent_email_request_returns_clear_error(): void

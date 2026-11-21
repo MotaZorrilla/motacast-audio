@@ -5,14 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TicketController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorizeAdmin();
-
         $query = SupportTicket::with('user');
 
         if ($request->filled('type')) {
@@ -53,8 +51,6 @@ class TicketController extends Controller
 
     public function reply(Request $request, SupportTicket $ticket)
     {
-        $this->authorizeAdmin();
-
         $validated = $request->validate([
             'status' => 'required|in:pendiente,en_revision,resuelto,rechazado',
             'admin_reply' => 'required|string|max:2000',
@@ -71,8 +67,6 @@ class TicketController extends Controller
 
     public function approveExtension(Request $request, SupportTicket $ticket)
     {
-        $this->authorizeAdmin();
-
         $additional = (int) $request->input('books', $ticket->requested_books ?: 2);
         if ($additional < 1) {
             $additional = 2;
@@ -80,18 +74,20 @@ class TicketController extends Controller
 
         $user = $ticket->user;
         if ($user) {
-            if ($user->book_limit !== -1) {
-                $user->book_limit += $additional;
-                $user->save();
-            }
+            DB::transaction(function () use ($user, $ticket, $additional) {
+                if ($user->book_limit !== -1) {
+                    $user->book_limit += $additional;
+                    $user->save();
+                }
 
-            $ticket->update([
-                'status' => 'resuelto',
-                'admin_reply' => "Solicitud aprobada: se añadieron {$additional} libros a tu cuenta. ¡Gracias por participar en la fase Beta!",
-                'resolved_at' => now(),
-            ]);
+                $ticket->update([
+                    'status' => 'resuelto',
+                    'admin_reply' => "Solicitud aprobada: se añadieron {$additional} libros a tu cuenta. ¡Gracias por participar en la fase Beta!",
+                    'resolved_at' => now(),
+                ]);
+            });
 
-            return back()->with('success', "¡Extensión de +{$additional} libros concedida al usuario {$user->name}! Nuevo límite: {$user->book_limit} libros.");
+            return back()->with('success', "¡Extensión de +{$additional} libros concedida al usuario {$user->fresh()->name}! Nuevo límite: {$user->fresh()->book_limit} libros.");
         }
 
         return back()->with('error', 'No se pudo asociar el ticket con un usuario registrado.');
@@ -99,17 +95,9 @@ class TicketController extends Controller
 
     public function destroy(SupportTicket $ticket)
     {
-        $this->authorizeAdmin();
         $ticketId = $ticket->id;
         $ticket->delete();
 
         return back()->with('success', "Ticket #{$ticketId} eliminado del sistema.");
-    }
-
-    protected function authorizeAdmin(): void
-    {
-        if (! Auth::check() || ! Auth::user()->isAdmin()) {
-            abort(403, 'Acceso denegado: Se requieren privilegios de Administrador.');
-        }
     }
 }

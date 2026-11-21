@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AudioSynthesisService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
@@ -21,15 +21,9 @@ class ProfileController extends Controller
         $totalDuration = $user->books()->sum('total_duration');
         $totalWords = $user->books()->sum('total_words');
 
-        $availableVoices = [
-            'es-ES-AlvaroNeural' => 'Álvaro (España - Masculina, Dinámica y Natural)',
-            'es-ES-ElviraNeural' => 'Elvira (España - Femenina, Clara y Expresiva)',
-            'es-MX-JorgeNeural' => 'Jorge (México - Masculina, Cálida y Neutral)',
-            'es-MX-DaliaNeural' => 'Dalia (México - Femenina, Dulce y Didáctica)',
-            'es-VE-SebastianNeural' => 'Sebastián (Venezuela - Masculina, Sonora y Convincente)',
-            'es-CO-GonzaloNeural' => 'Gonzalo (Colombia - Masculina, Académica)',
-            'es-AR-TomasNeural' => 'Tomás (Argentina - Masculina, Urbana y Cercana)',
-        ];
+        $availableVoices = collect(AudioSynthesisService::getAvailableVoices())
+            ->mapWithKeys(fn (array $v) => [$v['id'] => $v['profile_label'] ?? $v['name']])
+            ->all();
 
         return view('profile.index', compact('user', 'totalBooks', 'recentBooks', 'totalDuration', 'totalWords', 'availableVoices'));
     }
@@ -40,12 +34,14 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
+        $voiceIds = collect(AudioSynthesisService::getAvailableVoices())->pluck('id')->all();
+        $speedRates = (array) config('audiolibros.speed_rates', ['-20%', '-10%', '+0%', '+10%', '+20%', '+30%']);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'preferred_voice' => ['nullable', 'string', 'max:64'],
-            'preferred_speed' => ['nullable', 'string', 'max:16'],
+            'preferred_voice' => ['nullable', 'string', 'max:64', Rule::in($voiceIds)],
+            'preferred_speed' => ['nullable', 'string', 'max:16', Rule::in($speedRates)],
         ], [
             'name.required' => 'El nombre es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',

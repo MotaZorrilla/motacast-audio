@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 class BookPolicyTest extends TestCase
 {
-    public function test_social_media_crawler_is_granted_view_access(): void
+    public function test_social_media_crawler_cannot_bypass_private_book_access(): void
     {
         $guestSession = $this->createMock(GuestSessionService::class);
         $policy = new BookPolicy($guestSession);
@@ -19,7 +19,7 @@ class BookPolicyTest extends TestCase
 
         $book = new Book(['user_id' => 99]);
 
-        $this->assertTrue($policy->view(null, $book));
+        $this->assertFalse($policy->view(null, $book));
     }
 
     public function test_unauthenticated_guest_can_view_demo_book(): void

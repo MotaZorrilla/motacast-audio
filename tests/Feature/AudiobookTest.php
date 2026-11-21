@@ -774,10 +774,25 @@ doc.close()
         ]);
     }
 
-    public function test_social_media_crawler_can_access_book_and_sees_open_graph_tags(): void
+    public function test_social_media_crawler_is_blocked_from_private_book_and_sees_demo_open_graph_tags(): void
     {
-        $book = Book::create([
+        $privateBook = Book::create([
             'user_id' => $this->user->id,
+            'title' => 'Libro Privado Confidencial',
+            'author' => 'Autor Privado',
+            'original_filename' => 'privado.pdf',
+            'pdf_path' => 'pdfs/privado.pdf',
+            'summary' => 'Contenido confidencial.',
+            'status' => 'ready',
+        ]);
+
+        $this->withHeaders([
+            'User-Agent' => 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+        ])->get(route('books.show', $privateBook->id))
+            ->assertRedirect(route('login'));
+
+        $publicDemoBook = Book::create([
+            'user_id' => null,
             'title' => 'El Arte de la Guerra Resumido',
             'author' => 'Sun Tzu',
             'original_filename' => 'arte_guerra.pdf',
@@ -788,7 +803,7 @@ doc.close()
 
         $response = $this->withHeaders([
             'User-Agent' => 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
-        ])->get(route('books.show', $book->id));
+        ])->get(route('books.show', $publicDemoBook->id));
 
         $response->assertStatus(200);
         $response->assertSee('property="og:title"', false);

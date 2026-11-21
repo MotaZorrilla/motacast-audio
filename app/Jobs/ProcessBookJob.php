@@ -14,6 +14,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
@@ -36,9 +37,17 @@ class ProcessBookJob implements ShouldQueue
         AudioSynthesisService $synthesizer,
         TtsTextNormalizerService $normalizer
     ): void {
+        $lock = Cache::lock("process_book_{$this->bookId}", 1850);
+        if (! $lock->get()) {
+            Log::warning("ProcessBookJob: Libro ID {$this->bookId} ya se encuentra en procesamiento por otro worker.");
+
+            return;
+        }
+
         $book = Book::find($this->bookId);
         if (! $book) {
             Log::error("ProcessBookJob: Libro con ID {$this->bookId} no encontrado.");
+            $lock->release();
 
             return;
         }
@@ -171,7 +180,11 @@ class ProcessBookJob implements ShouldQueue
                     }
                 }
 
-                // Step 4: Mark book as ready
+                // Step 4: Only mark Ready if at least one chapter synthesized successfully
+                if ($book->chapters()->count() > 0 && $processedCount === 0) {
+                    throw new \Exception('No se pudo sintetizar audio TTS para ningún capítulo del documento.');
+                }
+
                 $book->update([
                     'status' => BookStatus::Ready->value,
                     'total_duration' => $totalDuration,
@@ -197,6 +210,8 @@ class ProcessBookJob implements ShouldQueue
                 'status' => BookStatus::Failed->value,
                 'error_message' => $e->getMessage(),
             ]);
+        } finally {
+            $lock->release();
         }
     }
 }

@@ -10,10 +10,10 @@ RUN chmod +x /usr/local/bin/install-php-extensions && \
 RUN apk add --no-cache python3 py3-pip build-base libffi-dev \
         tesseract-ocr tesseract-ocr-data-spa ffmpeg flac \
     && pip install --no-cache-dir --break-system-packages \
-        edge-tts pymupdf mutagen pytesseract Pillow python-docx SpeechRecognition \
+        "edge-tts>=7.3.1" pymupdf mutagen pytesseract Pillow python-docx SpeechRecognition \
     && (ln -sf /usr/bin/flac /usr/lib/python3.*/site-packages/speech_recognition/flac-linux-x86_64 || true)
 
-# Copy custom PHP configuration (100MB upload limits)
+# Copy custom PHP configuration (2048MB upload limits, 256M memory limit)
 COPY custom-php.ini /usr/local/etc/php/conf.d/custom-php.ini
 
 WORKDIR /app

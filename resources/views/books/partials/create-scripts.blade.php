@@ -129,9 +129,9 @@
         pendingExcessText = '';
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ──────────────────────────────────────────────────────────────────────────
     // Custom Tactile Cyberpunk Notice Modal (Replaces browser alert())
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ──────────────────────────────────────────────────────────────────────────
     function showNoticeModal({ title = 'Aviso', message = '', type = 'error', detail = null, onConfirm = null }) {
         const modal = document.getElementById('motaNoticeModal');
         const box = document.getElementById('motaNoticeBox');
@@ -162,19 +162,19 @@
         if (type === 'error') {
             box.classList.add('border-rose-500/50', 'shadow-[0_0_25px_rgba(244,63,94,0.15)]');
             iconBox.classList.add('bg-rose-500/10', 'border-rose-500/30', 'text-rose-500');
-            icon.textContent = 'âŒ';
+            icon.textContent = '❌';
         } else if (type === 'warning') {
             box.classList.add('border-amber-500/50', 'shadow-[0_0_25px_rgba(245,158,11,0.15)]');
             iconBox.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-500');
-            icon.textContent = 'âš ï¸';
+            icon.textContent = '⚠️';
         } else if (type === 'success') {
             box.classList.add('border-emerald-500/50', 'shadow-[0_0_25px_rgba(16,185,129,0.15)]');
             iconBox.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-500');
-            icon.textContent = 'âœ…';
+            icon.textContent = '✅';
         } else { // info
             box.classList.add('border-indigo-500/50', 'shadow-[0_0_25px_rgba(99,102,241,0.15)]');
             iconBox.classList.add('bg-indigo-500/10', 'border-indigo-500/30', 'text-indigo-500');
-            icon.textContent = 'â„¹ï¸';
+            icon.textContent = 'ℹ️';
         }
 
         actionBtn.onclick = function() {
@@ -447,7 +447,7 @@
                 }
             } else {
                 showNoticeModal({
-                    title: 'Incidencia en ExtracciÃ³n OCR',
+                    title: 'Incidencia en Extracción OCR',
                     message: data.message || 'No se pudo extraer texto reconocible de la imagen.',
                     detail: data.detail || null,
                     type: 'warning'
@@ -1081,9 +1081,9 @@
         }
     });
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ──────────────────────────────────────────────────────────────────────────
     // Interactive Voice Preview Engine
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ──────────────────────────────────────────────────────────────────────────
     let previewAudio = null;
 
     window.toggleVoicePreview = function() {
@@ -1099,7 +1099,7 @@
             previewAudio.pause();
             previewAudio.currentTime = 0;
             if (btnText) btnText.textContent = 'Escuchar muestra';
-            if (btnIcon) btnIcon.textContent = 'ðŸ”Š';
+            if (btnIcon) btnIcon.textContent = '🔊';
             if (playerContainer) playerContainer.classList.add('hidden');
             return;
         }
@@ -1108,16 +1108,16 @@
             previewAudio = new Audio();
             previewAudio.addEventListener('ended', () => {
                 if (btnText) btnText.textContent = 'Escuchar muestra';
-                if (btnIcon) btnIcon.textContent = 'ðŸ”Š';
+                if (btnIcon) btnIcon.textContent = '🔊';
                 if (playerContainer) playerContainer.classList.add('hidden');
             });
             previewAudio.addEventListener('error', (e) => {
                 console.warn('Audio playback error:', e);
                 if (btnText) btnText.textContent = 'Error al cargar';
-                if (btnIcon) btnIcon.textContent = 'âš ï¸';
+                if (btnIcon) btnIcon.textContent = '⚠️';
                 setTimeout(() => {
                     if (btnText) btnText.textContent = 'Escuchar muestra';
-                    if (btnIcon) btnIcon.textContent = 'ðŸ”Š';
+                    if (btnIcon) btnIcon.textContent = '🔊';
                     if (playerContainer) playerContainer.classList.add('hidden');
                 }, 2500);
             });
@@ -1131,14 +1131,14 @@
         const previewBaseUrl = "{{ route('voices.preview') }}";
         previewAudio.src = `${previewBaseUrl}?voice=${encodeURIComponent(voiceId)}&speed_rate=${encodeURIComponent(speedVal)}&pitch=${encodeURIComponent(pitchVal)}`;
         if (btnText) btnText.textContent = 'Detener muestra';
-        if (btnIcon) btnIcon.textContent = 'â¹ï¸';
+        if (btnIcon) btnIcon.textContent = '⏹️';
         if (statusText) statusText.textContent = `Reproduciendo: ${voiceSelect.options[voiceSelect.selectedIndex].text} (${speedVal}, ${pitchVal})`;
         if (playerContainer) playerContainer.classList.remove('hidden');
 
         previewAudio.play().catch(e => {
             console.warn('Playback play() was rejected or interrupted:', e);
             if (btnText) btnText.textContent = 'Escuchar muestra';
-            if (btnIcon) btnIcon.textContent = 'ðŸ”Š';
+            if (btnIcon) btnIcon.textContent = '🔊';
             if (playerContainer) playerContainer.classList.add('hidden');
         });
     };
@@ -1155,9 +1155,9 @@
         }
     };
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ──────────────────────────────────────────────────────────────────────────
     // Reactive Masonic & Symbolic Content Detector
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ──────────────────────────────────────────────────────────────────────────
     function checkMasonicPresence() {
         const textVal = rawTextInput ? rawTextInput.value : '';
         const fileVal = fileInput && fileInput.files.length > 0 ? fileInput.files[0].name : '';
@@ -1166,14 +1166,14 @@
         const combined = (textVal + ' ' + fileVal + ' ' + titleVal).toLowerCase();
 
         const hasMasonic = 
-            /[âˆ´]/.test(combined) ||
-            /\.\s*Â·\s*\./.test(combined) ||
+            /[∴]/.test(combined) ||
+            /\.\s*·\s*\./.test(combined) ||
             /\.\.\s*\./.test(combined) ||
             /:\./.test(combined) ||
             /\b(gadu|g\.a\.d\.u\.|s\.f\.u\.|t\.a\.f\.|l\.i\.f\.|r\.e\.a\.a\.|i\.p\.h\.|m\.r\.g\.m\.)\b/i.test(combined) ||
             /(?:a\s*\(\s*l\s*\(|ven\s*\(\s*m\s*\(|q\s*\(\s*h\s*\(|qq\s*\(\s*hh\s*\(|resp\s*\(\s*log\s*\(|vvig\s*\(|m\s*\(\s*m\s*\(|s\s*\(\s*f\s*\(\s*u\s*\()/i.test(combined) ||
-            /[a-zÃ¡Ã©Ã­Ã³ÃºÃ±]{1,4}\s*[:.Â·]{2,4}\s*[a-zÃ¡Ã©Ã­Ã³ÃºÃ±]{1,4}\s*[:.Â·]{2,4}/i.test(combined) ||
-            /\b(venerable\s+maestro|querido\s+hermano|queridos\s+hermanos|gran\s+arquitecto\s+del\s+universo|respetable\s+logia\s+simb[oÃ³]lica|francmasoner[iÃ­]a|salud,\s*fuerza\s*y\s*uni[oÃ³]n|triple\s+abrazo\s+fraternal|abreviatura\s+tripuntuada|la\s+plomada\s*-\s*instrumento)/i.test(combined);
+            /[a-záéíóúñ]{1,4}\s*[:.·]{2,4}\s*[a-záéíóúñ]{1,4}\s*[:.·]{2,4}/i.test(combined) ||
+            /\b(venerable\s+maestro|querido\s+hermano|queridos\s+hermanos|gran\s+arquitecto\s+del\s+universo|respetable\s+logia\s+simb[oó]lica|francmasoner[ií]a|salud,\s*fuerza\s*y\s*uni[oó]n|triple\s+abrazo\s+fraternal|abreviatura\s+tripuntuada|la\s+plomada\s*-\s*instrumento)/i.test(combined);
 
         const masonicBox = document.getElementById('masonicNoticeBox');
         if (masonicBox) {

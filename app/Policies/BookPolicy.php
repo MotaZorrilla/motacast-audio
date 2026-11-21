@@ -16,22 +16,17 @@ class BookPolicy
     ) {}
 
     /**
-     * Determina si el usuario, visitante o crawler de redes sociales tiene autorización para ver el libro.
+     * Determina si el usuario o visitante tiene autorización para ver el libro.
+     * Los libros privados nunca se exponen por User-Agent spoofeable.
      */
     public function view(?User $user, Book $book): bool
     {
-        // 1. Crawlers y bots de redes sociales (Open Graph previews)
-        $userAgent = request()->header('User-Agent', '');
-        if (preg_match('/(facebookexternalhit|WhatsApp|Twitterbot|TelegramBot|LinkedInBot|Slackbot|Discordbot|meta-externalagent)/i', $userAgent)) {
-            return true;
-        }
-
-        // 2. Libros públicos / demos de invitados o audiolibro perteneciente a la sesión de invitado activa
+        // 1. Libros públicos/demo (sin propietario) o audiolibro perteneciente a la sesión de invitado activa
         if (is_null($book->user_id) || $this->guestSession->guestOwnsBook($book)) {
             return true;
         }
 
-        // 3. Libros privados registrados: requieren autenticación y rol de propietario o administrador
+        // 2. Libros privados registrados: requieren autenticación y rol de propietario o administrador
         if (! $user) {
             return false;
         }

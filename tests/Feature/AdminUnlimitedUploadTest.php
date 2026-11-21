@@ -172,16 +172,17 @@ class AdminUnlimitedUploadTest extends TestCase
         $sttUploadId = (string) Str::uuid();
         $sttChunk = UploadedFile::fake()->createWithContent('part0', 'AUDIO_STT_BYTES');
 
-        $this->actingAs($admin)
+        $sttRes = $this->actingAs($admin)
             ->postJson(route('uploads.chunk'), [
                 'upload_id' => $sttUploadId,
                 'chunk_index' => 0,
                 'total_chunks' => 1,
                 'filename' => 'nota-larga.opus',
                 'chunk' => $sttChunk,
-            ])
-            ->assertOk()
-            ->assertJson(['completed' => true]);
+            ]);
+
+        $this->assertSame(200, $sttRes->status(), $sttRes->getContent());
+        $sttRes->assertJson(['completed' => true]);
 
         $mockExtractor = Mockery::mock(PdfExtractorService::class);
         $mockExtractor->shouldReceive('extract')
