@@ -28,7 +28,7 @@ class ChunkedUploadController extends Controller
         $validated = $request->validate([
             'upload_id' => 'required|uuid',
             'chunk_index' => 'required|integer|min:0',
-            'total_chunks' => 'required|integer|min:1|max:2000',
+            'total_chunks' => 'required|integer|min:1|max:5000',
             'filename' => 'required|string|max:255',
             'chunk' => 'required|file|max:25600',
         ]);

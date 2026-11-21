@@ -42,7 +42,7 @@
         id="dropZone"
         class="border-2 border-dashed border-slate-300 dark:border-white/[0.12] hover:border-[#5b4f96] dark:hover:border-[#5b4f96] rounded-2xl p-8 sm:p-10 text-center transition cursor-pointer bg-slate-50/60 dark:bg-[#121619]/60 hover:bg-[#5b4f96]/5 group"
     >
-        <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.png,.jpg,.jpeg,.webp,.bmp,.mp3,.wav,.m4a,.ogg,.opus,.aac,.flac,.mp4,.mkv,.mov,.avi,.webm" class="hidden">
+        <input type="file" name="pdf_file" id="pdfFileInput" class="hidden">
         
         <div class="flex flex-col items-center justify-center space-y-3">
             <div id="dropZoneIconBox" class="w-14 h-14 rounded-2xl bg-white dark:bg-[#181f25] border border-slate-200 dark:border-white/[0.1] shadow-sm flex items-center justify-center text-[#5b4f96] dark:text-[#a59be0] group-hover:scale-105 group-hover:border-[#5b4f96] transition">

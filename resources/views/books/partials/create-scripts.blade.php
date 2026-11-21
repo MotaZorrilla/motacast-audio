@@ -2,8 +2,8 @@
     let currentInputMode = 'file';
     const IS_ADMIN_USER = @json(Auth::check() && Auth::user()->isAdmin());
     const MAX_STANDARD_UPLOAD_BYTES = 100 * 1024 * 1024; // 100MB para usuarios estándar / invitados
-    const CHUNK_UPLOAD_THRESHOLD_BYTES = 80 * 1024 * 1024; // 80MB: umbral seguro bajo el límite de Cloudflare
-    const CHUNK_SIZE_BYTES = 20 * 1024 * 1024; // 20MB por fragmento
+    const CHUNK_UPLOAD_THRESHOLD_BYTES = 50 * 1024 * 1024; // 50MB: umbral seguro bajo el límite de Cloudflare
+    const CHUNK_SIZE_BYTES = 5 * 1024 * 1024; // 5MB por fragmento (estable en Wi-Fi/móvil sin timeouts)
     const chunkedUploadIdHidden = document.getElementById('chunkedUploadIdHidden');
     const chunkedFilenameHidden = document.getElementById('chunkedFilenameHidden');
 
@@ -33,25 +33,46 @@
                 onProgress(index + 1, totalChunks, pct);
             }
 
-            const chunkForm = new FormData();
-            chunkForm.append('upload_id', uploadId);
-            chunkForm.append('chunk_index', String(index));
-            chunkForm.append('total_chunks', String(totalChunks));
-            chunkForm.append('filename', file.name);
-            chunkForm.append('chunk', slice, `${file.name}.part${index}`);
+            let lastError = null;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    const chunkForm = new FormData();
+                    chunkForm.append('upload_id', uploadId);
+                    chunkForm.append('chunk_index', String(index));
+                    chunkForm.append('total_chunks', String(totalChunks));
+                    chunkForm.append('filename', file.name);
+                    chunkForm.append('chunk', slice, `${file.name}.part${index}`);
 
-            const res = await fetch("{{ route('uploads.chunk') }}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
-                },
-                body: chunkForm
-            });
+                    const res = await fetch("{{ route('uploads.chunk') }}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                        },
+                        body: chunkForm
+                    });
 
-            const data = await res.json();
-            if (!res.ok || !data.success) {
-                throw new Error(data.message || `Error subiendo fragmento ${index + 1} de ${totalChunks}.`);
+                    const rawText = await res.text();
+                    let data = {};
+                    try {
+                        data = JSON.parse(rawText);
+                    } catch (_) {}
+
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || `HTTP ${res.status} en fragmento ${index + 1}/${totalChunks}`);
+                    }
+                    lastError = null;
+                    break;
+                } catch (err) {
+                    lastError = err;
+                    if (attempt < 3) {
+                        await new Promise(r => setTimeout(r, 1000 * attempt));
+                    }
+                }
+            }
+
+            if (lastError) {
+                throw lastError;
             }
         }
 
@@ -577,6 +598,10 @@
 
         syncTranscriptionOnlyFlag();
         closeMediaStrategyModal();
+        const scrollTarget = (strategy === 'stt_tts') ? stepVoiceSection : (stepSubmitSection || stepAudioSection);
+        if (scrollTarget) {
+            setTimeout(() => scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
+        }
     }
 
     function setDetectedContentType(type, file = null, mediaKind = 'audio') {
@@ -805,7 +830,11 @@
     });
 
     // Click to open file dialog
-    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('click', (e) => {
+        if (e.target !== fileInput) {
+            fileInput.click();
+        }
+    });
 
     // Drag & Drop handlers
     ['dragenter', 'dragover'].forEach(eventName => {
@@ -827,7 +856,7 @@
         const files = dt.files;
         if (files.length > 0) {
             const fileName = files[0].name.toLowerCase();
-            const validExts = ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown', '.png', '.jpg', '.jpeg', '.webp', '.bmp', '.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac', '.mp4', '.mkv', '.mov', '.avi', '.webm'];
+            const validExts = ['.pdf', '.docx', '.doc', '.txt', '.md', '.markdown', '.png', '.jpg', '.jpeg', '.webp', '.bmp', '.mp3', '.wav', '.m4a', '.ogg', '.opus', '.aac', '.flac', '.mp4', '.mkv', '.mov', '.avi', '.webm'];
             const isValid = validExts.some(ext => fileName.endsWith(ext));
             if (isValid) {
                 fileInput.files = files;
