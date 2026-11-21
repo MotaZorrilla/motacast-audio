@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Convertir Documento a Audiolibro - MotaCastAudio')
-@section('meta_description', 'Convierte PDFs, Word (DOCX), texto directo e imágenes (OCR) en audiolibros interactivos con voces neuronales ultranaturales y resúmenes ejecutivos.')
-@section('og_title', 'MotaCastAudio - Documentos a Audiolibros con IA')
-@section('og_description', 'Sube tus libros, documentos o imágenes y escúchalos al instante con voces neuronales de alta fidelidad, navegación por capítulos y reproductor interactivo.')
+@section('title', 'Convertir Documento o Audio - MotaCastAudio')
+@section('meta_description', 'Convierte PDF, Word, imágenes (OCR) y audios/videos en audiolibros con voces neuronales o transcripciones .TXT/.MD. Conversiones ilimitadas al registrarte.')
+@section('og_title', 'MotaCastAudio · Audiolibros con IA y Transcripción de Audio')
+@section('og_description', 'Convierte PDF, Word, imágenes (OCR) y audios/videos en audiolibros con voces neuronales o transcripciones .TXT/.MD. Conversiones ilimitadas al registrarte.')
 @section('og_type', 'website')
 @section('og_url', route('books.create'))
-@section('og_image', asset('images/motacast-og-banner.jpg'))
-@section('og_image_alt', 'MotaCastAudio - Conversión Inteligente a Audiolibros')
+@section('og_image', asset('images/motacast-og-banner.jpg') . '?v=2.0')
+@section('og_image_alt', 'MotaCastAudio · Audiolibros con Voces Neuronales IA y Transcripción STT')
 
 @section('content')
 <div class="max-w-3xl mx-auto space-y-6">

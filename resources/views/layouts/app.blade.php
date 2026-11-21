@@ -8,29 +8,29 @@
     <title>@yield('title', 'MotaCastAudio') - Mota Zorrilla</title>
 
     <!-- Standard SEO & Description Meta -->
-    <meta name="description" content="@yield('meta_description', 'MotaCastAudio convierte PDFs, documentos de Word, texto e imágenes en audiolibros con voces neuronales realistas, resúmenes ejecutivos automáticos y reproductor interactivo.')">
+    <meta name="description" content="@yield('meta_description', 'MotaCastAudio convierte PDFs, Word, imágenes (OCR) y audios/videos en audiolibros con voces neuronales o transcripciones .TXT/.MD. Conversiones ilimitadas al registrarte.')">
     <meta name="author" content="@yield('meta_author', 'Héctor Mota Zorrilla')">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph / WhatsApp / Facebook / LinkedIn Meta Tags -->
     <meta property="og:site_name" content="MotaCastAudio">
-    <meta property="og:title" content="@yield('og_title', 'MotaCastAudio - Documentos a Audiolibros con IA')">
-    <meta property="og:description" content="@yield('og_description', 'Convierte al instante documentos PDF, Word, texto e imágenes (OCR) en audiolibros con voces neuronales ultranaturales en español, sinopsis inteligente y reproductor sincronizado.')">
+    <meta property="og:title" content="@yield('og_title', 'MotaCastAudio · Audiolibros con IA y Transcripción de Audio')">
+    <meta property="og:description" content="@yield('og_description', 'Convierte PDF, Word, imágenes (OCR) y audios/videos en audiolibros con voces neuronales o transcripciones .TXT/.MD. Conversiones ilimitadas al registrarte.')">
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:url" content="@yield('og_url', url()->current())">
-    <meta property="og:image" content="@yield('og_image', asset('images/motacast-og-banner.jpg'))">
-    <meta property="og:image:secure_url" content="@yield('og_image', asset('images/motacast-og-banner.jpg'))">
+    <meta property="og:image" content="@yield('og_image', asset('images/motacast-og-banner.jpg') . '?v=2.0')">
+    <meta property="og:image:secure_url" content="@yield('og_image', asset('images/motacast-og-banner.jpg') . '?v=2.0')">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="@yield('og_image_alt', 'MotaCastAudio - Documentos a Audiolibros con Inteligencia Artificial')">
+    <meta property="og:image:alt" content="@yield('og_image_alt', 'MotaCastAudio · Audiolibros con Voces Neuronales IA y Transcripción STT')">
     <meta property="og:locale" content="es_LA">
 
     <!-- Twitter / X Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('og_title', 'MotaCastAudio - Documentos a Audiolibros con IA')">
-    <meta name="twitter:description" content="@yield('og_description', 'Convierte PDFs, Word, texto e imágenes en audiolibros interactivos con voces neuronales.')">
-    <meta name="twitter:image" content="@yield('og_image', asset('images/motacast-og-banner.jpg'))">
+    <meta name="twitter:title" content="@yield('og_title', 'MotaCastAudio · Audiolibros con IA y Transcripción de Audio')">
+    <meta name="twitter:description" content="@yield('og_description', 'Convierte PDF, Word, imágenes (OCR) y audios/videos en audiolibros con voces neuronales o transcripciones .TXT/.MD. Conversiones ilimitadas al registrarte.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/motacast-og-banner.jpg') . '?v=2.0')">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/icono.png') }}">

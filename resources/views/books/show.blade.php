@@ -10,7 +10,7 @@
     $isImageUpload = in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'bmp']);
     $ogImage = (is_null($book->user_id) && $isImageUpload && is_file(public_path('storage/' . $book->pdf_path)))
         ? asset('storage/' . $book->pdf_path)
-        : asset('images/motacast-og-banner.jpg');
+        : asset('images/motacast-og-banner.jpg') . '?v=2.0';
 @endphp
 
 @section('title', $book->title . ' - MotaCastAudio')
